@@ -23,6 +23,9 @@ The app needs a public URL. The owner already connected the repo to Railway.
   `config/master.key` is git-ignored and stays that way.
 - Optional Railway variable `MOCK_PRODUCT_ONBOARDING=true` shows the mock product-onboarding
   pages in production (sellers only; see `product-onboarding.md`). Unset by default.
+- Catalog demo listings are temporarily enabled by default at the user's request
+  (2026-11-11). Set `CATALOG_DEMO=false` to hide them. This controls read-only synthetic
+  catalog inventory only, not mock login, admin access, or bidding. See `product-catalog.md`.
 - The app's health endpoint is `/up` (whether Railway uses it as a health check is open).
 
 ## Open questions

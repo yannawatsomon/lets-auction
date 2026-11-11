@@ -5,7 +5,7 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
     get root_url
     assert_response :success
     assert_select "h1", "สินค้าประมูล"
-    assert_select "article.catalog-card", count: 9
+    assert_select "article.catalog-card", count: 36
     assert_select "form[action='/'][method='get']"
     assert_select "a[href='/']", "ล้างตัวกรอง"
   end
@@ -14,7 +14,7 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
     get root_url, params: { status: "ongoing", auction_type: "sealed_first_price" }
     assert_response :success
     assert_select "main section", count: 1
-    assert_select "article.catalog-card", count: 1
+    assert_select "article.catalog-card", count: 5
     assert_select "h3", "นาฬิกาสปอร์ต"
     assert_select "form[action='/']"
   end
@@ -27,8 +27,11 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "production homepage renders catalog without demo inventory" do
+    Rails.application.reload_routes_unless_loaded
     original = Rails.env
+    original_demo = Rails.configuration.x.catalog_demo_in_production
     Rails.env = "production"
+    Rails.configuration.x.catalog_demo_in_production = false
     get root_url
     assert_response :success
     assert_select "h1", "สินค้าประมูล"
@@ -39,5 +42,25 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
     assert_empty Catalog::DemoLots.call(now: Time.current)
   ensure
     Rails.env = original
+    Rails.configuration.x.catalog_demo_in_production = original_demo
+  end
+
+  test "production demo catalog shows sample banner and independent load more" do
+    Rails.application.reload_routes_unless_loaded
+    original = Rails.env
+    original_demo = Rails.configuration.x.catalog_demo_in_production
+    Rails.env = "production"
+    Rails.configuration.x.catalog_demo_in_production = true
+    get root_url, params: { ongoing_page: "2" }
+    assert_response :success
+    assert_select "article.catalog-card", count: 39
+    assert_select "aside", text: /ไม่ใช่รายการประมูลจริง/
+    assert_select "#catalog-total", text: /45/
+    assert_select "a.catalog-load-more", count: 2
+    get "/catalog-preview"
+    assert_response :not_found
+  ensure
+    Rails.env = original
+    Rails.configuration.x.catalog_demo_in_production = original_demo
   end
 end

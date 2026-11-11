@@ -42,6 +42,12 @@ development/test). Admin pages therefore stay 404. Remove the variable when real
 
 **Gotchas:**
 
+- The public Catalog has a separate read-only demo requested by the user (2026-11-11):
+  `Catalog::DemoLots` returns 45 synthetic listings, enabled in production by default until
+  real inventory is integrated. `CATALOG_DEMO=false` hides them outside development/test.
+  The catalog shows a demo banner. This does not enable any additional mock accounts,
+  sessions, auction registrations, or bid submission.
+
 - `auctions.created_by_id` and `auction_lots.item_id` have no foreign key yet. Mock items never
   change status, so an item added to a lot stays `approved` in the YAML; the partial unique
   index `one_open_lot_per_item` is what stops it being in two unfinished lots.
