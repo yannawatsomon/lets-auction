@@ -103,14 +103,16 @@ Active Record Encryption in one `text` column, and bids are append-only. Decisio
   `Bidding::AuctionCloseJob` at `ends_at`. A job that runs early re-enqueues itself for the right
   time; one for a cancelled/missing auction does nothing.
 - `Bidding::OpenAuction` → auction and lots `live`, broadcasts `lot.state`.
-  `Bidding::CloseAuction` → every open lot closes together (no extensions): bids ranked with
-  `Bid.ranking` (English: each bidder's best) into `lot_results` (rank 1 = would-be winner,
-  status `pending`); no bids → lot `unsold` and the product back to `approved`; auction →
+  `Bidding::CloseAuction` → every open lot closes together (no extensions): a lot with bids →
+  `closed`, no bids → `unsold` and the product back to `approved`; auction →
   `awaiting_approval`; `lot.closed` broadcast after commit. Both are idempotent and audit-logged.
+- Ranking is **not stored**: `AuctionLot#results` computes it from `bids` with `Bid.ranking`
+  (English: each bidder's best), rank 1 = would-be winner. No `lot_results` table (created by
+  #96, dropped by `20261111130000_drop_lot_results`) — the team
+  adds no new tables for now (`bidding.md`); offers/payment state for #36 go in mock data.
 - Safety net: `bidding_auction_sweep` in `config/recurring.yml` (production, every minute)
   runs `Bidding::AuctionSweepJob` for anything due.
-- `lot_results` has no amount column; the amount stays encrypted in `bids` (`result.amount_cents`
-  reads it through the bid).
+- `Result#amount_cents` reads the amount through the bid; it stays encrypted in `bids`.
 - Bids never wait for these jobs: `AuctionLot#accepting_bids?` checks server time itself, and
   a lot that the job has closed refuses bids too.
 - **Production needs a job runner:** set `SOLID_QUEUE_IN_PUMA=1` on Railway (or run a separate

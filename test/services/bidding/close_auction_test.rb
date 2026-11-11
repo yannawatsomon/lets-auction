@@ -57,7 +57,6 @@ class Bidding::CloseAuctionTest < ActiveSupport::TestCase
     assert lot.reload.closed?
     assert_equal [ top, early_tie, late_tie ], lot.results.map(&:bid)
     assert_equal [ 1, 2, 3 ], lot.results.map(&:rank)
-    assert lot.results.all?(&:pending?)
   end
 
   test "running the close twice changes nothing" do
@@ -65,9 +64,9 @@ class Bidding::CloseAuctionTest < ActiveSupport::TestCase
     lot = a.lots.first
     sealed_bid(a, lot, 21, lot.min_price_cents, a.starts_at + 1.minute)
     Bidding::CloseAuction.call(auction: a, now: a.ends_at)
-    assert_no_difference -> { LotResult.count } do
-      Bidding::CloseAuction.call(auction: a, now: a.ends_at + 1.hour)
-    end
+    before = lot.reload.results
+    assert_not Bidding::CloseAuction.call(auction: a.reload, now: a.ends_at + 1.hour)
+    assert_equal before, lot.reload.results
     assert_equal 1, AuditLog.where(action: "auction.closed", entity_id: a.id).count
   end
 
