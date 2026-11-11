@@ -13,8 +13,9 @@ supplies one server timestamp and the latest effective lot closing time.
 
 - This service does not load records, filter visibility, or authorize requests.
   Supply only eligible lots after applying viewer access and draft/cancelled rules.
-- Map auction start time and lot-specific closing time from the auction model
-  once #28 is implemented; do not assume the event closing time includes lot extensions.
+- Use the provider's start/closing timestamps when integrating real inventory. Current
+  `AuctionLot` delegates both to `Auction`; English extensions have been removed by the
+  bidding decision. Do not recreate extension columns for Catalog.
 - Missing or malformed timestamps, duplicate/non-integer IDs, and invalid intervals
   raise `ArgumentError`. Do not feed unscheduled lots into the service.
 - The service sorts in memory. Paginating inputs before grouping would produce
@@ -35,8 +36,9 @@ synthetic inventory in local environments and, temporarily, in production by def
 at the user's request. `CATALOG_DEMO=false` disables the production demo and restores
 empty sections with no demo banner. This does not enable login or bidding.
 
-Demo inventory now contains 45 synthetic lots (15 per status) to exercise
-pagination; the initial page displays up to 12 per section, or 36 cards total.
+Demo inventory contains 45 synthetic lots, initially 15 per status at its fixed fixture
+anchor. Overview shows one responsive row per section; listings start with up to 12 per
+section. Counts change as server time advances through the schedule.
 
 ## Independent Load more
 
@@ -74,11 +76,12 @@ Tests that temporarily set `Rails.env = "production"` must first call
 `Rails.application.reload_routes_unless_loaded`. Otherwise lazy route loading can build
 production routes in a test worker, removing mock-login helpers from later tests.
 
-`/catalog-preview` renders nine synthetic lots through the real sections service.
+`/catalog-preview` renders the same responsive overview through the real sections service.
 The route and controller are restricted to development and do not persist data.
-The sample times are relative to each request, so reloading recreates the sample
-schedule; this preview does not demonstrate live status transitions. It is a
-throwaway visual aid, not completion of #39 or the product-card issue.
+Sample times are fixed relative to `Catalog::DemoLots::SCHEDULE_ANCHOR`
+(`2026-11-11T16:00:00Z`) and identical across requests/workers. The fixture naturally
+transitions and eventually ends; update the dated fixture deliberately for a new demo
+schedule rather than resetting it with each request.
 
 The preview now renders the reusable `catalog/card` partial from #40. Pass the
 domain auction type (`english` or `sealed_first_price`), status, and optional

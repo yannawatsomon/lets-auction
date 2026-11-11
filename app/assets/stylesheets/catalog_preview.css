@@ -46,6 +46,9 @@
 .catalog-see-more:hover { text-decoration: underline; text-underline-offset: 4px; }
 .catalog-preview__empty { padding: 45px 20px; background: white; border: 1px dashed var(--catalog-line); border-radius: 12px; text-align: center; color: var(--catalog-muted); }
 .catalog-footnote { margin-top: 40px; font-size: 12px; text-align: center; color: #77736c; }
+.catalog-refresh-status { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; margin: 0 0 20px; color: #63666d; font-size: 12px; }
+.catalog-refresh-status__error { color: #8a3b22; }
+.catalog-refresh-status button { min-height: 44px; border: 1px solid #d9d5cc; border-radius: 6px; background: white; padding: 8px 14px; color: #77571f; cursor: pointer; }
 @media (max-width: 900px) {
   .catalog-filters__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .catalog-hero__side { display: none; }

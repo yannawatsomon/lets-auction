@@ -33,8 +33,18 @@ Issue [#38](https://github.com/yannawatsomon/lets-auction/issues/38) ใช้�
   เพราะเสี่ยงปะปนกับ inventory จริง แหล่งที่มา: คำขอผู้ใช้ “อัพขึ้น railway พร้อมข้อมูลด้วย”
 - ขอบเขตเฉพาะการแสดงรายการและตัวกรอง ไม่เปิด mock login, สิทธิ์ admin,
   การเสนอราคา หรือ preview endpoint ใน production เพิ่มเติม
-- ใช้ 45 รายการจำลอง (15 ต่อสถานะ) โดยคำนวณเวลาสัมพันธ์กับแต่ละ request
-  จึงใช้ทดลอง UI ได้ แต่ไม่ใช่ข้อมูลที่เก็บถาวรหรือหลักฐานทดสอบ live refresh
+- ใช้ 45 รายการจำลอง โดยเดิมคำนวณเวลาสัมพันธ์กับแต่ละ request
+  **Superseded (2026-11-11, #43):** ใช้ตารางเวลาคงที่ที่ anchor
+  `2026-11-11T16:00:00Z` เพื่อทดสอบการย้ายสถานะด้วยเวลาเซิร์ฟเวอร์จริง
+  เริ่มต้นมี 15 รายการต่อสถานะ จากนั้นจำนวนเปลี่ยนตามกำหนดเวลาและจบลงตามธรรมชาติ
+
+### Server-time refresh (#43, requested 2026-11-11)
+
+The user authorized server-time status updates after the proposed 30-second refresh
+approach. Only the results fragment and update timestamp refresh; filters/unfinished
+form edits remain intact. Refresh on visible-tab return, defer while details/focus are
+in use, and reset expanded listing counters only after success. Failed requests retain
+previous results with retry. The overall topic remains Open for other unresolved choices.
 
 รายการต่อไปนี้มาจากคำขอของผู้ใช้โดยตรง แต่เอกสารยังคงสถานะ Open จนกว่าผู้ร่วมงานจะยืนยันแนวทางพัฒนาในตารางด้านล่าง
 

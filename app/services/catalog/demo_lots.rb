@@ -2,6 +2,7 @@ module Catalog
   # Read-only synthetic inventory, visibly marked as a demo on the catalog page.
   class DemoLots
     Lot = Data.define(:id, :name, :category, :auction_type, :starts_at, :ends_at, :min_price_cents)
+    SCHEDULE_ANCHOR = Time.utc(2026, 11, 11, 16).freeze
 
     def self.enabled?
       Rails.env.local? || Rails.configuration.x.catalog_demo_in_production == true
@@ -24,7 +25,7 @@ module Catalog
       samples.flat_map do |id, name, category, auction_type, starts, ends|
         5.times.map do |copy|
           title = copy.zero? ? name : "#{name} · ตัวอย่าง #{copy + 1}"
-          Lot.new(id + copy * 100, title, category, auction_type, now + starts, now + ends,
+          Lot.new(id + copy * 100, title, category, auction_type, SCHEDULE_ANCHOR + starts, SCHEDULE_ANCHOR + ends,
             (35_000 + id * 17_800) * 100)
         end
       end

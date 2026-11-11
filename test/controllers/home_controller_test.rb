@@ -1,6 +1,7 @@
 require "test_helper"
 
 class HomeControllerTest < ActionDispatch::IntegrationTest
+  setup { travel_to Catalog::DemoLots::SCHEDULE_ANCHOR }
   test "root renders" do
     get root_url
     assert_response :success

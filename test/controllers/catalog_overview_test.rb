@@ -1,6 +1,7 @@
 require "test_helper"
 
 class CatalogOverviewTest < ActionDispatch::IntegrationTest
+  setup { travel_to Catalog::DemoLots::SCHEDULE_ANCHOR }
   test "overview stays one row even with old page counters" do
     get root_path, params: { ongoing_page: "2", upcoming_page: "2" }
     assert_response :success
