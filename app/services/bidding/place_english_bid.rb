@@ -4,7 +4,7 @@ module Bidding
   # In one transaction: lock the lot row → invited buyer who accepted → open by server time
   # (no extensions: the lot ends at the auction's end) → not the seller → not already leading →
   # amount ≥ next minimum (first bid: minimum price; then current price + increment) → insert →
-  # move the lot's price, leader and count → audit log. Broadcasting comes after commit (#33).
+  # move the lot's price, leader and count → audit log → commit → broadcast (#33).
   #
   # Concurrency: `lock!` is SELECT … FOR UPDATE on Postgres; SQLite runs write transactions as
   # IMMEDIATE, so they queue. The lot update is also a compare-and-set on `bid_count`, so two
@@ -31,8 +31,10 @@ module Bidding
         return Result.new(bid: earlier, replayed: true)
       end
 
+      previous_leader_id = nil
       bid = ActiveRecord::Base.transaction do
         @lot.lock!
+        previous_leader_id = @lot.leader_bid&.user_id
         check_participant!
         check_open!
         check_not_seller!(@lot, @user)
@@ -49,6 +51,8 @@ module Bidding
         created
       end
       @lot.reload
+      # After commit only (#33): nobody hears about a bid that was rolled back.
+      Broadcaster.bid_accepted(lot: @lot, previous_leader_id:)
       Result.new(bid:, replayed: false)
     rescue ActiveRecord::RecordNotUnique
       earlier = replay(user: @user, key: @key, lot: @lot, amount:)
