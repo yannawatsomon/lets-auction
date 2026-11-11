@@ -57,10 +57,19 @@ collaborator confirms it in a PR (see `README.md`).
   war. Trade-off: a bid in the final seconds after the cap can still "snipe". Alternative
   rejected: no cap (earlier proposal); cap by number of extensions. Source: confirmed by
   @guy127, 2026-11-11.
-- **No deposit or KYC for now, including ฿20M+ English lots.** What: invite + accept is the
+- ~~**No deposit or KYC for now, including ฿20M+ English lots.**~~ **Superseded in part
+  (2026-11-11):** no deposit still holds; KYC is replaced by buyer onboarding, see the next
+  bullet and [`user-onboarding.md`](user-onboarding.md). Original: What: invite + accept is the
   only gate. Why: no collateral system exists; the admin chooses who is invited. Trade-off: a
   winner who never pays costs time (the lot passes to the next rank). Source: confirmed by
   @guy127, 2026-11-11 ("not yet"; revisit before real high-value use).
+- **Only onboarded buyers can join; the grade decides the participant list; no deposit.**
+  What: a buyer can register for a sealed event only after completing onboarding with grade
+  A–D. The admin can invite to English lots only grade A buyers whose proof of income is
+  approved. Registration (sealed) and invite + accept (English) still apply on top. No deposit.
+  The grade is checked when the buyer registers or is invited, not on every bid. Why: everyone
+  who can join an auction has passed onboarding. Trade-off: a buyer can't bid until onboarding
+  is done. Source: eyetanamas-max, agreed with @guy127, 2026-11-11.
 - **No two-admin reveal and no commitment hash.** What: one admin can view sealed rankings
   once the lot is `closed`; bid receipts carry no hash. Why: few admins; the hash only adds
   value if bidders verify it. Trade-off: one person can see sealed amounts before results
@@ -82,9 +91,10 @@ collaborator confirms it in a PR (see `README.md`).
   sellers cannot register for or accept an invitation to an event that contains their item.
   Detecting linked accounts (same IP/device) is out of scope for this milestone. Source: draft
   and SPEC; linked-account detection is SPEC phase 3.
-- **No OTP, deposit, credit limit or tier check before bidding in this milestone.** Why: no
-  SMS provider or collateral system exists yet; `scope.md` proposes no deposit/KYC for
-  Milestone 1. Trade-off: no protection against a winner who doesn't pay (see Open questions).
+- **No OTP, deposit, credit limit or per-bid tier check in this milestone.** What: the
+  onboarding grade is checked once, at registration or invite (see Decisions), so the bid
+  endpoint only checks the participant status. Why: no SMS provider or collateral system
+  exists yet; `scope.md` proposes no deposit for Milestone 1. Trade-off: no protection against a winner who doesn't pay (see Open questions).
   Alternative rejected: SPEC's OTP + credit-lock flow (blocked on providers and on the
   collateral decision). Source: draft; SPEC lists collateral as undecided.
 - **One endpoint for both types.** What: `POST /lots/:id/bids`; the logic branches on the
@@ -147,5 +157,6 @@ Amount input → satang:
 ## Open questions
 
 - **Remaining proposals** (everything under Proposals) still need a collaborator to confirm.
-- **Deposit or KYC** — revisit before real ฿20M+ use (decided "not yet").
+- **Deposit** — revisit before real ฿20M+ use (decided "not yet"). KYC is answered by
+  [`user-onboarding.md`](user-onboarding.md).
 - Real-time and job runtime: see `realtime.md` (proposal: Solid Queue inside Puma at first).
