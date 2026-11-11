@@ -452,7 +452,7 @@ CREATE TABLE bids (
   lot_id          uuid NOT NULL REFERENCES auction_lots(id),
   user_id         uuid NOT NULL REFERENCES users(id),
   auction_type    auction_type NOT NULL,   -- copy จาก auction เพื่อใช้ใน partial index
-  amount_cents          bigint NOT NULL CHECK (amount_cents > 0),  -- sealed: เข้ารหัสด้วย Active Record Encryption (bidding.md) ต้องเปลี่ยน type และจัดอันดับใน Ruby
+  amount_cents    text NOT NULL,           -- ciphertext ของ Active Record Encryption (bidding.md); ตรวจ > 0 ที่ model
   idempotency_key text NOT NULL,
   created_at      timestamptz NOT NULL DEFAULT clock_timestamp(),
   UNIQUE (user_id, idempotency_key)
@@ -460,8 +460,8 @@ CREATE TABLE bids (
 -- sealed: ยื่นได้ครั้งเดียวต่อ lot
 CREATE UNIQUE INDEX one_sealed_bid_per_user ON bids (lot_id, user_id)
   WHERE auction_type = 'sealed_first_price';
--- ใช้จัดอันดับ: ราคาสูงสุดก่อน เท่ากันใครยื่นก่อนชนะ
-CREATE INDEX bids_ranking ON bids (lot_id, amount_cents DESC, created_at ASC);
+-- amount เข้ารหัสอยู่ จึง sort ใน SQL ไม่ได้: ดึง bid ของ lot ตามเวลาแล้วจัดอันดับใน Ruby
+CREATE INDEX bids_by_lot ON bids (lot_id, created_at);
 ALTER TABLE auction_lots ADD FOREIGN KEY (leader_bid_id) REFERENCES bids(id);
 
 CREATE TABLE lot_results (
@@ -569,13 +569,14 @@ CREATE TABLE idempotency_keys (
 
 **การจัดอันดับเมื่อ lot ปิด**
 
-เรียง bid ตาม `amount_cents DESC, created_at ASC` แล้วเขียนลง `lot_results` ทุกอันดับ รอบ English ใช้ bid สูงสุดของแต่ละคนเพียงอันเดียว เมื่อแอดมิน approve ผล ระบบสร้าง order ให้อันดับ 1 พร้อม `payment_due_at = now() + 48 ชม.` ถ้าไม่จ่าย order ใบถัดไปไปที่อันดับ 2 และต่อไปเรื่อยๆ
+ถอดรหัส `amount_cents` ใน Ruby แล้วเรียง bid ตาม `amount_cents DESC, created_at ASC` (ใน SQL ทำไม่ได้เพราะเข้ารหัสอยู่) แล้วเขียนลง `lot_results` ทุกอันดับ รอบ English ใช้ bid สูงสุดของแต่ละคนเพียงอันเดียว เมื่อแอดมิน approve ผล ระบบสร้าง order ให้อันดับ 1 พร้อม `payment_due_at = now() + 48 ชม.` ถ้าไม่จ่าย order ใบถัดไปไปที่อันดับ 2 และต่อไปเรื่อยๆ
 
 **ความลับของราคา sealed**
 
 - API ไม่คืนราคาของคนอื่นและไม่คืนจำนวนผู้ยื่นจนกว่า auction จะเป็น published
 - ผู้ยื่นเห็นเฉพาะราคาของตัวเอง แอดมินเห็นตารางอันดับได้เมื่อ lot ปิดแล้วเท่านั้น
 - จำกัดสิทธิ์ query ตาราง `bids` ใน production เฉพาะ service account
+- `bids.amount_cents` เข้ารหัสด้วย Active Record Encryption (ทั้ง sealed และ English) dump DB แล้วไม่เห็นราคา
 
 **คำถามที่ยังเปิดอยู่**
 
