@@ -10,12 +10,15 @@ module Admin
           increment = Baht.parse(params[:bid_increment])
           raise Auction::Error, "ขั้นบิดขั้นต่ำต้องเป็นจำนวนเงินบาท ทศนิยมไม่เกิน 2 ตำแหน่ง และมากกว่า 0" unless increment&.positive?
         end
-        @auction.add_item!(item, bid_increment_cents: increment)
+        lot = @auction.add_item!(item, bid_increment_cents: increment)
+        audit!("auction.lot_added", @auction, { lot_id: lot.id, item_id: lot.item_id })
         redirect_to admin_bidding_auction_path(@auction), notice: "เพิ่มสินค้าเข้างานแล้ว"
       end
 
       def destroy
-        @auction.remove_lot!(@auction.lots.find(params[:id]))
+        lot = @auction.lots.find(params[:id])
+        @auction.remove_lot!(lot)
+        audit!("auction.lot_removed", @auction, { lot_id: lot.id, item_id: lot.item_id })
         redirect_to admin_bidding_auction_path(@auction), notice: "เอาสินค้าออกจากงานแล้ว"
       end
 

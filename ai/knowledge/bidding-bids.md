@@ -117,6 +117,26 @@ Active Record Encryption in one `text` column, and bids are append-only. Decisio
   worker) or nothing opens/closes and the sweep never runs. A human sets it (agents don't touch
   Railway); see `docs/decision/realtime.md`.
 
+## Security review (#37, 2026-11-11)
+
+Checked against `.claude/skills/security-review` over all bidding code.
+
+- Fixed in #37: per-buyer rate limit on bid review/create (30/min, `429 rate_limited`);
+  admin and participation actions now audit-logged (`BiddingAudit`: auction
+  created/updated/scheduled/cancelled, lot added/removed, participant
+  invited/revoked/registered/accepted); length limits on auction description (2000) and cancel
+  reason (500).
+- Tests: `bidding_security_test.rb` (secrecy sweep over every bidding page as guest, buyer,
+  seller and admin + feed, socket state, audit log, log filter; XSS escaping; rate limit; and a
+  self-test proving the leak detector fires), `bidding_concurrency_test.rb` (real separate DB
+  connections, no shared test transaction), `bidding_audit_test.rb`.
+- Open, not bidding-only (for the team): `config.force_ssl` / `assume_ssl` are commented out in
+  `production.rb` (HTTPS-only + `Secure` cookies, checklist §6; Railway terminates TLS, so
+  `assume_ssl = true` is likely needed with it). Append-only for `bids` / `audit_logs` is
+  model-only until Postgres (`REVOKE UPDATE, DELETE`). Registration/accept aren't rate-limited
+  (low risk: one row per buyer per auction).
+- Still to test with #36: winner doesn't pay → next rank.
+
 ## Audit log (shared)
 
 `audit_logs` / `AuditLog.record!(action:, entity:, actor:, data:)` is append-only and meant for
