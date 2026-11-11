@@ -37,8 +37,18 @@ draft gives them, and each bullet becomes Decided only when a collaborator confi
   Trade-off: manual admin work per order. Alternative rejected: payment gateway (not in
   Milestone 1). Source: design draft, 2026-11-11.
 
+- **Product media limits.** What: each item has 1 to 5 images (required) and 0 to 2 videos
+  (optional); verification documents are separate and have no limit yet. The API enforces the
+  counts. Why: the draft already caps images at 5; a minimum of 1 means buyers and the admin
+  always have something to look at. Trade-off: a seller with only a video or a document cannot
+  list. Source: onboarding flow draft
+  [`docs/design/product-onboarding-flow.md`](../design/product-onboarding-flow.md), 2026-11-11
+  (the 5-image cap is from the Milestone 1 design draft; the video cap and image minimum are new).
+
 ## Open questions
 
+- Product media: file formats and sizes, a limit on documents, and whether the 20M THB English
+  items must include documents. See the open questions in the onboarding flow draft.
 - Page 6 shows a credit card option, but Milestone 1 uses slips. Hide it until a gateway exists?
 - Is there a platform fee (deducted from the seller or added for the buyer)? If yes, `orders`
   and `payouts` need a `fee` column.
