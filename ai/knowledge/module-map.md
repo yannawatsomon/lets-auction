@@ -18,7 +18,7 @@ few named seams. This file records what exists today; the rules we propose for n
 | Payment | `/payment` (+ `quote`, `preview`) | `PaymentsController` | `application` / `application.css` | `MockPaymentOrder`, `PaymentQuote`, `PaymentSubmission` | One mock order |
 | User onboarding (buyer) | `/user-onboarding` | `OnboardingsController`, `Onboarding::*` | `onboarding` / `onboarding.css` | `UserOnboarding`, `CreditAssessment`, `CreditScore`, `OnboardingScoring`, `ThaiNationalId`, `ThaiPhoneNumber`, `OnboardingStore` | In-memory, seeded from `db/mock/user_onboardings.yml` |
 | Product onboarding (seller) | `/product-onboarding` | `ProductOnboarding::*` | `product_onboarding` / `application.css` | `app/models/product_onboarding/` (`Item`, `Review`, `MediaFile`, `UploadPolicy`, `Store`, `UploadStore`) | In-memory, seeded from `db/mock/product_items.yml` |
-| Bidding | `/bidding/...`, `/admin/bidding/...` | `Bidding::*`, `Admin::Bidding::*` | `bidding`, `bidding_admin` / `bidding.css` | `app/services/bidding/`, `Auction*`, `Bid`, `LotResult`, `AuditLog`, jobs in `app/jobs/bidding/`, `Bidding::AuctionChannel` | Real tables in `db/schema.rb` |
+| Bidding | `/bidding/...`, `/admin/bidding/...` | `Bidding::*`, `Admin::Bidding::*` | `bidding`, `bidding_admin` / `bidding.css` | `app/services/bidding/` (incl. `Results`), `Auction*`, `Bid`, `AuditLog`, `Bidding::OrderStore`, jobs in `app/jobs/bidding/`, `Bidding::AuctionChannel` | Real tables in `db/schema.rb`; offers and orders are in-memory (`OrderStore`), rankings are computed from bids (no `lot_results` table) |
 | Mock login (shared) | `/mock-login` | `MockSessionsController` | `application` | `MockData`, `Current`, `db/mock/users.yml` | YAML |
 
 Naming for bidding is written down in [`bidding-conventions.md`](bidding-conventions.md).
@@ -36,7 +36,8 @@ Product onboarding --[ AuctionItems ]--> Bidding <--[ BuyerStanding ]-- User onb
                                            v
                                         Catalog   (home uses Catalog::DemoLots today)
 
-Payment: standalone mock order. Not connected to bidding results (`LotResult`) yet.
+Payment: standalone mock order. Not connected to bidding's orders (`Bidding::OrderStore`) yet;
+admins mark them paid by hand (mock) until payment records real payments.
 ```
 
 | Seam | Direction | What crosses | Notes |
@@ -49,6 +50,9 @@ Payment: standalone mock order. Not connected to bidding results (`LotResult`) y
 Inside bidding: `Bidding::OpenAuction` / `CloseAuction` run from `Auction*Job` (and a
 once-a-minute `AuctionSweepJob` in production), then `Bidding::Broadcaster` pushes events to
 `Bidding::AuctionChannel`. Bids go through `Bidding::PlaceEnglishBid` / `PlaceSealedBid`.
+After close, admins approve results (`Bidding::Results`, `/admin/bidding/auctions/:id/results`);
+each lot is offered to rank 1 for 48 hours as an `OrderStore` order, `OrderExpireJob` moves it to
+the next rank, and buyers see their own outcome at `/bidding/lots/:id/result`.
 
 ### Shared platform (change with care)
 
@@ -70,9 +74,9 @@ These are facts about today's code, not defects to fix in one go:
   `ProductOnboarding::` model namespace.
 - **Admin pages exist only for bidding.** `ProductOnboarding::Review` models admin verification
   but has no admin pages yet.
-- **Four mock stores, four patterns.** `MockData` (read-only YAML), `OnboardingStore`
-  (writable, in memory), `ProductOnboarding::Store` (in memory) and `BuyerStanding` (its own
-  YAML). All reset on server restart. Replacement steps: [`mock-data.md`](mock-data.md).
+- **Five mock stores, five patterns.** `MockData` (read-only YAML), `OnboardingStore`
+  (writable, in memory), `ProductOnboarding::Store` (in memory), `Bidding::OrderStore` (in
+  memory) and `BuyerStanding` (its own YAML). All reset on server restart. Replacement steps: [`mock-data.md`](mock-data.md).
 - **Home page owner.** `/` is the catalog; there is no separate landing page.
 
 ## References
