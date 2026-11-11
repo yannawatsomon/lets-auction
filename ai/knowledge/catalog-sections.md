@@ -41,3 +41,22 @@ Missing paths show a placeholder/plain title; do not invent a detail route.
 The `catalog-image` Stimulus controller reveals the placeholder on image failure,
 including cached failures detected on connect. `catalog.css` owns shared card/grid
 styles; `catalog_preview.css` contains only preview page styles.
+
+## Combined filters
+
+`Catalog::Filters.new(attributes, categories:)` validates the seven explicit GET
+fields `q`, `category`, `status`, `auction_type`, `date_field`, `from`, and `to`.
+Call `sections(lots:, now:)` with already-authorized lots and one server timestamp.
+It returns the usual sorted section hash, narrowed to one section if status is selected.
+It exposes ActiveModel errors and sanitized scalar readers for the `catalog/filters` form.
+Invalid inputs yield empty results with field errors; the preview responds with HTTP 422.
+
+Pass the complete eligible category list, not categories derived from filtered results,
+so the dropdown remains stable. Search is a case-insensitive literal substring, not SQL
+wildcards. Date bounds are inclusive Thai local timestamps (minutes or seconds), with
+either endpoint optional. Minute-only timestamps need `:00` appended before Ruby's strict
+`Time.iso8601` parser. No browser timezone conversion is applied.
+
+On a checkout newly updated from main, prepare the local development database with
+`bin/rails db:migrate`; otherwise Rails blocks the preview with PendingMigrationError
+even though the preview itself does not query auction tables.

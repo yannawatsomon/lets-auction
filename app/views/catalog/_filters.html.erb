@@ -1,0 +1,35 @@
+<%# locals: (filters:, categories:, url:) %>
+<%= form_with url: url, method: :get, class: "catalog-filters", data: { turbo: false }, aria: { label: "ค้นหาและกรองสินค้าประมูล" } do |form| %>
+  <div class="catalog-filters__field catalog-filters__search">
+    <%= form.label :q, "ค้นหาสินค้า", for: "filter-q" %>
+    <%= form.search_field :q, value: filters.q, id: "filter-q", maxlength: 100, placeholder: "ค้นหาจากชื่อสินค้า",
+      aria: { invalid: filters.errors[:q].any?, describedby: filters.errors[:q].any? ? "filter-q-error" : nil } %>
+    <% if filters.errors[:q].any? %><p class="catalog-filters__error" id="filter-q-error"><%= filters.errors[:q].join(" · ") %></p><% end %>
+  </div>
+  <% choices = [
+    [:category, "หมวดหมู่", [["ทั้งหมด", ""]] + categories.map { |category| [category, category] }],
+    [:status, "สถานะการประมูล", [["ทั้งหมด", ""], ["อยู่ระหว่างประมูล", "ongoing"], ["ยังไม่ถึงเวลาประมูล", "upcoming"], ["ผ่านไปแล้ว", "ended"]]],
+    [:auction_type, "วิธีประมูล", [["ทั้งหมด", ""], ["English", "english"], ["First-price sealed-bid", "sealed_first_price"]]],
+    [:date_field, "กรองวันเวลาจาก", [["เวลาเริ่มประมูล", "starts_at"], ["เวลาปิดประมูล", "ends_at"]]]
+  ] %>
+  <% choices.each do |field, label, options| %>
+    <div class="catalog-filters__field">
+      <%= form.label field, label, for: "filter-#{field}" %>
+      <%= form.select field, options_for_select(options, filters.public_send(field)), {}, id: "filter-#{field}",
+        aria: { invalid: filters.errors[field].any?, describedby: filters.errors[field].any? ? "filter-#{field}-error" : nil } %>
+      <% if filters.errors[field].any? %><p class="catalog-filters__error" id="filter-<%= field %>-error"><%= filters.errors[field].join(" · ") %></p><% end %>
+    </div>
+  <% end %>
+  <% { from: "ตั้งแต่ (เวลาไทย)", to: "ถึง (เวลาไทย)" }.each do |field, label| %>
+    <div class="catalog-filters__field">
+      <%= form.label field, label, for: "filter-#{field}" %>
+      <%= form.datetime_local_field field, value: filters.public_send(field), step: 1, id: "filter-#{field}",
+        aria: { invalid: filters.errors[field].any?, describedby: filters.errors[field].any? ? "filter-#{field}-error" : nil } %>
+      <% if filters.errors[field].any? %><p class="catalog-filters__error" id="filter-<%= field %>-error"><%= filters.errors[field].join(" · ") %></p><% end %>
+    </div>
+  <% end %>
+  <div class="catalog-filters__actions">
+    <%= form.submit "ค้นหาและกรอง" %>
+    <%= link_to "ล้างตัวกรอง", url %>
+  </div>
+<% end %>
