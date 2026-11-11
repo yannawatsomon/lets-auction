@@ -5,7 +5,10 @@
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
 <% end %>
 
-<main class="catalog-preview" lang="th">
+<% refresh_enabled = !@catalog_load_error && @filters.errors.empty? && @pagination.errors.empty? %>
+<main class="catalog-preview" lang="th" data-controller="catalog-refresh"
+  data-catalog-refresh-url-value="<%= catalog_navigation_url(@catalog_url, @filters, {}) %>"
+  data-catalog-refresh-enabled-value="<%= refresh_enabled %>">
   <header class="catalog-hero">
     <div>
       <p class="catalog-eyebrow">LET’S AUCTION / MARKETPLACE</p>
@@ -18,7 +21,7 @@
     <aside class="catalog-notice" role="status">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 11v6m0-10h.01"/></svg>
       <div><strong>ตัวอย่างชั่วคราว — ไม่ใช่รายการประมูลจริง</strong>
-        <small>โหลดหน้าใหม่เพื่อสร้างเวลาอ้างอิงใหม่ · เวลาอ้างอิง:
+        <small>ตารางเวลาข้อมูลตัวอย่างคงที่ · เวลาเปิดหน้า:
           <time datetime="<%= @now.iso8601 %>"><%= @now.in_time_zone("Asia/Bangkok").strftime("%d/%m/%Y %H:%M:%S") %></time> (เวลาไทย)
         </small>
       </div>
@@ -26,6 +29,12 @@
   <% end %>
   <div class="catalog-filter-heading"><h2>ค้นหาและกรองสินค้า</h2><span>ปรับตัวกรองเพื่อค้นหารายการที่สนใจ</span></div>
   <%= render "catalog/filters", filters: @filters, categories: @categories, url: @catalog_url %>
+  <div class="catalog-refresh-status" aria-live="polite">
+    <span>อัปเดตล่าสุด <time datetime="<%= @now.iso8601 %>" data-catalog-refresh-target="updatedAt"><%= @now.in_time_zone("Asia/Bangkok").strftime("%d/%m/%Y %H:%M:%S") %></time><% if refresh_enabled %> · อัปเดตอัตโนมัติทุก 30 วินาที<% end %></span>
+    <span class="catalog-refresh-status__error" data-catalog-refresh-target="error" hidden>อัปเดตไม่สำเร็จ กำลังแสดงข้อมูลที่โหลดไว้ล่าสุด</span>
+    <button type="button" data-catalog-refresh-target="retry" data-action="catalog-refresh#retry" hidden>ลองใหม่</button>
+  </div>
+  <div data-catalog-refresh-target="results">
   <% if @catalog_load_error %>
     <div id="catalog-load-error" class="catalog-preview__empty" role="alert">
       <p>โหลดรายการสินค้าไม่สำเร็จ กรุณาลองใหม่อีกครั้ง</p>
@@ -81,5 +90,6 @@
       <% end %>
     </section>
   <% end %>
+  </div>
   <% if @demo_catalog %><p class="catalog-footnote">DEMO INTERFACE · รายการและราคาในหน้านี้เป็นข้อมูลตัวอย่างสำหรับแสดงการออกแบบ</p><% end %>
 </main>

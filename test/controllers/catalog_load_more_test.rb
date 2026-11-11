@@ -1,6 +1,7 @@
 require "test_helper"
 
 class CatalogLoadMoreTest < ActionDispatch::IntegrationTest
+  setup { travel_to Catalog::DemoLots::SCHEDULE_ANCHOR }
   test "shows matching totals and expands sections independently in stable order" do
     get catalog_path, params: { upcoming_page: "2" }
     assert_response :success
@@ -62,6 +63,7 @@ class CatalogLoadMoreTest < ActionDispatch::IntegrationTest
     Catalog::DemoLots.define_singleton_method(:call) { |now:| raise Catalog::InventoryUnavailable }
     get catalog_path, params: { status: "upcoming", upcoming_page: "2" }
     assert_response :service_unavailable
+    assert_select "main[data-catalog-refresh-enabled-value='false']"
     assert_select "#catalog-load-error", text: /ไม่สำเร็จ/
     assert_select "#catalog-total", count: 0
     retry_url = css_select("#catalog-load-error a").first["href"]

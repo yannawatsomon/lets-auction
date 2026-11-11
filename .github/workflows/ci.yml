@@ -95,3 +95,6 @@ jobs:
           # RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
           # REDIS_URL: redis://localhost:6379/0
         run: bin/rails db:test:prepare test
+
+      - name: Test catalog refresh scheduling
+        run: node --test test/javascript/catalog_refresh_loop_test.mjs
