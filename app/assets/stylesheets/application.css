@@ -1,10 +1,465 @@
-/*
- * This is a manifest file that'll be compiled into application.css.
- *
- * With Propshaft, assets are served efficiently without preprocessing steps. You can still include
- * application-wide styles in this file, but keep in mind that CSS precedence will follow the standard
- * cascading order, meaning styles declared later in the document or manifest will override earlier ones,
- * depending on specificity.
- *
- * Consider organizing styles into separate files for maintainability.
- */
+:root {
+  --bg: #f5f7fb;
+  --panel: #ffffff;
+  --panel-soft: #eef4ff;
+  --primary: #1d4ed8;
+  --primary-dark: #163aab;
+  --text: #122033;
+  --muted: #5f6d7d;
+  --border: rgba(15, 23, 42, 0.08);
+  --success: #0f9f6e;
+  --shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 20%, #f8fafc 100%);
+  color: var(--text);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+}
+
+.auction-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 18px 24px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(8px);
+  border-radius: 18px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+}
+
+.brand-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.brand-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--primary), #3d8bff);
+  color: white;
+  box-shadow: 0 12px 18px rgba(29, 78, 216, 0.25);
+}
+
+.topnav {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  color: var(--muted);
+  font-size: 0.96rem;
+}
+
+.topnav a:hover,
+.text-link:hover {
+  color: var(--primary);
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.primary-button,
+.secondary-button,
+.ghost-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.85rem 1.35rem;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.primary-button {
+  background: linear-gradient(135deg, var(--primary), #3c7ef7);
+  color: white;
+  box-shadow: 0 12px 22px rgba(29, 78, 216, 0.18);
+}
+
+.primary-button:hover {
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+}
+
+.secondary-button,
+.ghost-button {
+  background: white;
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 28px;
+  align-items: center;
+  padding: 54px 0 28px;
+}
+
+.hero-copy,
+.hero-panel,
+.auction-card,
+.info-card {
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  box-shadow: var(--shadow);
+}
+
+.hero-copy {
+  padding: 42px 36px;
+}
+
+.eyebrow {
+  margin: 0 0 14px;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.hero-copy h1 {
+  margin: 0;
+  font-size: clamp(2.8rem, 3vw, 4.4rem);
+  line-height: 1.02;
+  letter-spacing: -0.06em;
+}
+
+.lead {
+  max-width: 590px;
+  margin: 18px 0 0;
+  font-size: 1.12rem;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+.cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.stats-list {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  padding: 0;
+  margin: 30px 0 0;
+}
+
+.stats-list li {
+  background: var(--panel-soft);
+  padding: 18px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(29, 78, 216, 0.08);
+}
+
+.stats-list strong {
+  display: block;
+  font-size: 1.6rem;
+  margin-bottom: 8px;
+}
+
+.stats-list span {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.hero-panel {
+  padding: 18px;
+}
+
+.featured-badge {
+  display: inline-block;
+  background: rgba(15, 159, 110, 0.1);
+  color: var(--success);
+  border-radius: 999px;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.featured-image {
+  height: 260px;
+  display: grid;
+  place-items: center;
+  border-radius: 20px;
+  overflow: hidden;
+  font-size: 6rem;
+  background: linear-gradient(135deg, #dfeaff 0%, #edf4ff 100%);
+}
+
+.featured-summary {
+  padding: 20px 8px 8px;
+}
+
+.summary-topline,
+.meta-row,
+.auction-footer,
+.price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.category,
+.chip,
+.time {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.38rem 0.62rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.category,
+.chip {
+  background: rgba(29, 78, 216, 0.08);
+  color: var(--primary);
+}
+
+.time {
+  background: rgba(15, 159, 110, 0.08);
+  color: var(--success);
+}
+
+.featured-summary h2,
+.section-heading h2,
+.auction-card h3,
+.info-card h3 {
+  margin: 0;
+}
+
+.featured-summary h2 {
+  margin-top: 18px;
+  font-size: 2rem;
+}
+
+.price-row {
+  margin-top: 16px;
+  color: var(--muted);
+}
+
+.price-row strong,
+.auction-price strong {
+  font-size: 1.4rem;
+  color: var(--text);
+}
+
+.mini-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.mini-stats small,
+.auction-footer,
+.auction-price span {
+  color: var(--muted);
+}
+
+.auction-section,
+.info-section {
+  margin-top: 32px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.section-heading h2 {
+  font-size: clamp(1.6rem, 2vw, 2.2rem);
+}
+
+.section-heading.compact {
+  display: block;
+}
+
+.text-link {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.auction-grid,
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.auction-card {
+  overflow: hidden;
+}
+
+.thumb {
+  height: 180px;
+  display: grid;
+  place-items: center;
+  font-size: 4rem;
+}
+
+.thumb.car {
+  background: linear-gradient(135deg, #dfeaff, #eef4ff);
+}
+
+.thumb.watch {
+  background: linear-gradient(135deg, #f5e9d7, #fff7ef);
+}
+
+.thumb.camera {
+  background: linear-gradient(135deg, #e8f6ee, #f3fff8);
+}
+
+.auction-body {
+  padding: 18px 18px 20px;
+}
+
+.auction-card h3 {
+  margin-top: 16px;
+  font-size: 1.5rem;
+}
+
+.auction-price {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 18px;
+}
+
+.auction-footer {
+  margin-top: 18px;
+  padding-top: 15px;
+  border-top: 1px solid var(--border);
+  font-size: 0.82rem;
+}
+
+.info-card {
+  padding: 24px 18px;
+}
+
+.icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: #edf3ff;
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.info-card h3 {
+  margin-top: 18px;
+  font-size: 1.25rem;
+}
+
+.info-card p {
+  margin: 12px 0 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+@media (max-width: 900px) {
+  .topbar,
+  .hero,
+  .auction-grid,
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .topbar {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .topnav {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .hero {
+    display: block;
+  }
+
+  .hero-copy {
+    margin-bottom: 20px;
+  }
+
+  .auction-grid,
+  .info-grid {
+    display: grid;
+  }
+}
+
+@media (max-width: 640px) {
+  .auction-shell {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .topbar-actions,
+  .cta-row,
+  .stats-list {
+    width: 100%;
+    grid-template-columns: 1fr;
+  }
+
+  .topbar-actions,
+  .cta-row {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .stats-list {
+    display: grid;
+  }
+}

@@ -1,4 +1,142 @@
-<main>
-  <h1>Lets Auction</h1>
-  <p>Welcome. Auctions are coming soon.</p>
-</main>
+<div class="auction-shell">
+  <header class="topbar">
+    <div class="brand-block">
+      <div class="brand-mark">L</div>
+      <span>Lets Auction</span>
+    </div>
+
+    <nav class="topnav" aria-label="Main navigation">
+      <a href="#auctions">ประมูล</a>
+      <a href="#how-it-works">วิธีใช้</a>
+      <a href="#sell">ขายของ</a>
+    </nav>
+
+    <div class="topbar-actions">
+      <button class="ghost-button" type="button">เข้าสู่ระบบ</button>
+      <button class="primary-button" type="button">ลงประมูล</button>
+    </div>
+  </header>
+
+  <main class="hero">
+    <section class="hero-copy">
+      <p class="eyebrow">Marketplace สำหรับคนรักของมีค่า</p>
+      <h1>Lets Auction</h1>
+      <p class="lead">
+        ค้นหาสินค้าราคาโอทอปที่กำลังประมูลอยู่ ลุ้นราคาสุดท้ายแบบเรียลไทม์
+        และซื้อสินค้าที่ใช่ได้ทันที
+      </p>
+
+      <div class="cta-row">
+        <a class="primary-button" href="#auctions">ดูประมูลทั้งหมด</a>
+        <a class="secondary-button" href="#how-it-works">เรียนรู้เพิ่มเติม</a>
+      </div>
+
+      <ul class="stats-list" aria-label="Auction statistics">
+        <% @stats.each do |stat| %>
+          <li>
+            <strong><%= stat[:value] %></strong>
+            <span><%= stat[:label] %></span>
+          </li>
+        <% end %>
+      </ul>
+    </section>
+
+    <aside class="hero-panel" aria-label="Featured auction">
+      <div class="featured-badge">🔥 ประมูลยอดนิยม</div>
+      <div class="featured-image car">
+        <span>🚗</span>
+      </div>
+
+      <div class="featured-summary">
+        <div class="summary-topline">
+          <span class="category">รถยนต์</span>
+          <span class="time">2 ชม. 14 นาที</span>
+        </div>
+
+        <h2>BMW iX 2024</h2>
+
+        <div class="price-row">
+          <span>ราคาปัจจุบัน</span>
+          <strong>฿1,850,000</strong>
+        </div>
+
+        <div class="mini-stats">
+          <div>
+            <small>ผู้เข้าร่วม</small>
+            <strong>18</strong>
+          </div>
+          <div>
+            <small>จังหวัด</small>
+            <strong>กรุงเทพฯ</strong>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <section id="auctions" class="auction-section">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">ประมูลที่กำลังเปิด</p>
+        <h2>ประมูลที่กำลังเปิด</h2>
+      </div>
+      <a href="#" class="text-link">ดูประมูลทั้งหมด</a>
+    </div>
+
+    <div class="auction-grid">
+      <% @featured_auctions.each do |auction| %>
+        <article class="auction-card">
+          <div class="thumb <%= auction[:tone] %>">
+            <span><%= auction[:emoji] %></span>
+          </div>
+
+          <div class="auction-body">
+            <div class="meta-row">
+              <span class="chip"><%= auction[:category] %></span>
+              <span class="time"><%= auction[:ends_in] %></span>
+            </div>
+
+            <h3><%= auction[:title] %></h3>
+
+            <div class="auction-price">
+              <span>ราคาปัจจุบัน</span>
+              <strong><%= auction[:current_bid] %></strong>
+            </div>
+
+            <div class="auction-footer">
+              <span><%= auction[:location] %></span>
+              <span><%= auction[:bids] %> การเสนอ</span>
+            </div>
+          </div>
+        </article>
+      <% end %>
+    </div>
+  </section>
+
+  <section id="how-it-works" class="info-section">
+    <div class="section-heading compact">
+      <div>
+        <p class="eyebrow">ทำไมต้อง Lets Auction</p>
+        <h2>ประสบการณ์การประมูลที่ง่ายและโปร่งใส</h2>
+      </div>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-card">
+        <span class="icon">1</span>
+        <h3>ค้นหาสินค้า</h3>
+        <p>เลือกดูสินค้าที่น่าสนใจตามประเภทและช่วงราคา</p>
+      </div>
+      <div class="info-card">
+        <span class="icon">2</span>
+        <h3>เสนอราคาทันที</h3>
+        <p>เพิ่มราคาของคุณแบบเรียลไทม์และติดตามการคัดเลือก</p>
+      </div>
+      <div class="info-card">
+        <span class="icon">3</span>
+        <h3>ชนะประมูล</h3>
+        <p>ยืนยันคำสั่งซื้อและรับสินค้าตามเงื่อนไขที่กำหนด</p>
+      </div>
+    </div>
+  </section>
+</div>
