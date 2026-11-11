@@ -22,6 +22,8 @@ module AuctionItems
 
   def release!(item) = transition(item, from: "in_auction", to: "approved")
 
+  def mark_sold!(item) = transition(item, from: "in_auction", to: "sold")
+
   def transition(item, from:, to:)
     return unless item.respond_to?(:transition!)
     return unless item.status == from

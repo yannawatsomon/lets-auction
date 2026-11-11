@@ -1,6 +1,9 @@
 <% content_for :title, @lot.item&.title || "ล็อต #{@lot.lot_no}" %>
 <%= link_to "← กลับไปหน้างาน", bidding_auction_path(@auction), class: "bidding-btn bidding-btn--link" %>
 
+<% if @auction.published? && current_user %>
+  <div class="bidding-notice bidding-notice--ok">ประกาศผลแล้ว · <%= link_to "ดูผลของคุณ", result_bidding_lot_path(@lot) %></div>
+<% end %>
 <div class="bidding-row">
   <div style="display:flex;flex-direction:column;gap:16px">
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">

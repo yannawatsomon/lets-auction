@@ -9,6 +9,9 @@
     </div>
     <h1><%= @auction.title %></h1>
   </div>
+  <% if @auction.awaiting_approval? || @auction.published? %>
+    <div class="bidding-actions"><%= link_to(@auction.awaiting_approval? ? "ดูอันดับ + ประกาศผล" : "ดูผลและการชำระ", results_admin_bidding_auction_path(@auction), class: "bidding-btn bidding-btn--primary") %></div>
+  <% end %>
   <% if @auction.draft? %>
     <div class="bidding-actions">
       <%= link_to "แก้ไขข้อมูลงาน", edit_admin_bidding_auction_path(@auction), class: "bidding-btn" %>

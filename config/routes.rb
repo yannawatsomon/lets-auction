@@ -14,11 +14,18 @@ Rails.application.routes.draw do
         member do
           post :schedule
           post :cancel
+          get :results, to: "results#show"          # #36: ranking + approve (mockup A3)
+          post :approve_results, to: "results#approve"
         end
-        resources :lots, only: %i[create destroy]
+        resources :lots, only: %i[create destroy] do
+          post :disqualify, on: :member, to: "results#disqualify"
+        end
         resources :invitations, only: :create do
           post :revoke, on: :member
         end
+      end
+      resources :orders, only: [] do
+        post :mark_paid, on: :member, to: "results#mark_paid" # MOCK until payment records real payments
       end
     end
   end
@@ -32,11 +39,15 @@ Rails.application.routes.draw do
     end
     resources :lots, only: :show do
       get :bids, on: :member, action: :history # English bid history (#34)
+      get :result, on: :member, to: "results#show" # buyer's own result (#36, mockup B6)
       resources :bids, only: :create do
         post :review, on: :collection
       end
     end
     resources :bids, only: :index
+    resources :orders, only: [] do
+      post :decline, on: :member, to: "results#decline"
+    end
   end
 
   get "payment", to: "payments#show"
