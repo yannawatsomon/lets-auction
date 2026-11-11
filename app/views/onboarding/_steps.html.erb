@@ -1,0 +1,11 @@
+<%# 4-step bar (K-Onboarding mockup). current: the step on screen, nil when all are done. %>
+<% done = onboarding_done_count(onboarding) %>
+<ol class="ob-steps" aria-label="ขั้นตอน">
+  <% OnboardingsHelper::STEP_LABELS.each.with_index(1) do |label, n| %>
+    <% state = n == current ? "current" : (n <= done ? "done" : "todo") %>
+    <%= tag.li class: state, "aria-current": ("step" if n == current) do %>
+      <span class="bar"></span>
+      <span class="label"><%= n %>. <%= label %><% if state == "done" %><span class="sr-only"> (เสร็จแล้ว)</span><% end %></span>
+    <% end %>
+  <% end %>
+</ol>

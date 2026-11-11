@@ -1,0 +1,51 @@
+/*
+ * Buyer onboarding (/user-onboarding), after the team mockup's K-Onboarding board.
+ * Uses the shared tokens and .card/.field/.btn/.chip from application.css; only adds the
+ * narrow page, the 4-step bar, the consent row and the back/next bar.
+ */
+.ob-page { max-width: 920px; margin: 0 auto; padding: 32px; display: flex; flex-direction: column; gap: 24px; }
+.ob-intro { display: flex; flex-direction: column; gap: 6px; }
+.ob-intro p { margin: 0; font-size: 16px; color: var(--body); }
+
+.ob-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.ob-steps li { display: flex; flex-direction: column; gap: 8px; }
+.ob-steps .bar { height: 6px; border-radius: 3px; background: #DAD5C8; }
+.ob-steps .label { font-size: 13px; color: var(--muted); }
+.ob-steps li.done .bar { background: var(--ok-line); }
+.ob-steps li.done .label { color: var(--ink); }
+.ob-steps li.current .bar { background: var(--ink); }
+.ob-steps li.current .label { color: var(--ink); font-weight: 600; }
+
+.ob-card { padding: 28px; gap: 18px; }
+.ob-card h2 { font-size: 22px; }
+.ob-form { display: flex; flex-direction: column; gap: 18px; }
+.ob-note { background: var(--cream); border-radius: 8px; padding: 14px; font-size: 14px; color: var(--body); line-height: 1.6; }
+.ob-note strong { color: var(--ink); font-size: 16px; }
+.field label.ob-check { display: flex; flex-direction: row; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.5; font-weight: 400; cursor: pointer; }
+.field .ob-check input[type="checkbox"] { width: 20px; height: 20px; min-height: 0; padding: 0; margin: 1px 0 0; flex: 0 0 auto; accent-color: var(--ink); }
+.ob .topbar .btn.link { color: #C9CBD1; }
+
+.ob-nav { display: flex; justify-content: space-between; gap: 12px; border-top: 1px solid var(--line-soft); padding-top: 18px; }
+.ob-nav .btn.primary { font-size: 16px; padding: 0 28px; }
+
+.ob-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.ob-list li { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--line-soft); }
+.ob-list li:last-child { border-bottom: 0; }
+.ob-list .n { width: 32px; height: 32px; border-radius: 50%; background: var(--tile); display: flex; align-items: center; justify-content: center; font-weight: 600; flex: 0 0 auto; }
+.ob-list .body { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ob-list .title { font-size: 16px; font-weight: 600; }
+.ob-list .sub { font-size: 14px; color: var(--body); }
+.ob-soon { color: var(--muted); }
+.chip.ob-done { background: var(--ok-bg); color: var(--ok); }
+.chip.ob-todo { background: var(--tile); color: var(--ink); }
+
+.ob-score-line { margin: 0; font-size: 16px; color: var(--body); }
+.ob-score-line .v { font-size: 40px; font-weight: 700; color: var(--ink); }
+
+@media (max-width: 640px) {
+  .ob-page { padding: 24px 16px; }
+  .ob-card { padding: 20px; }
+  .ob-steps .label { font-size: 12px; }
+  .ob-list li { flex-wrap: wrap; }
+  .ob-autosave { display: none; }
+}
