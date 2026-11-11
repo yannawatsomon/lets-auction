@@ -22,6 +22,9 @@ scaffolded as a Rails app in this repo (`lets-auction`).
 ## Open questions
 
 - Production database: SQLite files are lost on Railway redeploys without a volume. Postgres
-  (add `pg`, change `config/database.yml`) or a volume? See `deployment.md`.
-- Scope and users (`ai/context/project.md`); auth approach; real-time bidding mechanism
-  (Action Cable / Turbo Streams?); frontend approach (Hotwire only, or add Tailwind?).
+  (add `pg`, change `config/database.yml`) or a volume? See `deployment.md`. The Milestone 1
+  design draft (`docs/design/milestone-1-api-and-database.md`) uses Postgres-only features
+  (enums, `citext`, `jsonb`, partial indexes).
+- Scope and users (`scope.md`, `ai/context/project.md`); auth approach (`auth.md`); real-time
+  bidding mechanism (`realtime.md`); frontend approach (Hotwire only, or a separate client
+  calling a JSON API? Tailwind?).
