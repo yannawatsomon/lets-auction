@@ -34,6 +34,9 @@ production.
 - IDs are plain integers (SQLite default), not the design draft's UUIDs.
 - `OnboardingStore` lives in process memory: a server restart resets it, and each Puma worker
   or parallel test process has its own copy. Tests call `OnboardingStore.reset!` in `setup`.
+- The step 1 rate limit (`Onboarding::IdentitiesController::RATE_LIMIT_STORE`) is also an
+  in-process `MemoryStore`, because the test env's cache is `:null_store` and would never
+  limit. Integration tests clear it in `setup`. Move it to the shared cache with the database.
 
 **Replacing it (when users/items land):**
 

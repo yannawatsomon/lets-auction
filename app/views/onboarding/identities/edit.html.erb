@@ -1,0 +1,43 @@
+<% content_for :title, "ยืนยันตัวตน" %>
+<h1>ขั้นที่ 1 จาก 4: ยืนยันตัวตน</h1>
+
+<%= form_with scope: :identity, url: onboarding_identity_path, method: :patch do |f| %>
+  <% if @onboarding.errors.any? %>
+    <div class="flash alert" role="alert">กรุณาแก้ข้อมูลที่ไม่ถูกต้อง</div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :national_id, "เลขบัตรประชาชน *" %>
+    <% if @saved.completed? %>
+      <p id="national_id"><%= ThaiNationalId.mask(@saved.national_id) %></p>
+      <span class="hint">ยืนยันแล้ว แก้ไขไม่ได้ ถ้าผิดกรุณาติดต่อแอดมิน</span>
+    <% else %>
+      <%# Never echo the ID back into the page (PDPA): the field is always empty. %>
+      <%= f.text_field :national_id, value: nil, inputmode: "numeric", autocomplete: "off", maxlength: 17,
+            required: @saved.national_id.blank?, "aria-invalid": @onboarding.errors[:national_id].any? %>
+      <% if @saved.national_id.present? %>
+        <span class="hint">บันทึกไว้แล้ว: <%= ThaiNationalId.mask(@saved.national_id) %> · เว้นว่างไว้ถ้าไม่เปลี่ยน</span>
+      <% end %>
+    <% end %>
+    <% @onboarding.errors[:national_id].each do |m| %><span class="field-error"><%= m %></span><% end %>
+  </div>
+
+  <div class="field">
+    <%= f.label :phone, "เบอร์มือถือ *" %>
+    <%= f.telephone_field :phone, value: params.dig(:identity, :phone) || @saved.phone, autocomplete: "tel",
+          required: true, "aria-invalid": @onboarding.errors[:phone].any? %>
+    <span class="hint">10 หลัก ขึ้นต้น 06, 08 หรือ 09</span>
+    <% @onboarding.errors[:phone].each do |m| %><span class="field-error"><%= m %></span><% end %>
+  </div>
+
+  <% if @saved.consent_at.nil? %>
+    <div class="field">
+      <%= f.check_box :consent, { "aria-invalid": @onboarding.errors[:consent].any? }, "1", "0" %>
+      <%= f.label :consent, "ฉันยินยอมให้ Lets Auction เก็บและใช้เลขบัตรประชาชน เบอร์โทร และข้อมูลรายได้ เพื่อยืนยันตัวตนและประเมินสิทธิ์การประมูล" %>
+      <% @onboarding.errors[:consent].each do |m| %><span class="field-error"><%= m %></span><% end %>
+    </div>
+  <% end %>
+
+  <%= f.submit "บันทึก" %>
+  <%= link_to "ย้อนกลับ", onboarding_path %>
+<% end %>

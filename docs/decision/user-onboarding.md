@@ -46,9 +46,23 @@ Tracked by the User Onboarding milestone (#15–#21, #66).
   possible score is 90. Why: OTP needs an SMS provider (new gem, paid service, secrets).
   Trade-off: a fake number passes. Source: eyetanamas-max in chat, 2026-11-11.
 - **A buyer can edit their answers and recalculate, at most 3 times in 30 days.** What: the
-  same limit applies to every grade, including E. Editing step 1 or 2 after scoring requires a
-  new score before confirming. Why: lets a buyer fix a mistake without letting them try
-  answers until they reach grade A. Source: eyetanamas-max in chat, 2026-11-11.
+  same limit applies to every grade, including E. Editing step 2 after scoring requires a new
+  score before confirming. ~~Editing step 1 also requires a new score.~~ **Changed
+  (2026-11-12):** step 1 answers don't feed the score, so editing them never does, see the
+  step 1 bullet below. Why: lets a buyer fix a mistake without letting them try answers until
+  they reach grade A. Source: eyetanamas-max in chat, 2026-11-11.
+- **Step 1 rules: consent first, ID locked after confirming, phone free to change.** What:
+  the buyer ticks a consent box in step 1, before the national ID is first stored; consent
+  is asked once and its time kept. After `completed` the national ID can't be changed by the
+  buyer (an admin fixes mistakes); before that it can. The phone can change at any time and
+  keeps the status. Two accounts may share a phone; only the national ID is unique. Step 1
+  submits are capped at 10 an hour per buyer, because "used by another account" reveals that
+  an ID is registered. Why:
+  PDPA wants consent before collecting the ID; locking it stops one account switching
+  identities; the phone isn't verified (no OTP) so uniqueness would prove nothing. Trade-off:
+  a typo in the ID after confirming needs an admin. Alternative rejected: consent only at
+  step 4 (the ID would be stored before consent). Source: eyetanamas-max in chat, 2026-11-12
+  (#17).
 
 - **Grade A needs proof of income.** What: a buyer whose score reaches grade A must attach
   proof of income before the admin can invite them to English lots. Why: income is

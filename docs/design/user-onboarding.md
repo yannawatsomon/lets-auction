@@ -35,7 +35,10 @@
 - เลขบัตรประชาชน 13 หลัก ตรวจ checksum (mod 11) ฝั่ง server
 - 1 เลขบัตรผูกได้กับ 1 บัญชีเท่านั้น (unique)
 - เบอร์มือถือไทย 10 หลัก ขึ้นต้น 06/08/09 เก็บเป็นรูป `+66...`
-- ยังไม่ยืนยันเบอร์ด้วย OTP ใน Milestone 1 (`phone_verified_at` ว่างไว้)
+- ยังไม่ยืนยันเบอร์ด้วย OTP ใน Milestone 1 (`phone_verified_at` ว่างไว้) เบอร์ซ้ำกันได้
+- ติ๊ก consent ใน step นี้ก่อนเก็บเลขบัตรครั้งแรก ถามครั้งเดียวและบันทึกเวลาไว้
+- หลัง `completed` แก้เลขบัตรเองไม่ได้ (ต้องให้ admin แก้) แต่แก้เบอร์ได้ตลอดโดยสถานะไม่เปลี่ยน
+- หน้าจอแสดงเลขบัตรแค่ 4 หลักท้าย (`X-XXXX-XXXX0-12-1`) และไม่ใส่เลขที่พิมพ์กลับลงในฟอร์ม
 - Open: ต้องเก็บชื่อ-นามสกุล/วันเกิดด้วยไหม
 
 ### Step 2: อาชีพและรายได้
@@ -55,8 +58,8 @@
 ### Step 4: แสดงผลและยืนยัน
 
 - แสดงคะแนน (0–100), เกรด, เหตุผล และประเภท auction ที่เข้าได้ตามเกรด
-- ผู้ใช้ติ๊ก consent แล้วกดยืนยัน → สถานะ `completed` (บันทึกเวลา)
-- ถ้าย้อนกลับไปแก้ step 1–2 ต้องคำนวณคะแนนใหม่
+- ผู้ใช้กดยืนยันผล → สถานะ `completed` (บันทึกเวลา) consent ขอไปแล้วใน step 1
+- ถ้าย้อนกลับไปแก้ step 2 ต้องคำนวณคะแนนใหม่ (step 1 ไม่มีผลกับคะแนน)
 - เกรด E ยังประมูลไม่ได้ แต่แก้ข้อมูลแล้วคำนวณใหม่ได้ (ภายใต้ลิมิตเดียวกัน)
 
 ## Flow / Data / API (ร่าง)
@@ -74,11 +77,11 @@
 
   | Method | Path | ใช้ทำอะไร |
   |---|---|---|
-  | GET | `/onboarding` | ดูสถานะและข้อมูลที่กรอกไว้ |
-  | PATCH | `/onboarding/identity` | Step 1 |
-  | PATCH | `/onboarding/employment` | Step 2 |
-  | POST | `/onboarding/score` | Step 3 คำนวณคะแนน |
-  | POST | `/onboarding/confirm` | Step 4 ยืนยัน |
+  | GET | `/user-onboarding` | ดูสถานะและข้อมูลที่กรอกไว้ |
+  | PATCH | `/user-onboarding/identity` | Step 1 |
+  | PATCH | `/user-onboarding/employment` | Step 2 |
+  | POST | `/user-onboarding/score` | Step 3 คำนวณคะแนน |
+  | POST | `/user-onboarding/confirm` | Step 4 ยืนยัน |
 
 - **Non-functional:**
   - ใส่ `national_id` ใน `filter_parameters` ไม่ให้หลุดลง log
