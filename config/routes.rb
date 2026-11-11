@@ -11,4 +11,8 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   root "home#index"
+
+  if Rails.env.development?
+    get "catalog-preview", to: "catalog_previews#show"
+  end
 end

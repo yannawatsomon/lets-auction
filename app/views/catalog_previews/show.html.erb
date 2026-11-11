@@ -1,0 +1,33 @@
+<% content_for :title, "Product Catalog — Preview" %>
+
+<main class="catalog-preview" lang="th">
+  <header>
+    <p class="catalog-preview__eyebrow">LETS AUCTION / DEVELOPMENT PREVIEW</p>
+    <h1>สินค้าประมูล</h1>
+    <p>ข้อมูลจำลอง 9 รายการ สำหรับตรวจสอบการแบ่งสถานะและลำดับสินค้า</p>
+    <aside>
+      ตัวอย่างชั่วคราว ไม่ใช่รายการประมูลจริง · โหลดหน้าใหม่เพื่อสร้างเวลาอ้างอิงใหม่<br>
+      เวลาอ้างอิง: <time datetime="<%= @now.iso8601 %>"><%= @now.in_time_zone("Asia/Bangkok").strftime("%d/%m/%Y %H:%M:%S") %></time> (เวลาไทย)
+    </aside>
+  </header>
+
+  <% labels = {
+    ongoing: ["อยู่ระหว่างประมูล", "เรียงเวลาปิดใกล้ที่สุดก่อน", "กำลังประมูล"],
+    upcoming: ["ยังไม่ถึงเวลาประมูล", "เรียงเวลาเริ่มใกล้ที่สุดก่อน", "ยังไม่เริ่ม"],
+    ended: ["ผ่านไปแล้ว", "เรียงเวลาปิดล่าสุดก่อน", "จบแล้ว"]
+  } %>
+  <% @sections.each do |status, lots| %>
+    <section aria-labelledby="section-<%= status %>">
+      <div class="catalog-preview__section-heading">
+        <h2 id="section-<%= status %>"><%= labels.fetch(status)[0] %> <span><%= lots.size %> รายการ</span></h2>
+        <p><%= labels.fetch(status)[1] %></p>
+      </div>
+      <div class="catalog-grid">
+        <% lots.each do |lot| %>
+          <%= render "catalog/card", lot: lot, status: status, auction_type: lot.auction_type,
+            image_path: lot.id == 3 ? asset_path("catalog-preview-camera.svg") : nil %>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+</main>
