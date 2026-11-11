@@ -23,6 +23,22 @@ Shared domain models keep plain names because other milestones read them: `Aucti
 `AuctionLot`, `AuctionParticipant`, `Baht`, `AuctionItems`. The catalog (#63) reuses
 `Auction.auction_types` and can reuse `BiddingHelper::TYPE_LABELS` for display labels.
 
+## Feeding the catalog
+
+`Bidding::CatalogFeed.call(viewer: current_user)` (`app/services/bidding/catalog_feed.rb`)
+returns real auction lots with the same readers as `Catalog::DemoLots::Lot` (`id`, `name`,
+`category`, `auction_type`, `starts_at`, `ends_at`) plus `min_price_cents` (public, for
+Highlights) and `detail_path` (`/bidding/auctions/:id`, pass it to `catalog/_card` as
+`detail_path:`). To switch the catalog to real data, the catalog team replaces
+`Catalog::DemoLots.call(now: @now)` in `CatalogPage#prepare_catalog` with it; bidding doesn't
+edit catalog code.
+
+- Shown: lots of sealed auctions that are `scheduled`, `live`, `awaiting_approval` or
+  `published`; English lots only to admins and invited buyers (their pages are 404 otherwise).
+- Never shown: drafts, cancelled auctions or lots, bid amounts, bid counts, participants.
+- Lot ids are bidding's own; don't mix the feed with `DemoLots` in one list (ids can collide).
+- Times are the auction's: lots never extend (`bidding.md`).
+
 ## Gotchas
 
 - `application.css` (the generic `.topbar`, `.btn`, `.card`… from #28) and
