@@ -39,8 +39,9 @@ Statuses: `Open` → `Decided` → `Superseded`. Only a human collaborator moves
   `ai/context/project.md`.
 - Production database (Postgres vs SQLite volume)? → `deployment.md`, `stack.md`. The Milestone 1
   design draft assumes Postgres.
-- Language: the Milestone 1 design draft (`docs/design/`) is kept in Thai at the author's request
-  (2026-11-11), against "Files in English". Allow Thai for design docs, or translate later?
+- Language: the design drafts in `docs/design/` (Milestone 1 API and database, user
+  onboarding) are kept in Thai at the author's request (2026-11-11), against "Files in
+  English". Allow Thai for design docs, or translate later?
 - Which license? (public repo)
 - Who reviews? (CODEOWNERS not set yet)
 - Set the ruleset admin bypass to "for pull requests only" (owner only), so an agent on an admin login can't push to `main` → `agent-boundaries.md`.
