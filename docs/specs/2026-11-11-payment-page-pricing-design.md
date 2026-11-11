@@ -12,7 +12,7 @@ payment is processed yet.
 - Show a mock item image, name, winning bid, buyer's premium, delivery fee, VAT (7%),
   payment methods, pickup or shipping details, tax-invoice option, and proceed button.
 - Recalculate the total on the server when delivery changes. Reject cash with shipping.
-- Validate the invoice fields when requested, show a demo payment-deadline countdown,
+- Validate the invoice fields when requested, show a static 48-hour payment-deadline notice,
   disable invalid submissions, and prevent repeated submits.
 - Use Thai labels and the reference image's warm off-white surfaces, charcoal borders and
   buttons, rounded panels, and mobile-first layout. The page is one checkout step, not a
@@ -37,8 +37,8 @@ milestone 6 (#55–#58). The prototype must not report a payment as completed.
   are examples, not product pricing policy.
 - Render the milestone's payment choices for the prototype, but make no claim that any
   method can actually charge or confirm a payment.
-- A countdown and form interactions are demonstration behavior only; without persisted
-  orders there is no durable deadline or expiry job.
+- A live countdown is deferred; without persisted orders there is no durable deadline or
+  expiry job. The static 48-hour notice reflects the payment rule, not a live order timer.
 
 ## Approaches considered
 

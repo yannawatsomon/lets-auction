@@ -45,7 +45,6 @@ class PaymentsController < ApplicationController
 
   def prepare_page
     @quote = @order.quote(delivery_method: @delivery_method)
-    @payment_deadline_at = 48.hours.from_now
   end
 
   def quote_payload

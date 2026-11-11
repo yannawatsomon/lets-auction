@@ -2,27 +2,23 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = [
-    "cashHint", "countdown", "delivery", "form", "invoiceField",
+    "cashHint", "delivery", "form", "invoiceField",
     "invoiceFields", "invoiceToggle", "method", "pickupDetails", "quoteError",
     "quoteErrorMessage",
     "shippingDetails", "shippingFee", "subtotal", "submit", "total", "vat"
   ]
 
-  static values = { deadline: Number, quoteUrl: String }
+  static values = { quoteUrl: String }
 
   connect() {
     this.submitting = false
-    this.expired = false
     this.quotePending = false
     this.updateDeliveryDetails()
     this.updateInvoiceFields()
     this.updateSubmitButton()
-    this.updateCountdown()
-    this.countdownTimer = window.setInterval(() => this.updateCountdown(), 1000)
   }
 
   disconnect() {
-    window.clearInterval(this.countdownTimer)
     this.quoteAbortController?.abort()
     this.quoteAbortController = null
   }
@@ -45,7 +41,7 @@ export default class extends Controller {
   }
 
   submit(event) {
-    if (!this.formTarget.checkValidity() || this.expired || !this.quoteErrorTarget.hidden) {
+    if (!this.formTarget.checkValidity() || !this.quoteErrorTarget.hidden) {
       event.preventDefault()
       this.updateSubmitButton()
       return
@@ -86,26 +82,9 @@ export default class extends Controller {
 
   updateSubmitButton() {
     this.submitTarget.disabled = !this.formTarget.checkValidity()
-      || this.expired
       || this.submitting
       || this.quotePending
       || !this.quoteErrorTarget.hidden
-  }
-
-  updateCountdown() {
-    const secondsRemaining = Math.max(0, this.deadlineValue - Math.floor(Date.now() / 1000))
-    if (secondsRemaining === 0) {
-      this.expired = true
-      this.countdownTarget.textContent = "หมดเวลาชำระ (ตัวอย่าง)"
-      this.countdownTarget.classList.add("is-expired")
-      this.updateSubmitButton()
-      return
-    }
-
-    const hours = Math.floor(secondsRemaining / 3600).toString().padStart(2, "0")
-    const minutes = Math.floor((secondsRemaining % 3600) / 60).toString().padStart(2, "0")
-    const seconds = (secondsRemaining % 60).toString().padStart(2, "0")
-    this.countdownTarget.textContent = `${hours}:${minutes}:${seconds}`
   }
 
   async refreshQuote() {

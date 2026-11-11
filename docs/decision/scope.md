@@ -40,6 +40,12 @@ draft gives them, and each bullet becomes Decided only when a collaborator confi
   admin verifies it, the platform holds the money and records the payout to the seller.
   Trade-off: manual admin work per order. Alternative rejected: payment gateway (not in
   Milestone 1). Source: design draft, 2026-11-11.
+- **Payment prototype shows a static 48-hour deadline, not a live countdown.** What: keep the
+  deadline notice on the page but defer the remaining-time timer until a durable payment
+  deadline exists. Why: the mock page has no persisted order whose deadline can be trusted.
+  Trade-off: buyers see the payment window but not a live remaining-time value. Alternative
+  rejected: showing a client-only timer as if it represented an order's actual deadline.
+  Source: collaborator-preserved change in commit `5447d0d`, 2026-11-11.
 
 - **Product media limits.** What: each item has 1 to 5 images (required) and 0 to 2 videos
   (optional); verification documents are separate and have no limit yet. The API enforces the

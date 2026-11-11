@@ -28,7 +28,7 @@
 - A forged cash + shipping submission must be rejected server-side, even when the browser interaction is bypassed. Test the preview endpoint.
 - Checked tax-invoice details must require a 13-digit tax ID, branch (≤100 characters), address (≤1,000 characters), and valid email (≤254 characters); unchecked details must remain optional. Test both cases.
 - VAT rounding must stay deterministic in satang. Test a subtotal whose 7% VAT includes a fractional satang.
-- Repeated clicks must not submit the form twice, and an expired demo countdown must not look live. Verify these client interactions in a browser; do not imply that mock expiry cancels an order.
+- Repeated clicks must not submit the form twice. Show the static 48-hour payment deadline without a live timer; verify submit interactions in a browser.
 
 ---
 
@@ -123,11 +123,11 @@
 
 **Interfaces:**
 - The view receives `@order`, `@quote`, `@delivery_method`, and `@payment_submission`.
-- The Stimulus controller requests the quote endpoint on delivery changes, updates totals, toggles cash availability and invoice fields, displays a demo countdown, and disables the proceed button on invalid or repeated submission.
+- The Stimulus controller requests the quote endpoint on delivery changes, updates totals, toggles cash availability and invoice fields, and disables the proceed button on invalid or repeated submission.
 
 - [ ] **Step 1: Write failing integration tests**
 
-  Assert the page renders all seven issue elements; the itemized bid, premium, shipping, VAT, and total; pickup and shipping details; all five payment choices; invoice fields; deadline display; and proceed button. Assert the page clearly indicates demo-only behavior and never displays a payment-success state.
+  Assert the page renders all seven issue elements; the itemized bid, premium, shipping, VAT, and total; pickup and shipping details; all five payment choices; invoice fields; the static 48-hour deadline notice; and proceed button. Assert the page clearly indicates demo-only behavior and never displays a payment-success state or live countdown.
 
 - [ ] **Step 2: Run the integration test and confirm it fails**
 
@@ -140,7 +140,7 @@
 
 - [ ] **Step 4: Implement Stimulus interactions**
 
-  Request server quotes using only the delivery-method value; update totals and accessible status text from the response. Apply HTML validation, cash/shipping disabling, invoice-required toggles, countdown display, and one-submit button disabling.
+  Request server quotes using only the delivery-method value; update totals and accessible status text from the response. Apply HTML validation, cash/shipping disabling, invoice-required toggles, and one-submit button disabling.
 
 - [ ] **Step 5: Style the responsive page**
 
@@ -148,7 +148,7 @@
 
 - [ ] **Step 6: Verify the interactive page in a browser**
 
-  Open `/payment`; change pickup to shipping and confirm the displayed total matches the server quote, cash becomes unavailable, and shipping details appear. Toggle invoice details and confirm required-field validation. Confirm the countdown visibly expires and that a valid proceed click disables the button and shows only a demo notice, never a success state.
+  Open `/payment`; change pickup to shipping and confirm the displayed total matches the server quote, cash becomes unavailable, and shipping details appear. Toggle invoice details and confirm required-field validation. Confirm no live countdown is initialized and that a valid proceed click disables the button and shows only a demo notice, never a success state.
 
 - [ ] **Step 7: Run the page tests and targeted checks**
 
