@@ -97,6 +97,26 @@ Active Record Encryption in one `text` column, and bids are append-only. Decisio
 - No browser/system tests yet (`test/system/` doesn't exist); the JS is checked by
   `node --check` only. Try it by hand: two browsers, two invited buyers, one English lot.
 
+## Opening, closing and ranking (#35)
+
+- `Auction#schedule!` enqueues `Bidding::AuctionOpenJob` at `starts_at` and
+  `Bidding::AuctionCloseJob` at `ends_at`. A job that runs early re-enqueues itself for the right
+  time; one for a cancelled/missing auction does nothing.
+- `Bidding::OpenAuction` → auction and lots `live`, broadcasts `lot.state`.
+  `Bidding::CloseAuction` → every open lot closes together (no extensions): bids ranked with
+  `Bid.ranking` (English: each bidder's best) into `lot_results` (rank 1 = would-be winner,
+  status `pending`); no bids → lot `unsold` and the product back to `approved`; auction →
+  `awaiting_approval`; `lot.closed` broadcast after commit. Both are idempotent and audit-logged.
+- Safety net: `bidding_auction_sweep` in `config/recurring.yml` (production, every minute)
+  runs `Bidding::AuctionSweepJob` for anything due.
+- `lot_results` has no amount column; the amount stays encrypted in `bids` (`result.amount_cents`
+  reads it through the bid).
+- Bids never wait for these jobs: `AuctionLot#accepting_bids?` checks server time itself, and
+  a lot that the job has closed refuses bids too.
+- **Production needs a job runner:** set `SOLID_QUEUE_IN_PUMA=1` on Railway (or run a separate
+  worker) or nothing opens/closes and the sweep never runs. A human sets it (agents don't touch
+  Railway); see `docs/decision/realtime.md`.
+
 ## Audit log (shared)
 
 `audit_logs` / `AuditLog.record!(action:, entity:, actor:, data:)` is append-only and meant for
