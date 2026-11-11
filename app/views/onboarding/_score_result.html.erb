@@ -1,0 +1,10 @@
+<div class="ob-score">
+  <p class="ob-score-line"><span class="v"><%= assessment.score %></span> / 100 · เกรด <strong><%= assessment.grade %></strong></p>
+  <% reasons = assessment.reasons.transform_keys(&:to_s) %>
+  <ul class="ob-reasons">
+    <li>รายได้ <strong><%= reasons["income"] %></strong> / 50</li>
+    <li>อาชีพ <strong><%= reasons["occupation"] %></strong> / 25</li>
+    <li>ประสบการณ์ <strong><%= reasons["experience"] %></strong> / 15</li>
+    <li>เบอร์ยืนยัน OTP <strong><%= reasons["phone"] %></strong> / 10</li>
+  </ul>
+</div>

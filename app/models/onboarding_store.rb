@@ -1,10 +1,10 @@
 # MOCK DATA: in-memory store for UserOnboarding and CreditAssessment until the database lands.
 # Seeded from db/mock/user_onboardings.yml; a restart (or reset!) brings the seed back.
 # Each Ruby process has its own copy. Swap this module for ActiveRecord later; callers only use
-# find / save / all / assessments / latest_assessment / add_assessment. See ai/knowledge/mock-data.md.
+# find / save / all / assessments / latest_assessment / add_assessment / transaction. See ai/knowledge/mock-data.md.
 module OnboardingStore
   SEED = Rails.root.join("db/mock/user_onboardings.yml")
-  LOCK = Mutex.new
+  LOCK = Monitor.new # re-entrant, so transaction can wrap find/save
 
   class << self
     # Returns a copy; change it and call save to keep the change.
@@ -43,6 +43,10 @@ module OnboardingStore
       LOCK.synchronize { (assessment_log[assessment.user_id] ||= []) << assessment }
       assessment
     end
+
+    # Runs the block while holding the store lock, so a check-then-write can't interleave
+    # with another request in this process (the database version will use a row lock).
+    def transaction(&) = LOCK.synchronize(&)
 
     def reset!
       LOCK.synchronize { @onboardings = @assessment_log = nil }

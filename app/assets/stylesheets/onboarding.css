@@ -18,6 +18,7 @@
 
 .ob-card { padding: 28px; gap: 18px; }
 .ob-card h2 { font-size: 22px; }
+.ob-card p { margin: 0; }
 .ob-form { display: flex; flex-direction: column; gap: 18px; }
 .ob-form .fields-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .ob-note { background: var(--cream); border-radius: 8px; padding: 14px; font-size: 14px; color: var(--body); line-height: 1.6; }
@@ -40,7 +41,16 @@
 .chip.ob-done { background: var(--ok-bg); color: var(--ok); }
 .chip.ob-todo { background: var(--tile); color: var(--ink); }
 
+.ob-score { display: flex; flex-direction: column; gap: 12px; }
 .ob-score-line { margin: 0; font-size: 16px; color: var(--body); }
+.ob-reasons { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.ob-reasons li { background: var(--cream); border-radius: 8px; padding: 10px 12px; font-size: 14px; color: var(--body); }
+.ob-reasons strong { color: var(--ink); font-size: 18px; }
+.ob-summary { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.ob-summary div { background: var(--cream); border-radius: 8px; padding: 12px 14px; }
+.ob-summary dt { font-size: 13px; color: var(--muted); }
+.ob-summary dd { margin: 2px 0 0; font-size: 16px; font-weight: 600; }
+.ob-tries { margin: 0; font-size: 14px; color: var(--body); }
 .ob-score-line .v { font-size: 40px; font-weight: 700; color: var(--ink); }
 
 @media (max-width: 640px) {
@@ -50,4 +60,5 @@
   .ob-list li { flex-wrap: wrap; }
   .ob-autosave { display: none; }
   .ob-form .fields-2 { grid-template-columns: 1fr; }
+  .ob-reasons, .ob-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
