@@ -67,7 +67,7 @@ item, admin item review). Steps 1 to 4 are all part of screen 8.
 | Title | Yes | Shown in the catalog |
 | Category | Yes | From `GET /categories` |
 | Description | Yes | Free text. The form can show prompts (condition, size, age, defects, provenance) to guide the seller; no extra columns in Milestone 1 |
-| Minimum price (THB) | Yes | Greater than 0. The admin cannot edit it, so the seller is told this before submitting |
+| Minimum price (THB) | Yes | Greater than 0. Whole baht gets `.00` added; more than two decimals is rejected; stored as satang `min_price_cents` (`bidding.md`). The admin cannot edit it, so the seller is told this before submitting |
 | Contact channel | No | Exists on `items`; the draft does not say how it is used |
 | Verification documents | No | Evidence files, uploaded the same way as media |
 
