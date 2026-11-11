@@ -32,6 +32,10 @@ Rails.application.routes.draw do
     end
   end
 
+  get "payment", to: "payments#show"
+  get "payment/quote", to: "payments#quote"
+  post "payment/preview", to: "payments#preview"
+
   # Product onboarding milestone: http://127.0.0.1:3000/product-onboarding (mock data; in production only with MOCK_PRODUCT_ONBOARDING=true).
   namespace :product_onboarding, path: "product-onboarding" do
     root "items#index"
