@@ -19,6 +19,10 @@ class CatalogPreviewsController < ApplicationController
     lots = samples.map do |id, name, category, auction_type, starts, ends|
       PreviewLot.new(id, name, category, auction_type, @now + starts, @now + ends)
     end
-    @sections = Catalog::Sections.call(lots: lots, now: @now)
+    @categories = lots.map(&:category).uniq.sort
+    attributes = Catalog::Filters::FIELDS.to_h { |field| [ field, params[field] ] }
+    @filters = Catalog::Filters.new(attributes, categories: @categories)
+    @sections = @filters.sections(lots: lots, now: @now)
+    response.status = :unprocessable_content if @filters.errors.any?
   end
 end
