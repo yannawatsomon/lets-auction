@@ -83,7 +83,9 @@ Built **without any schema change** (no migrations, no `db/schema.rb`, no Active
 
 **Verified:** `bin/rails db:test:prepare test` 77 runs, 0 failures, 0 skips; `bin/rubocop` and `bin/brakeman` clean. The concurrency test runs here because the mock store has a lock; it does not prove a database row lock.
 
-### Task 3: Uploads and file storage (#49)
+### Task 3: Uploads and file storage (#49) - done on mock data
+
+Built as pure Ruby, no storage, no Active Storage: `ProductOnboarding::UploadPolicy.check!(kind:, content_type:, size:)` (images JPEG/PNG/WebP 10 MB, videos MP4 200 MB, documents PDF/JPEG/PNG 20 MB), `ProductOnboarding::UploadStore` (`issue!`, `receive!`, `attach!`, `purge_orphans!` after 48 hours, in memory), and `POST /product-onboarding/uploads` + `PUT /product-onboarding/uploads/:key` for sellers (everyone else gets 404, like the admin pages). The whole milestone now lives under **http://127.0.0.1:3000/product-onboarding** (mock data, not served in production); that page lists the mock products, statuses, admin notes and the file rules. Deviations: 404 instead of 401/403, following `Admin::BaseController`; no cleanup job yet (needs a scheduler and real storage); the upload paths and tests below describe the real-storage version that replaces this.
 
 **Files:**
 - Create: `app/controllers/uploads_controller.rb`, `app/models/upload_policy.rb`, `app/jobs/purge_unattached_uploads_job.rb`
