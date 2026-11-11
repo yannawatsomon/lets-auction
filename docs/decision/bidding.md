@@ -90,6 +90,12 @@ collaborator confirms it in a PR (see `README.md`).
   The grade is checked when the buyer registers or is invited, not on every bid. Why: everyone
   who can join an auction has passed onboarding. Trade-off: a buyer can't bid until onboarding
   is done. Source: eyetanamas-max, agreed with @guy127, 2026-11-11.
+- **No separate auditor role; admins do all checking.** What: the roles are buyer, seller and
+  admin only. Everything the SPEC gave an "auditor" (ผู้ตรวจสอบ) — viewing sealed rankings once a
+  lot is closed, approving results, reading the audit log — is done by any one admin. Every such
+  action is written to `audit_logs`. Why: the team has no auditor. Trade-off: no second person
+  checks an admin; the audit log is the only trail. Alternative rejected: an `auditor` role or
+  two-admin approval. Source: @guy127 in chat, 2026-11-11.
 - **No two-admin reveal and no commitment hash.** What: one admin can view sealed rankings
   once the lot is `closed`; bid receipts carry no hash. Why: few admins; the hash only adds
   value if bidders verify it. Trade-off: one person can see sealed amounts before results
