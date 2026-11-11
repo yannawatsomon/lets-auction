@@ -6,7 +6,7 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
     get root_url
     assert_response :success
     assert_select "h1", "สินค้าประมูล"
-    assert_select "article.catalog-card", count: 9
+    assert_select ".catalog-overview-section article.catalog-card", count: 9
     assert_select "a.catalog-see-more", count: 3
     assert_select "form[action='/'][method='get']"
     assert_select "a[href='/']", "ล้างตัวกรอง"
@@ -15,8 +15,8 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
   test "homepage filters products without leaving root" do
     get root_url, params: { status: "ongoing", auction_type: "sealed_first_price" }
     assert_response :success
-    assert_select "main section", count: 1
-    assert_select "article.catalog-card", count: 3
+    assert_select "main section.catalog-overview-section", count: 1
+    assert_select ".catalog-overview-section article.catalog-card", count: 3
     assert_select "h3", "นาฬิกาสปอร์ต"
     assert_select "form[action='/']"
   end
@@ -37,7 +37,7 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
     get root_url
     assert_response :success
     assert_select "h1", "สินค้าประมูล"
-    assert_select "main section", count: 3
+    assert_select "main section.catalog-overview-section", count: 3
     assert_select "article.catalog-card", count: 0
     assert_select "aside", count: 0
     assert_select "form[action='/']"
@@ -55,7 +55,7 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
     Rails.configuration.x.catalog_demo_in_production = true
     get root_url, params: { ongoing_page: "2" }
     assert_response :success
-    assert_select "article.catalog-card", count: 9
+    assert_select ".catalog-overview-section article.catalog-card", count: 9
     assert_select "aside", text: /ไม่ใช่รายการประมูลจริง/
     assert_select "#catalog-total", text: /45/
     assert_select "a.catalog-see-more", count: 3

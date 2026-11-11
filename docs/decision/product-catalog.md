@@ -97,3 +97,15 @@ previous results with retry. The overall topic remains Open for other unresolved
 - #44: ตรวจสอบ flow ร่วมกัน สิทธิ์การมองเห็น ขอบเขตเวลา มือถือ และความปลอดภัย
 
 เอกสารนี้ยังไม่ได้เปลี่ยนพฤติกรรมแอป และไม่ได้กำหนดข้อเสนอที่รอยืนยันเป็น Decided
+
+### #63 demo implementation defaults (2026-11-11)
+
+Highlights on the homepage select at most five products in total, using public starting
+price (`min_price_cents`) descending and lot ID ascending for ties. As requested by the
+product owner, only ongoing auctions matching all active filters are eligible: server time
+must satisfy `starts_at <= now < ends_at`. Upcoming and ended products are excluded, even
+when their starting price is higher. Selecting an upcoming/ended status filter produces
+no Highlights. Eligibility is recalculated on every refresh. Missing, malformed and nonpositive prices are excluded.
+The full status-listing page keeps its existing pagination. No bid amounts are read.
+These defaults implement the mock catalog; confirm the ranking source and eligibility
+again when connecting real inventory. The overall decision remains Open.
