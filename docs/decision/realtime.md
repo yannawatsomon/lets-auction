@@ -19,9 +19,9 @@ libraries and conflict with `stack.md`. The Rails app already ships `solid_cable
   idempotency live in one place. Why: already in the stack, no extra service. Trade-off: Solid
   Cable polls the database (0.1 s in `config/cable.yml`); fine for a few live lots, revisit if
   load grows. Alternative rejected: a separate Node WebSocket server (violates `stack.md`).
-- **Timed work via Active Job on Solid Queue.** What: `AuctionOpenJob`, `LotCloseJob`,
+- **Timed work via Active Job on Solid Queue.** What: `Bidding::AuctionOpenJob`, `Bidding::AuctionCloseJob` (one per auction, closes all its lots; was `LotCloseJob`),
   `OrderExpireJob`, `PaymentReminderJob`, scheduled with `set(wait_until:)`. Lots never extend
-  (`bidding.md`, 2026-11-11), so one `LotCloseJob` per auction runs at `ends_at`; it is
+  (`bidding.md`, 2026-11-11), so one `Bidding::AuctionCloseJob` per auction runs at `ends_at` (plus the every-minute `Bidding::AuctionSweepJob` safety net in `config/recurring.yml`); it is
   idempotent so a retry is safe. (Superseded 2026-11-11: re-enqueue on extension and the
   `lot.extended` event.) Trade-off: needs a worker running in
   production. Alternative rejected: BullMQ / pg-boss (Node.js, violates `stack.md`).

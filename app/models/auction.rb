@@ -88,6 +88,10 @@ class Auction < ApplicationRecord
       update_columns(status: "scheduled", scheduled_at: now, updated_at: now)
       lots.each { |l| AuctionItems.mark_in_auction!(l.item) }
     end
+    # Open and close on time (#35). The sweep job in config/recurring.yml is the safety net.
+    Bidding::AuctionOpenJob.set(wait_until: starts_at).perform_later(id)
+    Bidding::AuctionCloseJob.set(wait_until: ends_at).perform_later(id)
+    true
   end
 
   def cancel!(reason:, now: Time.current)

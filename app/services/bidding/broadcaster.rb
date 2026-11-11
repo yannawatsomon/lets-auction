@@ -35,6 +35,11 @@ module Bidding
           next_minimum_cents: lot.next_minimum_cents })
     end
 
+    # When the open job (#35) starts an auction: everyone watching gets the new state.
+    def auction_state(auction, now: Time.current)
+      ActionCable.server.broadcast(auction_stream(auction), lot_state(auction, now:))
+    end
+
     # For the close job (#35).
     def lot_closed(lot)
       ActionCable.server.broadcast(auction_stream(lot.auction), { type: "lot.closed", lot_id: lot.id })
