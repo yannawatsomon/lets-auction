@@ -1,7 +1,8 @@
 # Decision log — lets-auction
 
-Read this before any work. Update the relevant topic file **before** changing code that
-contradicts it. Template: [`_template.md`](_template.md). Skill: `record-decision`.
+What was decided and why. Worth a look before you change something it covers; if a change
+contradicts a Decided entry, update or supersede that entry in the same PR. Template:
+[`_template.md`](_template.md). Optional skill: `record-decision`.
 
 Statuses: `Open` → `Decided` → `Superseded`. Only a human collaborator moves a topic to Decided.
 
@@ -10,8 +11,9 @@ Statuses: `Open` → `Decided` → `Superseded`. Only a human collaborator moves
 | Topic | File | Status | Summary |
 |---|---|---|---|
 | Repo & collaboration | [repo-and-collaboration.md](repo-and-collaboration.md) | Decided | Public GitHub repo, PR flow on `main` via rulesets (PR + CI required, 0 approvals); branches `<handle>-<type>-[<issue>-]<detail>` (CI-checked), short-lived |
-| AI agent hub | [ai-agent-hub.md](ai-agent-hub.md) | Decided | `AGENTS.md` entry point + `ai/` hub + `.claude/skills/`; tool files only point back |
-| Agent boundaries | [agent-boundaries.md](agent-boundaries.md) | Decided | Agents never force-push or delete remote branches; commits, pushes, PRs, gems, CI, GitHub/Railway changes are ask-first; exception: CI Auto-fix on its own PR branch; enforced via `.claude/settings.json` |
+| AI agent hub | [ai-agent-hub.md](ai-agent-hub.md) | Decided | `AGENTS.md` entry point (hard rules only) + `ai/` reference hub; tool files only point back; only 2 own skills, no vendored third-party skills |
+| Agent boundaries | [agent-boundaries.md](agent-boundaries.md) | Decided | Agents never force-push, delete remote branches or push to `main`; Railway/GitHub settings, secrets and merges only when asked; everything else is each person's own choice; enforced via `.claude/settings.json` (Claude Code) |
+| Project structure | [project-structure.md](project-structure.md) | Open | Proposed: one short name per module across URL/controllers/views/layout/CSS/services; modules talk only through named seams; shared platform code listed. Current map: `ai/knowledge/module-map.md` |
 | Stack | [stack.md](stack.md) | Decided | Ruby on Rails (Ruby 4.0.5, Rails 8.1), GitHub Actions CI — confirm with a collaborator |
 | Deployment | [deployment.md](deployment.md) | Decided | Railway, auto-deploy from `main`; production DB still open |
 | Scope | — | Open | What lets-auction must do |
@@ -29,10 +31,10 @@ Statuses: `Open` → `Decided` → `Superseded`. Only a human collaborator moves
 - Repo: `github.com/yannawatsomon/lets-auction`, public (continues `we-auction`, 2026-11-11).
 - Merging to `main` deploys to production (Railway), so CI must be green first. Rulesets
   require a PR and CI but no approval: anyone with Write can merge their own PR (2026-11-11).
-- **Agent boundaries (the one rule not to miss):** AI agents never force-push or delete remote
-  branches, and do commits, pushes, PRs, gem/CI changes and GitHub/Railway changes only when a
-  human explicitly asks for that exact action (2026-11-11); exception: a PR with CI Auto-fix
-  on. See `agent-boundaries.md`.
+- **Agent boundaries (the one rule not to miss):** AI agents never force-push, delete remote
+  branches or push to `main`, and change Railway/GitHub settings, secrets or merge PRs only
+  when a human asks (2026-11-11). Everything else (commit/push prompts, skills, workflow) is
+  each collaborator's own choice. See `agent-boundaries.md`.
 - Branch names: `<github-handle>-<type>-[<issue>-]<detail>`, e.g. `yannawatsomon-fix-add-db-schema`
   (2026-11-11).
 - Agent-agnostic: any agent reads `AGENTS.md`; Claude Code is the confirmed primary tool.

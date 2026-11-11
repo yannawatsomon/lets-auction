@@ -1,6 +1,6 @@
 ---
 name: security-review
-description: Use before merging any change that touches bidding, money, authentication, user input, file uploads, secrets or configuration in lets-auction — a security checklist for a public auction app. Also use when reviewing a PR for security.
+description: Optional security checklist for lets-auction (a public auction app). Use only if the user asks for a security review, e.g. of a change touching bidding, money, authentication, user input, file uploads, secrets or configuration.
 ---
 
 # Security review (lets-auction)

@@ -1,7 +1,5 @@
 # Product Onboarding Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use subagent-driven-development (recommended) or executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** A seller can list a product (1-5 images, 0-2 videos, details, minimum price, optional documents), an admin can approve / reject / request more evidence, and the seller is told the outcome.
 
 **Architecture:** Rails models own the rules (media limits under a row lock, status transitions, append-only review history). Uploads use Active Storage direct upload behind our own `POST /uploads` so type and size are checked before a signed URL is issued. Seller and admin screens are Rails views (Hotwire) unless #47 decides on a separate JSON client. One PR per task.

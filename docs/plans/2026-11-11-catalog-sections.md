@@ -1,7 +1,5 @@
 # Catalog Sections Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** Implement the approved grouping and sorting service for the first part of #39.
 
 **Architecture:** A stateless Ruby service groups already-authorized lots using one explicit server timestamp. It does not create auction models or expose a route; integration remains dependent on #28/#35.

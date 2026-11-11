@@ -26,8 +26,8 @@ Open http://localhost:3000. **Merging to `main` deploys to production on Railway
 
 1. Read [`CONTRIBUTING.md`](CONTRIBUTING.md).
 2. Read the decision log: [`docs/decision/README.md`](docs/decision/README.md).
-3. Using an AI agent? It should start at [`AGENTS.md`](AGENTS.md). The shared skills,
-   knowledge and context live in [`ai/`](ai/README.md) and `.claude/skills/`.
+3. Using an AI agent? It should start at [`AGENTS.md`](AGENTS.md) (a few hard rules only).
+   Shared knowledge and context live in [`ai/`](ai/README.md).
 
 ## Repo map
 
@@ -36,7 +36,7 @@ AGENTS.md          entry point for all AI agents
 CLAUDE.md          Claude Code (imports AGENTS.md)
 ai/                shared context, knowledge, playbooks
 docs/decision/     decision log (what + why)
-.claude/skills/    reusable agent skills
+.claude/           shared Claude Code permissions + 2 optional skills
 .github/           CI, PR/issue templates, Dependabot, Copilot pointer
 app/ config/ db/ test/   the Rails app
 ```

@@ -1,6 +1,6 @@
 ---
 name: record-decision
-description: Use when a technical, product or process decision is made (or an existing one must change) in lets-auction — records it in docs/decision/ with What/Why/Trade-off/Source and updates the index. Also use before changing code that might contradict a Decided entry.
+description: Optional helper for writing a decision into docs/decision/ with What/Why/Trade-off/Source and updating the index. Use only if the user asks to record or change a decision.
 ---
 
 # Record a decision

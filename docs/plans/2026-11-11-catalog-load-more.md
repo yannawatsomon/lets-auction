@@ -1,7 +1,5 @@
 # Catalog Load More Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use executing-plans to implement this plan task-by-task.
-
 **Goal:** Independent Load more and retry behavior for #42.
 
 **Architecture:** Pagination validates bounded GET counters and slices sorted section arrays. Shared catalog preparation keeps totals separate from displayed cards and handles a typed inventory outage. Normal GET links preserve state and work without JavaScript.

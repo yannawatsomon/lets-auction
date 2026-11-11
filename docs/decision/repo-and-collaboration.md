@@ -57,7 +57,8 @@ work doesn't collide and nothing sensitive leaks. The project moved here from `w
   Alternative rejected: type-only prefixes (`feat/*`, `fix/*`) as before — no owner visible
   once several people have branches open. Source: user, 2026-11-11.
 - **Branches are short-lived.** What: the head branch is deleted after the squash-merge, and
-  before opening a PR you rebase your branch on the latest `main`. Rebase only your own branch;
+  rebasing your branch on the latest `main` before opening a PR is recommended, not required
+  (softened 2026-11-11). Rebase only your own branch;
   if it is already pushed, a human pushes it with `git push --force-with-lease`, never plain
   `--force`, and AI agents never force-push (`agent-boundaries.md`). Deleting on
   merge is done by the GitHub repo setting "Automatically delete head branches" (Settings →

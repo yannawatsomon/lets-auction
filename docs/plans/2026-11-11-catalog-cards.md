@@ -1,7 +1,5 @@
 # Catalog Cards Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use executing-plans to implement this plan task-by-task.
-
 **Goal:** Reusable responsive cards based on the approved preview appearance for #40.
 
 **Architecture:** Rails partial/helper, CSS grid, and a small Stimulus image-error handler. Preview supplies synthetic data and reuses the partial; no database or detail routes are invented.

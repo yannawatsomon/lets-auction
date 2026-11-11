@@ -3,6 +3,6 @@ description: Project rules — defer to AGENTS.md
 alwaysApply: true
 ---
 
-Read and follow `AGENTS.md` at the repository root before doing any work. It is the single
-source of truth for working rules, the decision log (`docs/decision/`) and the shared AI hub
-(`ai/`). Do not add rules here.
+The shared project rules are in `AGENTS.md` at the repository root (a few hard rules only);
+background is in the decision log (`docs/decision/`) and the shared AI hub (`ai/`). Do not add
+rules here.
