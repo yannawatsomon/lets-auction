@@ -53,14 +53,14 @@ class ProductOnboardingPageTest < ActionDispatch::IntegrationTest
 
     post mock_session_path(user_id: 1) # an admin
     assert_redirected_to new_mock_session_path
-    get admin_auctions_path
+    get admin_bidding_auctions_path
     assert_response :not_found
 
     post mock_session_path(user_id: 11) # a seller
     assert_redirected_to product_onboarding_root_path
     get new_product_onboarding_item_path
     assert_response :success
-    get admin_auctions_path
+    get admin_bidding_auctions_path
     assert_response :not_found
   ensure
     Rails.env = original_env

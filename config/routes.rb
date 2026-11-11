@@ -7,13 +7,28 @@ Rails.application.routes.draw do
     resource :mock_session, only: %i[new create destroy], path: "mock-login"
   end
 
+  # Bidding milestone (#27–#37): every bidding page lives under /bidding or /admin/bidding.
   namespace :admin do
-    resources :auctions, except: :destroy do
-      member do
-        post :schedule
-        post :cancel
+    namespace :bidding do
+      resources :auctions, except: :destroy do
+        member do
+          post :schedule
+          post :cancel
+        end
+        resources :lots, only: %i[create destroy]
+        resources :invitations, only: :create do
+          post :revoke, on: :member
+        end
       end
-      resources :lots, controller: "auction_lots", only: %i[create destroy]
+    end
+  end
+
+  namespace :bidding do
+    resources :auctions, only: %i[index show] do
+      resource :registration, only: :create
+    end
+    resources :invitations, only: :index do
+      post :accept, on: :member
     end
   end
 

@@ -1,0 +1,41 @@
+<% content_for :title, "จัดการ Auction" %>
+<div class="bidding-head">
+  <h1>จัดการ Auction</h1>
+  <%= link_to "+ สร้าง Auction", new_admin_bidding_auction_path, class: "bidding-btn bidding-btn--primary" %>
+</div>
+
+<%= form_with url: admin_bidding_auctions_path, method: :get, class: "bidding-head" do %>
+  <div class="bidding-field">
+    <label for="status">กรองตามสถานะ</label>
+    <%= select_tag :status, options_for_select([["ทั้งหมด", ""]] + BiddingHelper::STATUS_LABELS.map { |k, v| [v, k] }, @status), onchange: "this.form.requestSubmit()" %>
+  </div>
+  <noscript><button class="bidding-btn">กรอง</button></noscript>
+<% end %>
+
+<div class="bidding-card bidding-card--scroll">
+  <% if @auctions.empty? %>
+    <p class="bidding-hint">ยังไม่มีงานประมูล<%= " ในสถานะนี้" if @status %> · กด “สร้าง Auction” เพื่อเริ่ม</p>
+  <% else %>
+    <table class="bidding-table">
+      <thead><tr><th>งาน</th><th>เริ่ม</th><th>จบ</th><th>วิธีประมูล</th><th>สินค้า</th><th>สถานะ</th><th><span class="bidding-sr-only">จัดการ</span></th></tr></thead>
+      <tbody>
+        <% @auctions.each do |a| %>
+          <tr>
+            <td><strong><%= a.title %></strong></td>
+            <td><%= bidding_time(a.starts_at) %></td>
+            <td><%= bidding_time(a.ends_at) %></td>
+            <td><%= bidding_type_label(a) %></td>
+            <td><%= a.lots.size %>/<%= Auction::MAX_LOTS %></td>
+            <td><%= bidding_status_chip(a) %></td>
+            <td><%= link_to(a.draft? ? "แก้ไข" : "ดูงาน", admin_bidding_auction_path(a)) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+</div>
+
+<nav class="bidding-actions" aria-label="หน้า">
+  <% if @page > 1 %><%= link_to "← ก่อนหน้า", admin_bidding_auctions_path(status: @status, page: @page - 1), class: "bidding-btn" %><% end %>
+  <% if @next_page %><%= link_to "ถัดไป →", admin_bidding_auctions_path(status: @status, page: @page + 1), class: "bidding-btn" %><% end %>
+</nav>
