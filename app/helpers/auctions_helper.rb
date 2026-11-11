@@ -14,8 +14,6 @@ module AuctionsHelper
     TYPE_LABELS.fetch(type.to_s)
   end
 
-  def baht(cents) = "฿ #{Baht.format(cents)}"
-
   # 15 พ.ย. 2026 18:00 (Asia/Bangkok, Buddhist-era-free to match the mockup)
   THAI_MONTHS = %w[ม.ค. ก.พ. มี.ค. เม.ย. พ.ค. มิ.ย. ก.ค. ส.ค. ก.ย. ต.ค. พ.ย. ธ.ค.].freeze
   def thai_time(time)

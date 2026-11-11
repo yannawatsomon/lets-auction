@@ -1,0 +1,166 @@
+<% content_for :title, "ชำระเงิน · Lets Auction" %>
+
+<main class="payment-page"
+      data-controller="payment"
+      data-payment-quote-url-value="/payment/quote"
+      data-payment-deadline-value="<%= @payment_deadline_at.to_i %>">
+  <header class="payment-header">
+    <%= link_to "Lets Auction", root_path, class: "payment-brand" %>
+    <span class="payment-demo-tag">ข้อมูลตัวอย่าง</span>
+  </header>
+
+  <div class="payment-content">
+    <div class="payment-heading">
+      <div>
+        <p class="payment-eyebrow">ขั้นตอนที่ 1 · ตรวจสอบคำสั่งซื้อ</p>
+        <h1>ชำระเงิน</h1>
+      </div>
+      <div class="payment-countdown">
+        <span>เวลาชำระที่เหลือ (ตัวอย่าง)</span>
+        <strong data-payment-target="countdown" aria-live="polite">กำลังคำนวณ…</strong>
+      </div>
+    </div>
+
+    <% if @demo_notice %>
+      <p class="payment-notice" role="status"><%= @demo_notice %></p>
+    <% end %>
+    <% if @payment_submission.errors.any? %>
+      <div class="payment-errors" role="alert">
+        <p>กรุณาตรวจสอบข้อมูลก่อนดำเนินการ</p>
+        <ul>
+          <% @payment_submission.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="payment-grid">
+      <section class="payment-card payment-item-card" aria-labelledby="payment-item-heading">
+        <div class="payment-item-image" role="img" aria-label="<%= @order.item_image_alt %>">
+          <span class="payment-gem" aria-hidden="true"></span>
+          <span>ภาพสินค้าตัวอย่าง</span>
+        </div>
+        <div class="payment-item-details">
+          <p class="payment-eyebrow">รายการที่ชนะการประมูล</p>
+          <h2 id="payment-item-heading"><%= @order.item_title %></h2>
+          <p class="payment-deadline-copy">กำหนดชำระภายใน 48 ชั่วโมงหลังประกาศผล</p>
+
+          <dl class="payment-breakdown">
+            <div>
+              <dt>ราคาประมูล</dt>
+              <dd><%= baht(@order.winning_bid_satang) %></dd>
+            </div>
+            <div>
+              <dt>ค่าบริการผู้ซื้อ</dt>
+              <dd><%= baht(@order.buyer_premium_satang) %></dd>
+            </div>
+            <div>
+              <dt>ค่าขนส่ง</dt>
+              <dd data-payment-target="shippingFee"><%= baht(@delivery_method == "shipping" ? @order.shipping_fee_satang : 0) %></dd>
+            </div>
+            <div>
+              <dt>ภาษีมูลค่าเพิ่ม 7%</dt>
+              <dd data-payment-target="vat"><%= baht(@quote.vat_satang) %></dd>
+            </div>
+            <div class="payment-total-row">
+              <dt>รวมทั้งสิ้น</dt>
+              <dd data-payment-target="total"><%= baht(@quote.total_satang) %></dd>
+            </div>
+          </dl>
+          <p class="payment-subtotal" data-payment-target="subtotal">
+            ยอดก่อน VAT <%= baht(@quote.subtotal_satang) %>
+          </p>
+        </div>
+      </section>
+
+      <section class="payment-card payment-form-card" aria-labelledby="payment-options-heading">
+        <%= form_with url: "/payment/preview", method: :post, data: { payment_target: "form", action: "input->payment#validate change->payment#change submit->payment#submit" } do %>
+          <fieldset class="payment-fieldset">
+            <legend id="payment-options-heading">วิธีรับสินค้า</legend>
+            <div class="payment-choice-grid">
+              <label class="payment-choice">
+                <%= radio_button_tag :delivery_method, "self_pickup", @delivery_method == "self_pickup", required: true, data: { payment_target: "delivery" } %>
+                <span>รับสินค้าเอง</span>
+              </label>
+              <label class="payment-choice">
+                <%= radio_button_tag :delivery_method, "shipping", @delivery_method == "shipping", required: true, data: { payment_target: "delivery" } %>
+                <span>ขนส่ง</span>
+              </label>
+            </div>
+
+            <div class="payment-delivery-details" data-payment-target="pickupDetails" <%= "hidden" unless @delivery_method == "self_pickup" %>>
+              <strong><%= @order.pickup_location %></strong>
+              <span><%= @order.pickup_hours %></span>
+              <span><%= @order.pickup_time_slot %></span>
+            </div>
+            <div class="payment-delivery-details" data-payment-target="shippingDetails" <%= "hidden" unless @delivery_method == "shipping" %>>
+              <strong><%= @order.shipping_address %></strong>
+              <span><%= @order.shipping_carrier %></span>
+              <span>ค่าขนส่ง <%= baht(@order.shipping_fee_satang) %></span>
+            </div>
+          </fieldset>
+
+          <fieldset class="payment-fieldset">
+            <legend>วิธีชำระเงิน</legend>
+            <div class="payment-method-list">
+              <% [
+                [ "qr", "QR พร้อมเพย์", "สแกนเพื่อชำระ (ตัวอย่าง)" ],
+                [ "online_banking", "โอนผ่านธนาคารออนไลน์", "ระบบธนาคารยังไม่เชื่อมต่อ" ],
+                [ "card", "บัตรเครดิต / เดบิต", "ระบบบัตรยังไม่เชื่อมต่อ" ],
+                [ "cheque", "เช็ค", "รอตรวจสอบ (ตัวอย่าง)" ],
+                [ "cash", "เงินสด", "รับชำระเมื่อรับสินค้าเอง" ]
+              ].each do |method, label, description| %>
+                <label class="payment-method-option">
+                  <%= radio_button_tag :payment_method, method, @payment_submission.payment_method == method, required: true, disabled: method == "cash" && @delivery_method == "shipping", data: { payment_target: "method" } %>
+                  <span class="payment-method-copy">
+                    <strong><%= label %></strong>
+                    <small><%= description %></small>
+                  </span>
+                </label>
+              <% end %>
+            </div>
+            <p class="payment-field-hint" data-payment-target="cashHint" <%= "hidden" unless @delivery_method == "shipping" %>>
+              เงินสดใช้ได้เฉพาะการรับสินค้าเอง
+            </p>
+          </fieldset>
+
+          <fieldset class="payment-fieldset payment-invoice">
+            <legend>ใบกำกับภาษี</legend>
+            <label class="payment-invoice-toggle">
+              <%= check_box_tag :tax_invoice, "1", @payment_submission.tax_invoice, data: { payment_target: "invoiceToggle" } %>
+              <span>ต้องการใบกำกับภาษี</span>
+            </label>
+            <div class="payment-invoice-fields" data-payment-target="invoiceFields" <%= "hidden" unless @payment_submission.tax_invoice %>>
+              <div class="payment-field">
+                <%= label_tag :tax_id, "เลขประจำตัวผู้เสียภาษี (13 หลัก)" %>
+                <%= text_field_tag :tax_id, @payment_submission.tax_id, inputmode: "numeric", pattern: "\\d{13}", maxlength: 13, autocomplete: "off", data: { payment_target: "invoiceField" }, disabled: !@payment_submission.tax_invoice, required: @payment_submission.tax_invoice %>
+              </div>
+              <div class="payment-field">
+                <%= label_tag :branch, "สาขา" %>
+                <%= text_field_tag :branch, @payment_submission.branch, autocomplete: "organization-title", maxlength: 100, data: { payment_target: "invoiceField" }, disabled: !@payment_submission.tax_invoice, required: @payment_submission.tax_invoice %>
+              </div>
+              <div class="payment-field">
+                <%= label_tag :address, "ที่อยู่สำหรับใบกำกับภาษี" %>
+                <%= text_area_tag :address, @payment_submission.address, rows: 3, maxlength: 1_000, autocomplete: "street-address", data: { payment_target: "invoiceField" }, disabled: !@payment_submission.tax_invoice, required: @payment_submission.tax_invoice %>
+              </div>
+              <div class="payment-field">
+                <%= label_tag :email, "อีเมล" %>
+                <%= email_field_tag :email, @payment_submission.email, maxlength: 254, autocomplete: "email", data: { payment_target: "invoiceField" }, disabled: !@payment_submission.tax_invoice, required: @payment_submission.tax_invoice %>
+              </div>
+            </div>
+          </fieldset>
+
+          <div class="payment-form-error" role="alert" data-payment-target="quoteError" hidden>
+            <span data-payment-target="quoteErrorMessage"></span>
+            <button type="button" class="payment-retry" data-action="click->payment#refreshQuote">ลองคำนวณอีกครั้ง</button>
+          </div>
+          <button type="submit" class="payment-submit" data-payment-target="submit" disabled>
+            ดำเนินการชำระ
+          </button>
+          <p class="payment-demo-caption">หน้าทดลองนี้ใช้ข้อมูลจำลองและไม่มีการเรียกเก็บเงินจริง</p>
+        <% end %>
+      </section>
+    </div>
+  </div>
+</main>

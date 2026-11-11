@@ -16,5 +16,9 @@ Rails.application.routes.draw do
     end
   end
 
+  get "payment", to: "payments#show"
+  get "payment/quote", to: "payments#quote"
+  post "payment/preview", to: "payments#preview"
+
   root "home#index"
 end
