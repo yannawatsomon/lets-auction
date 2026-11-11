@@ -1,9 +1,10 @@
-<%# locals: (lot:, status:, auction_type:, image_path: nil, detail_path: nil) %>
+<%# locals: (lot:, status:, auction_type:, image_path: nil, detail_path: nil, min_price_cents: nil) %>
 <% status_label = catalog_status_label(status) %>
 <% auction_label = catalog_auction_label(auction_type) %>
 <% image_source = catalog_local_path(image_path) %>
 <% destination = catalog_local_path(detail_path) %>
-<article class="catalog-card">
+<% detail_heading = "catalog-detail-#{SecureRandom.hex(6)}" %>
+<article class="catalog-card" data-controller="catalog-detail">
   <div class="catalog-card__media" data-controller="catalog-image">
     <% if image_source %>
       <%= image_tag image_source, alt: lot.name, loading: "lazy", width: 640, height: 400,
@@ -29,5 +30,28 @@
       <dt>เริ่มประมูล</dt><dd><time datetime="<%= lot.starts_at.iso8601 %>"><%= lot.starts_at.in_time_zone("Asia/Bangkok").strftime("%d/%m/%Y %H:%M") %></time></dd>
       <dt>ปิดประมูล</dt><dd><time datetime="<%= lot.ends_at.iso8601 %>"><%= lot.ends_at.in_time_zone("Asia/Bangkok").strftime("%d/%m/%Y %H:%M") %></time></dd>
     </dl>
+    <div class="catalog-card__footer">
+      <% if min_price_cents %>
+        <div><span class="catalog-card__price-label">ราคาเริ่มต้น</span><strong class="catalog-card__price"><%= Baht.format(min_price_cents) %> ฿</strong></div>
+      <% end %>
+      <% if destination %>
+        <%= link_to "ดูรายละเอียด ↗", destination, class: "catalog-card__view" %>
+      <% else %>
+        <button class="catalog-card__view" type="button" data-action="catalog-detail#open">ดูรายละเอียด ↗</button>
+      <% end %>
+    </div>
   </div>
+  <% unless destination %>
+    <dialog class="catalog-detail-dialog" aria-labelledby="<%= detail_heading %>" data-catalog-detail-target="dialog" data-action="click->catalog-detail#dismiss">
+      <div class="catalog-detail-dialog__body">
+        <button type="button" class="catalog-detail-dialog__close" aria-label="ปิดรายละเอียด" data-action="catalog-detail#close">×</button>
+        <p class="catalog-eyebrow">AUCTION DETAIL</p>
+        <h2 id="<%= detail_heading %>"><%= lot.name %></h2>
+        <p><%= lot.category %> · <%= status_label %> · <%= auction_label %></p>
+        <% if min_price_cents %><p>ราคาเริ่มต้น <strong><%= Baht.format(min_price_cents) %> ฿</strong></p><% end %>
+        <p>ข้อมูลในหน้านี้เป็นข้อมูลตัวอย่าง ไม่ใช่รายการประมูลจริง</p>
+        <button type="button" class="catalog-detail-dialog__done" data-action="catalog-detail#close">ปิดหน้าต่าง</button>
+      </div>
+    </dialog>
+  <% end %>
 </article>

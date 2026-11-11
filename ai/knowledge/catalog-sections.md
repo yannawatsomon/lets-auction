@@ -40,6 +40,22 @@ pagination; the initial page displays up to 12 per section, or 36 cards total.
 
 ## Independent Load more
 
+The latest reference redesign changes the homepage into an overview: three cards are
+rendered per status, with CSS showing only two at <=900px and one at <=600px. Extra
+overview cards use `display:none`, including their interactive children. Matching counts
+still represent the complete result set. “ดูเพิ่มเติม” links to `/catalog` with the chosen
+status and all other filters, resetting counters. `/catalog` keeps the 12-item cumulative
+pagination described below; homepage requests no longer expand section rows.
+
+The reference is the user-supplied `auction-redesign.html`: cream/white/ink/gold styling,
+Google-hosted IBM Plex Sans Thai and Inter with system fallbacks, metadata dividers and
+starting-price footers. Demo prices are integer satang and use `Baht.format`. Cards with
+no detail URL use a native read-only `<dialog>` via `catalog-detail` Stimulus; callers with
+real data must supply an authorized detail URL. All demo labels remain explicit.
+
+If a long-running dev server predates a new autoload directory such as `app/lib`, restart
+it after updating the checkout; otherwise new constants can fail despite fresh test runs passing.
+
 `Catalog::Pagination` accepts `ongoing_page`, `upcoming_page`, and `ended_page` as
 decimal strings from 1 through 100; missing values start at 1. Counters are cumulative:
 page 2 displays the first 24 matching lots, not a replacement page. Filtering and

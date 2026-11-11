@@ -69,6 +69,13 @@ class CatalogCardTest < ActionView::TestCase
     assert_kind_of KeyError, error.cause
   end
 
+  test "shows supplied starting price in baht without inventing missing prices" do
+    card(min_price_cents: 1_234_567)
+    assert_select ".catalog-card__price", "12,345.67 ฿"
+    card
+    assert_select ".catalog-card__price", count: 0
+  end
+
   private
     def card(**options)
       render partial: "catalog/card", locals: {
