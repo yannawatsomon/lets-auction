@@ -1,0 +1,21 @@
+<% content_for :title, "ลงทะเบียนผู้ซื้อ" %>
+<h1>ลงทะเบียนผู้ซื้อ</h1>
+<p>ทำให้ครบ 4 ขั้นก่อนเข้าร่วมการประมูล</p>
+
+<% done_up_to = UserOnboarding::STATUSES.index(@onboarding.status) %>
+<ol>
+  <li>
+    ยืนยันตัวตน: <%= done_up_to >= 1 ? "เสร็จแล้ว" : "ยังไม่ได้ทำ" %>
+    <% if @onboarding.national_id.present? %>
+      (<%= ThaiNationalId.mask(@onboarding.national_id) %> · <%= @onboarding.phone %>)
+    <% end %>
+    · <%= link_to(done_up_to >= 1 ? "แก้ไข" : "เริ่ม", edit_onboarding_identity_path) %>
+  </li>
+  <li>อาชีพและรายได้: <%= done_up_to >= 2 ? "เสร็จแล้ว" : "ยังไม่ได้ทำ" %></li>
+  <li>คำนวณคะแนน: <%= done_up_to >= 3 ? "เสร็จแล้ว" : "ยังไม่ได้ทำ" %></li>
+  <li>ยืนยันผล: <%= done_up_to >= 4 ? "เสร็จแล้ว" : "ยังไม่ได้ทำ" %></li>
+</ol>
+
+<% if @onboarding.completed? && @assessment %>
+  <p>คะแนนของคุณ: <%= @assessment.score %> / 100 · เกรด <%= @assessment.grade %></p>
+<% end %>

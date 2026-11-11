@@ -23,7 +23,8 @@ class ThaiNationalIdTest < ActiveSupport::TestCase
     end
   end
 
-  test "masks all but the first and last digits for display" do
-    assert_equal "1-XXXX-XXXXX-XX-1", ThaiNationalId.mask(VALID)
+  test "masks all but the last 4 digits for display (docs/decision/user-onboarding.md)" do
+    assert_equal "X-XXXX-XXXX0-12-1", ThaiNationalId.mask(VALID)
+    assert_equal "X-XXXX-XXXX0-12-1", ThaiNationalId.mask("1-2345-67890-12-1")
   end
 end

@@ -25,7 +25,7 @@ module OnboardingStore
 
       LOCK.synchronize do
         if national_id_taken?(onboarding)
-          onboarding.errors.add(:national_id, :taken)
+          onboarding.errors.add(:national_id, :taken, message: "เลขบัตรประชาชนนี้ถูกใช้กับบัญชีอื่นแล้ว")
           return false
         end
         onboardings[onboarding.user_id] = copy(onboarding)

@@ -22,6 +22,13 @@ Rails.application.routes.draw do
     resources :uploads, only: %i[create update], param: :key
   end
 
+  # Buyer onboarding (docs/decision/user-onboarding.md). Buyers only; others get 404.
+  # URL says "user-onboarding" to keep it apart from /product-onboarding; helpers stay onboarding_*.
+  resource :onboarding, only: :show, path: "user-onboarding"
+  namespace :onboarding, path: "user-onboarding" do
+    resource :identity, only: %i[edit update]
+  end
+
   root "home#index"
 
   if Rails.env.development?

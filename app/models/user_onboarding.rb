@@ -26,8 +26,42 @@ class UserOnboarding
 
   def completed? = status == "completed"
 
+  # Step 1 (#17). A blank national_id keeps the saved one. The ID is locked once completed
+  # (an admin fixes mistakes); the phone can change any time without a new score. Consent is
+  # asked once, before the ID is first stored. Returns false with errors and changes nothing.
+  def update_identity(national_id:, phone:, consent:, now: Time.current)
+    errors.clear
+    typed_id = national_id.to_s.strip.presence
+    new_phone = ThaiPhoneNumber.normalize(phone)
+
+    check_national_id(typed_id)
+    errors.add(:phone, "เบอร์มือถือไม่ถูกต้อง (10 หลัก ขึ้นต้น 06, 08 หรือ 09)") unless new_phone
+    if consent_at.nil? && !ActiveModel::Type::Boolean.new.cast(consent)
+      errors.add(:consent, "กรุณายินยอมให้เก็บและใช้ข้อมูลก่อน")
+    end
+    return false if errors.any?
+
+    self.national_id = ThaiNationalId.normalize(typed_id) if typed_id
+    self.phone = new_phone
+    self.consent_at ||= now
+    self.status = "identity_done" if status == "not_started"
+    true
+  end
+
   def inspect
     shown = attributes.merge("national_id" => national_id.present? ? ThaiNationalId.mask(national_id) : nil)
     "#<#{self.class.name} #{shown.map { |k, v| "#{k}: #{v.inspect}" }.join(", ")}>"
+  end
+
+  private
+
+  def check_national_id(typed_id)
+    if typed_id.nil?
+      errors.add(:national_id, "กรุณากรอกเลขบัตรประชาชน") if national_id.blank?
+    elsif !ThaiNationalId.valid?(typed_id)
+      errors.add(:national_id, "เลขบัตรประชาชนไม่ถูกต้อง")
+    elsif completed? && ThaiNationalId.normalize(typed_id) != national_id
+      errors.add(:national_id, "แก้เลขบัตรประชาชนไม่ได้หลังยืนยันแล้ว ติดต่อแอดมิน")
+    end
   end
 end

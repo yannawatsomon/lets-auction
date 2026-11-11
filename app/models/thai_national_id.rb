@@ -16,9 +16,9 @@ class ThaiNationalId
     ((11 - (sum % 11)) % 10) == ints.last
   end
 
-  # "1-XXXX-XXXXX-XX-1" (first and last digit only)
+  # "X-XXXX-XXXX0-12-1": last 4 digits only (docs/decision/user-onboarding.md)
   def self.mask(value)
     d = normalize(value)
-    "#{d[0]}-XXXX-XXXXX-XX-#{d[12]}"
+    "X-XXXX-XXXX#{d[9]}-#{d[10, 2]}-#{d[12]}"
   end
 end
