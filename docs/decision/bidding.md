@@ -35,14 +35,21 @@ collaborator confirms it in a PR (see `README.md`).
   show the count. Once the auction is `published`, bidders may see the bid count. Why: the count leaks demand and helps nobody bid honestly. Trade-off: less
   "activity" signal for bidders. Alternative rejected: SPEC's public `bid_count`. Source:
   draft; confirmed by @guy127, 2026-11-11.
-- **Sealed amounts are encrypted at rest, no nonce column.** What: Active Record Encryption on
-  the sealed amount column; ranking decrypts in `LotCloseJob` only. No `nonce` column, since
-  the commitment hash is not being built. Why: a DB dump or a stray query must not reveal open
-  bids; Rails ships this, no new gem. Trade-off: can't sort or index by amount in SQL for
-  sealed lots, so ranking happens in Ruby (≤ a few hundred bids per lot, fine); adding a hash
-  later needs a migration and old bids would have none. Alternative rejected: plain column +
-  DB permissions only (draft) — weaker against dumps and admin queries. Source: SPEC invariant
-  6; confirmed by @guy127, 2026-11-11.
+- **Bid amounts are encrypted at rest in one `text` column, no nonce column.** What:
+  `bids.amount_cents` is a `text` column holding Active Record Encryption ciphertext
+  (`encrypts :amount_cents`, cast to integer in Ruby). Encryption applies to the whole
+  attribute, so English bids are encrypted too. Ranking decrypts in Ruby (`LotCloseJob`, the
+  admin results page). English bid checks use the plain `auction_lots.current_price_cents`,
+  not the `bids` table. `amount_cents > 0` is a model validation, not a DB `CHECK`. No
+  `nonce` column, since the commitment hash is not being built. Why: a DB dump or a stray
+  query must not reveal open sealed bids; Rails ships this, no new gem; one column keeps one
+  bid path for both types. Trade-off: no SQL sort, index or `CHECK` on bid amounts (ranking
+  in Ruby is fine for ≤ a few hundred bids per lot); English amounts are encrypted though they
+  are not secret; adding a hash later needs a migration and old bids would have none.
+  Alternative rejected: plain column + DB permissions only (draft) — weaker against dumps and
+  admin queries; separate encrypted column for sealed only — two amount columns and a
+  NULL-one-or-the-other rule. Source: SPEC invariant 6; confirmed by @guy127, 2026-11-11
+  (encryption, then `text` type over a separate column).
 - **English extensions stop 30 minutes after the original end.** What: the anti-sniping rule
   (a bid with ≤ 120 s left moves `ends_at` to `now() + 120 s`) applies only while the new
   `ends_at` would be ≤ `original_ends_at + 30 min`; the lot keeps `original_ends_at` for this.
