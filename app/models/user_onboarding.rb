@@ -36,6 +36,24 @@ class UserOnboarding
 
   def completed? = status == "completed"
 
+  # Step 4 (#20). Only from scored; the buyer must declare the answers true. Completed buyers
+  # count as onboarded for bidding (BuyerStanding). Returns false with errors otherwise.
+  def confirm(declaration:, now: Time.current)
+    errors.clear
+    if status != "scored"
+      errors.add(:base, "ยืนยันผลได้หลังคำนวณคะแนนแล้วเท่านั้น")
+      return false
+    end
+    unless ActiveModel::Type::Boolean.new.cast(declaration)
+      errors.add(:declaration, "กรุณารับรองว่าข้อมูลเป็นความจริงก่อนยืนยัน")
+      return false
+    end
+
+    self.confirmed_at = now
+    self.status = "completed"
+    true
+  end
+
   # Saved income in whole baht, for the form.
   def monthly_income = monthly_income_cents && monthly_income_cents / 100
 

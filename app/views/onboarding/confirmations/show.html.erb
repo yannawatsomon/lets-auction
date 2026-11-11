@@ -1,0 +1,41 @@
+<% content_for :title, @onboarding.completed? ? "ยืนยันเรียบร้อย" : "ยืนยันผล" %>
+<%= render "onboarding/intro" %>
+<%= render "onboarding/steps", onboarding: @onboarding, current: (@onboarding.completed? ? nil : 4) %>
+
+<% if @onboarding.completed? %>
+  <section class="card ob-card ob-done-panel">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="ob-done-icon"><circle cx="12" cy="12" r="9"></circle><path d="M8 12.5l2.5 2.5L16 9.5"></path></svg>
+    <h2>ยืนยันเรียบร้อย</h2>
+    <%= render "onboarding/score_result", assessment: @assessment %>
+    <%= render "onboarding/access", grade: @assessment.grade, tries_left: @tries_left %>
+    <div class="ob-nav">
+      <% if @assessment.grade == "E" %>
+        <%= link_to "แก้ข้อมูลและคำนวณใหม่", edit_onboarding_employment_path, class: "btn" %>
+      <% else %>
+        <%= link_to "ดูขั้นตอนทั้งหมด", onboarding_path, class: "btn" %>
+      <% end %>
+      <%= link_to "ไปดูสินค้า", root_path, class: "btn primary" %>
+    </div>
+  </section>
+<% else %>
+  <section class="card ob-card">
+    <%= form_with scope: :confirmation, url: onboarding_confirmation_path, class: "ob-form" do |f| %>
+      <h2>ยืนยันผล</h2>
+      <%= render "onboarding/score_result", assessment: @assessment %>
+      <%= render "onboarding/access", grade: @assessment.grade, tries_left: @tries_left %>
+
+      <div class="field">
+        <label class="ob-check">
+          <%= f.check_box :declaration, { "aria-invalid": @onboarding.errors[:declaration].any? }, "1", "0" %>
+          <span>ข้าพเจ้ารับรองว่าข้อมูลที่ให้ไว้ทั้งหมดเป็นความจริง และเข้าใจว่าหากข้อมูลไม่ตรงความจริง แพลตฟอร์มอาจระงับสิทธิ์การประมูล</span>
+        </label>
+        <% @onboarding.errors[:declaration].each do |m| %><span class="field-error"><%= m %></span><% end %>
+      </div>
+
+      <div class="ob-nav">
+        <%= link_to "ย้อนกลับ", onboarding_score_path, class: "btn" %>
+        <%= f.submit "ยืนยันผล", class: "btn primary" %>
+      </div>
+    <% end %>
+  </section>
+<% end %>

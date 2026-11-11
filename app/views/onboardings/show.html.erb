@@ -27,9 +27,9 @@
           <% end %>
         </span>
         <span class="chip <%= n <= done ? "ob-done" : "ob-todo" %>"><%= n <= done ? "เสร็จแล้ว" : "ยังไม่ได้ทำ" %></span>
-        <% step_path = { 1 => edit_onboarding_identity_path, 2 => edit_onboarding_employment_path, 3 => onboarding_score_path }[n] %>
+        <% step_path = { 1 => edit_onboarding_identity_path, 2 => edit_onboarding_employment_path, 3 => onboarding_score_path, 4 => onboarding_confirmation_path }[n] %>
         <% if step_path && n <= (next_step || 4) %>
-          <%= link_to (n <= done ? (n == 3 ? "ดูผล" : "แก้ไข") : "เริ่ม"), step_path, class: (n == next_step ? "btn primary" : "btn") %>
+          <%= link_to (n <= done ? (n >= 3 ? "ดูผล" : "แก้ไข") : (n == 4 ? "ยืนยัน" : "เริ่ม")), step_path, class: (n == next_step ? "btn primary" : "btn") %>
         <% elsif step_path %>
           <span class="hint ob-soon">ทำขั้นก่อนหน้าก่อน</span>
         <% else %>

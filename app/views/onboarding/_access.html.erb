@@ -1,0 +1,14 @@
+<%# What a grade unlocks (docs/decision/user-onboarding.md). %>
+<div class="ob-access ob-note">
+  <% case grade %>
+  <% when "A" %>
+    <strong>เข้าประมูลแบบ sealed ได้</strong><br>
+    รับเชิญเข้าประมูลแบบ English (สินค้า 20 ล้านบาทขึ้นไป) ได้หลังแนบหลักฐานรายได้และแอดมินอนุมัติ ระหว่างรอเข้าได้เฉพาะ sealed
+  <% when "B", "C", "D" %>
+    <strong>เข้าประมูลแบบ sealed ได้</strong><br>
+    ประมูลแบบ English ต้องได้เกรด A
+  <% else %>
+    <strong>ยังเข้าประมูลไม่ได้</strong><br>
+    แก้ข้อมูลอาชีพและรายได้ แล้วคำนวณคะแนนใหม่ได้ (เหลือ <%= tries_left %> จาก <%= OnboardingScoring::MAX_TRIES %> ครั้งใน 30 วัน)
+  <% end %>
+</div>
