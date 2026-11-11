@@ -1,21 +1,35 @@
 <% content_for :title, "ลงทะเบียนผู้ซื้อ" %>
-<h1>ลงทะเบียนผู้ซื้อ</h1>
-<p>ทำให้ครบ 4 ขั้นก่อนเข้าร่วมการประมูล</p>
-
-<% done_up_to = UserOnboarding::STATUSES.index(@onboarding.status) %>
-<ol>
-  <li>
-    ยืนยันตัวตน: <%= done_up_to >= 1 ? "เสร็จแล้ว" : "ยังไม่ได้ทำ" %>
-    <% if @onboarding.national_id.present? %>
-      (<%= ThaiNationalId.mask(@onboarding.national_id) %> · <%= @onboarding.phone %>)
-    <% end %>
-    · <%= link_to(done_up_to >= 1 ? "แก้ไข" : "เริ่ม", edit_onboarding_identity_path) %>
-  </li>
-  <li>อาชีพและรายได้: <%= done_up_to >= 2 ? "เสร็จแล้ว" : "ยังไม่ได้ทำ" %></li>
-  <li>คำนวณคะแนน: <%= done_up_to >= 3 ? "เสร็จแล้ว" : "ยังไม่ได้ทำ" %></li>
-  <li>ยืนยันผล: <%= done_up_to >= 4 ? "เสร็จแล้ว" : "ยังไม่ได้ทำ" %></li>
-</ol>
+<% done = onboarding_done_count(@onboarding) %>
+<% next_step = onboarding_next_step(@onboarding) %>
+<%= render "onboarding/intro" %>
+<%= render "onboarding/steps", onboarding: @onboarding, current: next_step %>
 
 <% if @onboarding.completed? && @assessment %>
-  <p>คะแนนของคุณ: <%= @assessment.score %> / 100 · เกรด <%= @assessment.grade %></p>
+  <section class="card ob-card ob-score">
+    <h2>ผลการประเมิน</h2>
+    <p class="ob-score-line"><span class="v"><%= @assessment.score %></span> / 100 · เกรด <strong><%= @assessment.grade %></strong></p>
+  </section>
 <% end %>
+
+<section class="card ob-card">
+  <h2>ขั้นตอนของคุณ</h2>
+  <ol class="ob-list">
+    <% OnboardingsHelper::STEP_LABELS.each.with_index(1) do |label, n| %>
+      <li>
+        <span class="n"><%= n %></span>
+        <span class="body">
+          <span class="title"><%= label %></span>
+          <% if n == 1 && @onboarding.national_id.present? %>
+            <span class="sub"><%= ThaiNationalId.mask(@onboarding.national_id) %> · <%= @onboarding.phone %></span>
+          <% end %>
+        </span>
+        <span class="chip <%= n <= done ? "ob-done" : "ob-todo" %>"><%= n <= done ? "เสร็จแล้ว" : "ยังไม่ได้ทำ" %></span>
+        <% if n == 1 %>
+          <%= link_to (n <= done ? "แก้ไข" : "เริ่ม"), edit_onboarding_identity_path, class: (n == next_step ? "btn primary" : "btn") %>
+        <% else %>
+          <span class="hint ob-soon">เร็วๆ นี้</span>
+        <% end %>
+      </li>
+    <% end %>
+  </ol>
+</section>
