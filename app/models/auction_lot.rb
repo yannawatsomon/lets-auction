@@ -10,10 +10,13 @@ class AuctionLot < ApplicationRecord
     sold: "sold", unsold: "unsold", cancelled: "cancelled"
   }, default: "scheduled", validate: true
 
-  validates :item_id, :ends_at, :original_ends_at, presence: true
+  validates :item_id, presence: true
   validates :lot_no, numericality: { only_integer: true, in: 1..Auction::MAX_LOTS }
   validates :min_price_cents, numericality: { only_integer: true, greater_than: 0 }
   validates :bid_increment_cents, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
 
-  def item = MockData.item(item_id)
+  def item = AuctionItems.find(item_id)
+
+  # Every lot ends with its auction; English lots never extend (bidding.md, 2026-11-11).
+  delegate :starts_at, :ends_at, to: :auction
 end

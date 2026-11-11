@@ -1,0 +1,25 @@
+<% content_for :title, "งานประมูล" %>
+<h1>งานประมูล</h1>
+<p class="bidding-hint">งานแบบยื่นซองที่เปิดให้ลงทะเบียน · งาน English เป็นแบบเชิญเท่านั้น ดูได้ที่ “คำเชิญของฉัน”</p>
+
+<% if @auctions.empty? %>
+  <div class="bidding-card"><p class="bidding-hint">ยังไม่มีงานประมูลที่เปิดอยู่</p></div>
+<% else %>
+  <div class="bidding-cards">
+    <% @auctions.each do |a| %>
+      <article class="bidding-card">
+        <%= link_to bidding_auction_path(a), class: "bidding-cover" do %>
+          <div class="bidding-cover__img" aria-hidden="true"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><span class="bidding-chip bidding-chip--type"><%= bidding_type_label(a) %></span><%= bidding_status_chip(a) %></div>
+          <h2><%= a.title %></h2>
+          <span class="bidding-hint"><%= bidding_time(a.starts_at) %> – <%= bidding_time(a.ends_at) %> · <%= a.lots.size %> รายการ</span>
+        <% end %>
+      </article>
+    <% end %>
+  </div>
+<% end %>
+
+<nav class="bidding-actions" aria-label="หน้า">
+  <% if @page > 1 %><%= link_to "← ก่อนหน้า", bidding_auctions_path(page: @page - 1), class: "bidding-btn" %><% end %>
+  <% if @next_page %><%= link_to "ถัดไป →", bidding_auctions_path(page: @page + 1), class: "bidding-btn" %><% end %>
+</nav>

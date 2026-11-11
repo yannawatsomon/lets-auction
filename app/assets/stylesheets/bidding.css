@@ -1,0 +1,130 @@
+/*
+ * Bidding milestone styles (#27–#37). Propshaft loads every stylesheet on every page, so
+ * everything here is scoped: tokens live on `.bidding` (the <body> class of the bidding
+ * layouts) and every class starts with `bidding-`. Look adapted from the team UI mockup:
+ * cream ground, ink text, gold accent, IBM Plex Sans Thai, 44px+ touch targets.
+ */
+.bidding {
+  --bidding-cream: #F5F3EE;
+  --bidding-ink: #15171C;
+  --bidding-ink-2: #2A2D35;
+  --bidding-muted: #5C5F68;
+  --bidding-body: #4A4D55;
+  --bidding-line: #E2DED4;
+  --bidding-line-soft: #EEEAE1;
+  --bidding-field: #BDB7A8;
+  --bidding-tile: #E7E3D9;
+  --bidding-white: #FFFFFF;
+  --bidding-gold: #D9C08A;
+  --bidding-gold-ink: #7A5C22;
+  --bidding-ok-bg: #E3F1E8; --bidding-ok: #1F4D33;
+  --bidding-warn-bg: #FDF3E1; --bidding-warn: #6B4500;
+  --bidding-bad-bg: #FBE9E7; --bidding-bad: #8F1D14;
+  --bidding-radius: 12px;
+
+  margin: 0;
+  background: var(--bidding-cream);
+  color: var(--bidding-ink);
+  font-family: "IBM Plex Sans Thai", system-ui, sans-serif;
+  line-height: 1.5;
+}
+.bidding *, .bidding *::before, .bidding *::after { box-sizing: border-box; }
+.bidding a { color: var(--bidding-gold-ink); }
+.bidding a:hover { color: #5A4317; }
+.bidding h1 { margin: 0; font-size: 30px; font-weight: 700; line-height: 1.25; }
+.bidding h2 { margin: 0; font-size: 19px; font-weight: 600; }
+
+.bidding-topbar {
+  background: var(--bidding-ink); color: var(--bidding-cream);
+  padding: 12px 32px; display: flex; flex-wrap: wrap; align-items: center;
+  justify-content: space-between; gap: 12px;
+}
+.bidding-topbar a { color: #C9CBD1; text-decoration: none; }
+.bidding-topbar a.bidding-brand { color: var(--bidding-cream); display: flex; align-items: center; gap: 12px; font-size: 20px; font-weight: 700; }
+.bidding-topbar nav { display: flex; flex-wrap: wrap; gap: 4px; font-size: 15px; }
+.bidding-topbar nav a { min-height: 44px; display: flex; align-items: center; padding: 0 12px; }
+.bidding-topbar nav a[aria-current="page"] { color: var(--bidding-cream); font-weight: 600; }
+.bidding-pill { font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: var(--bidding-ink-2); color: var(--bidding-gold); }
+.bidding-who { font-size: 14px; color: #C9CBD1; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+
+.bidding-page { max-width: 1360px; margin: 0 auto; padding: 28px 32px; display: flex; flex-direction: column; gap: 20px; }
+.bidding-row { display: flex; flex-wrap: wrap; gap: 20px; }
+.bidding-row > * { flex: 1 1 460px; min-width: 0; }
+.bidding-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; }
+
+.bidding-card { background: var(--bidding-white); border: 1px solid var(--bidding-line); border-radius: var(--bidding-radius); padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+.bidding-card--scroll { overflow-x: auto; }
+.bidding-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.bidding-stat { background: var(--bidding-white); border: 1px solid var(--bidding-line); border-radius: 10px; padding: 14px 16px; }
+.bidding-stat__k { font-size: 13px; color: var(--bidding-muted); }
+.bidding-stat__v { font-size: 18px; font-weight: 700; }
+.bidding-hint { font-size: 14px; color: var(--bidding-body); }
+
+.bidding-btn {
+  font: inherit; font-size: 15px; min-height: 48px; padding: 0 20px; border-radius: 8px;
+  border: 1px solid var(--bidding-field); background: var(--bidding-white); color: var(--bidding-ink);
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  text-decoration: none; cursor: pointer;
+}
+.bidding-btn--primary { background: var(--bidding-ink); color: var(--bidding-cream); border-color: var(--bidding-ink); font-weight: 600; }
+.bidding a.bidding-btn--primary { color: var(--bidding-cream); }
+.bidding-btn--danger { color: var(--bidding-bad); border-color: var(--bidding-bad); }
+.bidding-btn--link { border: 0; background: transparent; color: var(--bidding-gold-ink); padding: 0; min-height: 44px; }
+.bidding-btn[disabled] { opacity: .5; cursor: not-allowed; }
+.bidding-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
+form.bidding-inline { display: inline; }
+
+.bidding-field { display: flex; flex-direction: column; gap: 8px; }
+.bidding-field label { font-size: 14px; font-weight: 500; }
+.bidding-field input, .bidding-field select, .bidding-field textarea {
+  font: inherit; font-size: 16px; min-height: 48px; padding: 8px 12px;
+  border: 1px solid var(--bidding-field); border-radius: 8px; background: var(--bidding-white); color: var(--bidding-ink);
+}
+.bidding-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.bidding-field-error { font-size: 13px; color: var(--bidding-bad); }
+
+.bidding-table { width: 100%; border-collapse: collapse; font-size: 15px; min-width: 760px; }
+.bidding-table th { text-align: left; color: var(--bidding-muted); font-size: 13px; font-weight: 500; padding: 10px 8px; border-bottom: 1px solid var(--bidding-line); }
+.bidding-table td { padding: 12px 8px; border-bottom: 1px solid var(--bidding-line-soft); vertical-align: middle; }
+
+.bidding-chip { font-size: 13px; font-weight: 600; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+.bidding-chip--draft { background: var(--bidding-warn-bg); color: var(--bidding-warn); }
+.bidding-chip--scheduled { background: var(--bidding-tile); color: var(--bidding-ink); }
+.bidding-chip--live, .bidding-chip--published { background: var(--bidding-ok-bg); color: var(--bidding-ok); }
+.bidding-chip--awaiting_approval { background: var(--bidding-ink); color: var(--bidding-cream); }
+.bidding-chip--cancelled { background: var(--bidding-bad-bg); color: var(--bidding-bad); }
+.bidding-chip--type { background: var(--bidding-ink); color: var(--bidding-gold); }
+
+.bidding-flash { border-radius: 10px; padding: 14px 16px; font-size: 15px; }
+.bidding-flash--notice { background: var(--bidding-ok-bg); color: var(--bidding-ok); }
+.bidding-flash--alert { background: var(--bidding-bad-bg); color: var(--bidding-bad); }
+
+/* Tell buyers whether they can join before they press anything (SPEC UX). */
+.bidding-notice { border-radius: 10px; padding: 14px 16px; font-size: 15px; line-height: 1.6; }
+.bidding-notice--ok { background: var(--bidding-ok-bg); color: var(--bidding-ok); }
+.bidding-notice--warn { background: var(--bidding-warn-bg); color: var(--bidding-warn); }
+
+.bidding-pick { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 10px; min-height: 64px; border: 1px solid var(--bidding-field); background: var(--bidding-white); }
+.bidding-pick--in { background: var(--bidding-ink); color: var(--bidding-cream); border-color: var(--bidding-ink); }
+.bidding-pick--in a { color: var(--bidding-gold); }
+.bidding-pick__thumb { width: 48px; height: 48px; background: var(--bidding-tile); border-radius: 6px; flex: 0 0 auto; }
+.bidding-pick__body { flex: 1 1 200px; display: flex; flex-direction: column; gap: 2px; }
+.bidding-pick__title { font-size: 15px; font-weight: 600; }
+.bidding-pick__sub { font-size: 13px; color: var(--bidding-body); }
+.bidding-pick--in .bidding-pick__sub { color: #C9CBD1; }
+.bidding-pick form { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.bidding-pick input { font: inherit; font-size: 15px; min-height: 44px; width: 140px; padding: 0 10px; border: 1px solid var(--bidding-field); border-radius: 8px; }
+.bidding-count { font-size: 15px; font-weight: 600; }
+.bidding-count--full { color: var(--bidding-bad); }
+
+.bidding-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.bidding-cards .bidding-card { gap: 10px; }
+a.bidding-cover { text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 10px; }
+.bidding-cover__img { background: var(--bidding-tile); border-radius: 8px; height: 140px; }
+
+.bidding-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (max-width: 640px) {
+  .bidding-topbar, .bidding-page { padding-left: 16px; padding-right: 16px; }
+  .bidding h1 { font-size: 24px; }
+}

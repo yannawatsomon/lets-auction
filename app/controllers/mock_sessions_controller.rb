@@ -25,7 +25,7 @@ class MockSessionsController < ApplicationController
   private
 
   def after_login_path(user)
-    return admin_auctions_path if user.admin?
+    return admin_bidding_auctions_path if user.admin?
 
     mock_login_enabled? ? root_path : product_onboarding_root_path
   end
