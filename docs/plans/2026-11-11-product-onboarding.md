@@ -10,6 +10,8 @@
 
 **Spec:** [`docs/design/product-onboarding-flow.md`](../design/product-onboarding-flow.md) (draft), [`docs/design/milestone-1-api-and-database.md`](../design/milestone-1-api-and-database.md) (schema, state machine, endpoints), [`docs/decision/scope.md`](../decision/scope.md) (Open). GitHub milestone "product onboarding", issues #47-#54.
 
+> **Update 2026-11-11 (requested by `yannawatsomon`): no schema changes yet.** Until the structure between milestones is agreed, product onboarding runs on mock data (`ProductOnboarding::Store`, seeded from `db/mock/product_items.yml`), following `main`'s `MockData` pattern, so branches do not conflict on `db/schema.rb`. Where Tasks 3 to 8 say `Item`, `ItemReview`, `ItemMedium`, `AuditLog` or `Notification`, read the `ProductOnboarding::` equivalents built in Task 2 (and in-memory ones for audit log and notifications); skip migrations and database constraints; build upload checks (Task 3) as pure Ruby without Active Storage until real storage exists. Prerequisites 1 to 4 below no longer block the code, only the later swap to real tables.
+
 ## Global Constraints
 
 - Images: **1 to 5**, required. Videos: **0 to 2**, optional. Documents: no limit until #47 decides.
@@ -59,35 +61,31 @@ Inputs and conditions the spec implies but does not spell out. Each has a test i
 - [ ] **Step 4: Verify.** Run `grep -n "product-onboarding" docs/decision/README.md` -> one row; every relative link in the new file resolves (`ls` each target).
 - [ ] **Step 5: Ask the human before committing; open the PR (docs only) and request the confirmations the team still owes.** Tasks 2+ wait for the Decided status of: media limits, file formats/sizes, `draft` status.
 
-### Task 2: Item data model with media limits (#48)
+### Task 2: Product model on mock data (#48) - done
+
+Built **without any schema change** (no migrations, no `db/schema.rb`, no Active Storage tables), as `yannawatsomon` decided on 2026-11-11: until the structure between milestones is agreed, data models run on mock data so branches do not conflict on the schema. It follows `main`'s `MockData` pattern (`ai/knowledge/mock-data.md`).
 
 **Files:**
-- Create: `db/migrate/<ts>_create_categories.rb`, `..._create_items.rb`, `..._create_item_media.rb`, `..._create_item_reviews.rb`
-- Create: `app/models/category.rb`, `app/models/item.rb`, `app/models/item_medium.rb`, `app/models/item_review.rb`
-- Create: `test/models/item_test.rb`, `test/models/item_review_test.rb`, `test/models/item_media_concurrency_test.rb`, `test/fixtures/categories.yml`, `test/fixtures/items.yml`
-- Modify: `config/initializers/inflections.rb` only if `"item_media".classify` is not `"ItemMedium"` (check in a console first)
+- Created: `app/models/product_onboarding/item.rb`, `review.rb`, `media_file.rb`, `store.rb`, `not_found.rb`; `db/mock/product_items.yml`
+- Tests: `test/models/product_onboarding/item_test.rb`, `review_test.rb`, `store_test.rb`, `item_concurrency_test.rb`, `support.rb`
 
-**Interfaces:**
-- Consumes: `User` with `role` (Prerequisite 1).
-- Produces:
-  - `Item::MEDIA_LIMITS = { "image" => 1..5, "video" => 0..2 }.freeze` (documents unlimited until Task 1 decides)
-  - `Item::TRANSITIONS: Hash{String => Array<String>}` (pending_review -> approved, rejected, info_requested, withdrawn; info_requested -> pending_review, withdrawn; approved -> withdrawn, in_auction; in_auction -> sold, approved)
-  - `Item#editable? -> Boolean`
-  - `Item#sync_media!(entries) -> void`, `entries` = ordered array of `{ kind: "image"|"video"|"document", signed_id: String }`; replaces the item's media inside `with_lock`, raises `ActiveRecord::RecordInvalid` when a limit is broken
-  - `Item#transition!(to, by:) -> Item`, raises `Item::InvalidTransition` (subclass of `StandardError`)
-  - `ItemReview` columns `item_id`, `admin_id`, `action` (`approve|reject|request_info`), `note`, `created_at`; read-only once persisted
-  - `items.min_price_cents` (`bigint`, `> 0`), `items.status` string enum, `items.contact_channel` nullable
+**Interfaces produced (later tasks use these, not `Item` / `ItemReview` / `ItemMedium`):**
+- `ProductOnboarding::Item` (plain Ruby object, `ActiveModel` validations): readers `id, seller_id, category, title, description, contact_channel, min_price_cents, status, media, reviews`
+  - `MEDIA_LIMITS = { "image" => 1..5, "video" => 0..2 }`, `TRANSITIONS`, `STATUSES`
+  - `#sync_media!(entries) -> self` (replace the whole list; enforces min and max), `#add_media!(entry) -> MediaFile` (enforces max), both under a per-item lock and raising `ActiveModel::ValidationError`
+  - `#transition!(to) -> self`, raises `Item::InvalidTransition`; `#editable?`; predicates such as `#approved?`
+  - `#record_review!(admin_id:, action:, note: nil) -> Review`; `#media_count(kind)`; `#cover`
+- `ProductOnboarding::Review.build!(admin_id:, action:, note: nil)`: validated, frozen (append-only); note required for `reject` and `request_info`; `admin_id` must be a mock admin
+- `ProductOnboarding::MediaFile` (`kind, key, filename, content_type, byte_size`); `key` becomes the Active Storage signed blob id later
+- `ProductOnboarding::Store`: `all`, `find(id)`, `find!(id)`, `for_seller(seller_id, status: nil)`, `approved`, `create!(attributes, media:)`, `reset!`. In memory, seeded from `db/mock/product_items.yml`, reset on restart.
 
-- [ ] **Step 1: Write failing tests in `test/models/item_test.rb`.** Names and assertions: `"accepts 1 to 5 images"`; `"rejects a sixth image"` (`assert_raises(ActiveRecord::RecordInvalid)`); `"rejects zero images on submit"`; `"rejects a third video"`; `"allows zero videos"`; `"min price must be a positive integer"` for `0`, `-1`, `nil` (and non-integer input rejected, not truncated); `"seller can edit only in pending_review or info_requested"` (`editable?` per status); `"transition! follows TRANSITIONS and raises InvalidTransition otherwise"` (approved -> pending_review raises; rejected -> anything raises).
-- [ ] **Step 2: Write failing tests in `test/models/item_review_test.rb`.** `"is read-only after create"` (`assert_raises(ActiveRecord::ReadOnlyRecord) { review.update!(note: "x") }`); `"reject and request_info require a note"`; `"approve allows a blank note"`.
-- [ ] **Step 3: Write `test/models/item_media_concurrency_test.rb`.** `use_transactional_tests = false`; the item holds 4 images; two threads each call `sync_media!` to make it 5 images by adding a different new one. Assert `item.item_media.where(kind: "image").count == 5` and that exactly one thread raised `ActiveRecord::RecordInvalid`. First line: `skip "needs Postgres row locks" if ActiveRecord::Base.connection.adapter_name == "SQLite"`.
-- [ ] **Step 4: Run** `bin/rails test test/models` **Expected:** FAIL, `NameError: uninitialized constant Item`.
-- [ ] **Step 5: Write the four migrations** from the `CREATE TABLE` blocks in `milestone-1-api-and-database.md` (lines 351-388), changed to: `min_price_cents bigint NOT NULL CHECK (> 0)`, `lock_version integer NOT NULL DEFAULT 0` on `items`, `item_media` without `url` (Active Storage attachment instead), index `(item_id, kind, sort_order)`, `item_reviews.note` text. Use `uuid` primary keys only if the database decision says Postgres; otherwise bigint ids and say so in the PR.
-- [ ] **Step 6: Implement the models** to the Interfaces block. `sync_media!` locks with `with_lock`, counts per kind after the change, and validates before commit. `ItemReview#readonly?` returns `persisted?`.
-- [ ] **Step 7: Run** `bin/rails db:test:prepare test test/models` **Expected:** PASS (concurrency test SKIPPED on SQLite, reported as skipped, not passed).
-- [ ] **Step 8: Run** `bin/rubocop` and `bin/brakeman`; fix findings. Ask the human before committing.
+**Replacing it later:** an ActiveRecord model with the same public methods takes over (`Item`, `ItemReview`, `ItemMedium` + Active Storage); `Store` calls become `Item` scopes. Details in `ai/knowledge/product-onboarding-integration-points.md`.
 
-### Task 3: Uploads and file storage (#49)
+**Verified:** `bin/rails db:test:prepare test` 77 runs, 0 failures, 0 skips; `bin/rubocop` and `bin/brakeman` clean. The concurrency test runs here because the mock store has a lock; it does not prove a database row lock.
+
+### Task 3: Uploads and file storage (#49) - done on mock data
+
+Built as pure Ruby, no storage, no Active Storage: `ProductOnboarding::UploadPolicy.check!(kind:, content_type:, size:)` (images JPEG/PNG/WebP 10 MB, videos MP4 200 MB, documents PDF/JPEG/PNG 20 MB), `ProductOnboarding::UploadStore` (`issue!`, `receive!`, `attach!`, `purge_orphans!` after 48 hours, in memory), and `POST /product-onboarding/uploads` + `PUT /product-onboarding/uploads/:key` for sellers (everyone else gets 404, like the admin pages). The whole milestone now lives under **http://127.0.0.1:3000/product-onboarding** (mock data, not served in production); that page lists the mock products, statuses, admin notes and the file rules. Deviations: 404 instead of 401/403, following `Admin::BaseController`; no cleanup job yet (needs a scheduler and real storage); the upload paths and tests below describe the real-storage version that replaces this.
 
 **Files:**
 - Create: `app/controllers/uploads_controller.rb`, `app/models/upload_policy.rb`, `app/jobs/purge_unattached_uploads_job.rb`
@@ -127,7 +125,9 @@ Inputs and conditions the spec implies but does not spell out. Each has a test i
 - [ ] **Step 4: Build `index`/`show` views** with a status filter and the latest `item_reviews.note`; mobile-first layout.
 - [ ] **Step 5: Run** `bin/rails test` **Expected:** PASS. Then `bin/rubocop`, `bin/brakeman`. Ask before committing.
 
-### Task 5: Seller product wizard (#50)
+### Task 5: Seller product wizard (#50) - done on mock data
+
+Built at `GET /product-onboarding/items/new` and `POST /product-onboarding/items` (sellers only, 404 otherwise): four steps in one form driven by `product_wizard_controller.js` (images 1-5 with cover, videos 0-2 skippable, details + minimum price in baht + up to 10 documents, summary with edit links). Files upload as picked through the Task 3 endpoints; the form submits only `upload_keys[]` in order, and the server creates the product with `Store.create!` and attaches the uploads. Also raised `Item::MEDIA_LIMITS` to include documents 0..10 (the proposed limit). Checked in a real browser (client checks, uploads, cover, summary, submit). Not covered by automated tests: the JavaScript itself. The steps and tests below describe the full version.
 
 **Files:**
 - Create: `app/controllers/seller/items_controller.rb#new,#create` (extend Task 4's file), `app/views/seller/items/new.html.erb` + step partials `_images.html.erb`, `_videos.html.erb`, `_details.html.erb`, `_review.html.erb`, `app/javascript/controllers/media_picker_controller.js`, `app/javascript/controllers/wizard_controller.js`

@@ -1,0 +1,49 @@
+<% content_for :title, "ลงสินค้า" %>
+<div class="head">
+  <h1>ลงสินค้าเพื่อประมูล</h1>
+  <span class="chip type">ข้อมูลจำลอง</span>
+  <% if current_user&.seller? %>
+    <%= link_to "+ ลงสินค้าใหม่", new_product_onboarding_item_path, class: "btn primary" %>
+  <% end %>
+</div>
+<p class="hint">หน้านี้ใช้ข้อมูลจำลอง (mock) ของ Product onboarding ยังไม่เชื่อมฐานข้อมูลจริง · ข้อมูลรีเซ็ตเมื่อรีสตาร์ทเซิร์ฟเวอร์</p>
+
+<div class="card">
+  <h2>กติกาไฟล์สินค้า</h2>
+  <ul>
+    <% ProductOnboarding::UploadPolicy::LIMITS.each do |kind, rule| %>
+      <li><strong><%= kind_label(kind) %></strong> · <%= media_count_rule(kind) %> · <%= rule[:types_label] %> · ไม่เกิน <%= ProductOnboarding::UploadPolicy.max_label(kind) %> ต่อไฟล์</li>
+    <% end %>
+  </ul>
+</div>
+
+<%= form_with url: product_onboarding_root_path, method: :get, class: "head" do %>
+  <div class="field">
+    <label for="status">กรองตามสถานะ</label>
+    <%= select_tag :status, options_for_select([ [ "ทั้งหมด", "" ] ] + ProductOnboardingHelper::STATUS_LABELS.map { |k, v| [ v, k ] }, @status), onchange: "this.form.requestSubmit()" %>
+  </div>
+  <noscript><button class="btn">กรอง</button></noscript>
+<% end %>
+
+<div class="card scroll">
+  <% if @items.empty? %>
+    <p class="hint">ไม่มีสินค้าในสถานะนี้</p>
+  <% else %>
+    <table class="list">
+      <thead><tr><th>สินค้า</th><th>หมวด</th><th>ผู้ขาย</th><th>ราคาขั้นต่ำ</th><th>ไฟล์</th><th>สถานะ</th><th>หมายเหตุแอดมิน</th></tr></thead>
+      <tbody>
+        <% @items.each do |item| %>
+          <tr>
+            <td><strong><%= item.title %></strong><br><span class="hint">#<%= item.id %></span></td>
+            <td><%= item.category %></td>
+            <td><%= seller_name(item) %></td>
+            <td><%= baht(item.min_price_cents) %></td>
+            <td><%= media_summary(item) %></td>
+            <td><%= product_status_chip(item) %></td>
+            <td><%= item.reviews.last&.note || "—" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+</div>

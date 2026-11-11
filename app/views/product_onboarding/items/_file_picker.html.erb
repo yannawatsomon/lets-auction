@@ -1,0 +1,8 @@
+<%# locals: kind, label, accept, hint %>
+<div class="field">
+  <label for="pick-<%= kind %>"><%= label %></label>
+  <input id="pick-<%= kind %>" type="file" multiple accept="<%= accept %>" data-kind="<%= kind %>"
+         data-product-wizard-target="input" data-action="change->product-wizard#pick">
+  <p class="hint"><%= hint %> · <span data-product-wizard-target="count" data-kind="<%= kind %>"></span></p>
+</div>
+<ul class="files" data-product-wizard-target="list" data-kind="<%= kind %>"></ul>

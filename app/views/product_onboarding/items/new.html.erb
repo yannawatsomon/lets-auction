@@ -1,0 +1,78 @@
+<% content_for :title, "ลงสินค้าใหม่" %>
+<div class="head">
+  <h1>ลงสินค้าใหม่</h1>
+  <%= link_to "← กลับไปรายการ", product_onboarding_root_path, class: "btn" %>
+</div>
+<p class="hint">ข้อมูลจำลอง (mock) · ไฟล์ที่เลือกจะอัปโหลดทันที แต่ยังไม่ได้เก็บไว้จริง</p>
+
+<% if @errors.present? %>
+  <div class="flash alert" role="alert">
+    <ul><% form_error_messages(@errors).each do |message| %><li><%= message %></li><% end %></ul>
+  </div>
+<% end %>
+
+<%= form_with url: product_onboarding_items_path, scope: :item, class: "card wizard",
+      data: { controller: "product-wizard", action: "submit->product-wizard#submit",
+              product_wizard_uploads_url_value: product_onboarding_uploads_path,
+              product_wizard_limits_value: wizard_limits.to_json,
+              product_wizard_existing_value: @uploads.map { |u| { key: u.key, kind: u.kind, filename: u.filename } }.to_json } do |f| %>
+  <ol class="steps" aria-label="ขั้นตอน">
+    <% [ "รูปภาพ", "วิดีโอ", "รายละเอียด", "ตรวจสอบ" ].each_with_index do |name, i| %>
+      <li data-product-wizard-target="dot"><%= i + 1 %> · <%= name %></li>
+    <% end %>
+  </ol>
+  <p class="field-error" role="alert" data-product-wizard-target="error"></p>
+
+  <fieldset data-product-wizard-target="step">
+    <legend>ขั้นที่ 1 · รูปภาพสินค้า (จำเป็น 1–5 รูป)</legend>
+    <%= render "file_picker", kind: "image", label: "เลือกรูปภาพ", accept: "image/jpeg,image/png,image/webp",
+          hint: "JPEG, PNG, WebP · ไม่เกิน #{ProductOnboarding::UploadPolicy.max_label('image')} · รูปแรกคือรูปปก" %>
+  </fieldset>
+
+  <fieldset data-product-wizard-target="step" hidden>
+    <legend>ขั้นที่ 2 · วิดีโอ (ไม่บังคับ 0–2 ไฟล์)</legend>
+    <%= render "file_picker", kind: "video", label: "เลือกวิดีโอ", accept: "video/mp4",
+          hint: "MP4 · ไม่เกิน #{ProductOnboarding::UploadPolicy.max_label('video')} · ข้ามขั้นตอนนี้ได้" %>
+  </fieldset>
+
+  <fieldset data-product-wizard-target="step" hidden>
+    <legend>ขั้นที่ 3 · รายละเอียดสินค้า</legend>
+    <div class="field">
+      <%= f.label :title, "ชื่อสินค้า" %>
+      <%= f.text_field :title, value: @values[:title], required: true, maxlength: 200 %>
+    </div>
+    <div class="field">
+      <%= f.label :category, "หมวดสินค้า" %>
+      <%= f.select :category, category_options, { include_blank: "เลือกหมวด", selected: @values[:category] }, required: true %>
+    </div>
+    <div class="field">
+      <%= f.label :description, "รายละเอียด" %>
+      <%= f.text_area :description, value: @values[:description], required: true, rows: 5,
+            placeholder: "สภาพ ขนาด อายุ ตำหนิ ที่มาของสินค้า" %>
+    </div>
+    <div class="field">
+      <%= f.label :price, "ราคาขั้นต่ำ (บาท)" %>
+      <%= f.text_field :price, value: @values[:price], required: true, inputmode: "decimal",
+            pattern: "[0-9,]+(\\.[0-9]{1,2})?", placeholder: "เช่น 85000 หรือ 1,250.50" %>
+      <p class="hint">แอดมินแก้ราคาขั้นต่ำนี้ไม่ได้ ตรวจให้แน่ใจก่อนส่ง</p>
+    </div>
+    <div class="field">
+      <%= f.label :contact_channel, "ช่องทางติดต่อ (ไม่บังคับ)" %>
+      <%= f.text_field :contact_channel, value: @values[:contact_channel] %>
+    </div>
+    <%= render "file_picker", kind: "document", label: "เอกสารยืนยัน (ไม่บังคับ)", accept: "application/pdf,image/jpeg,image/png",
+          hint: "ใบเสร็จ ใบรับรอง หลักฐานความเป็นเจ้าของ · PDF, JPEG, PNG · ไม่เกิน #{ProductOnboarding::UploadPolicy.max_label('document')}" %>
+  </fieldset>
+
+  <fieldset data-product-wizard-target="step" hidden>
+    <legend>ขั้นที่ 4 · ตรวจสอบและส่ง</legend>
+    <div data-product-wizard-target="summary"></div>
+    <p class="hint">เมื่อส่งแล้ว สินค้าจะอยู่ในสถานะ “รอตรวจสอบ” และผู้ซื้อยังมองไม่เห็นจนกว่าแอดมินอนุมัติ</p>
+  </fieldset>
+
+  <div class="actions">
+    <button type="button" class="btn" data-product-wizard-target="back" data-action="product-wizard#back" hidden>ย้อนกลับ</button>
+    <button type="button" class="btn primary" data-product-wizard-target="next" data-action="product-wizard#next">ถัดไป</button>
+    <button type="submit" class="btn primary" data-product-wizard-target="submit" hidden>ส่งให้แอดมินตรวจสอบ</button>
+  </div>
+<% end %>

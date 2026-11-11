@@ -1,0 +1,90 @@
+# MOCK DATA — stands in for `user_onboardings` and `credit_assessments` until the database
+# lands. See ai/knowledge/mock-data.md. Fake people and fake national IDs only (public repo);
+# the IDs have a valid mod 11 check digit but belong to no one.
+# Scores follow score_version 1 in docs/decision/user-onboarding.md. Income is satang.
+# User 26 has no row on purpose: a buyer who hasn't started onboarding.
+- user_id: 21 # grade A: private employee, 1,000,000 THB, 12 years → 50 + 21 + 15 = 86
+  national_id: "1100000000024"
+  phone: "+66800000021"
+  occupation: private_employee
+  monthly_income_cents: 100000000
+  years_in_current_job: 5
+  years_experience_total: 12
+  status: completed
+  consent_at: 2026-11-11T10:00:00+07:00
+  confirmed_at: 2026-11-11T10:05:00+07:00
+  assessment:
+    score: 86
+    grade: A
+    score_version: 1
+    inputs: { occupation: private_employee, monthly_income_cents: 100000000, years_experience_total: 12, phone_verified: false }
+    reasons: { income: 50, occupation: 21, experience: 15, phone: 0 }
+    created_at: 2026-11-11T10:04:00+07:00
+- user_id: 22 # grade B: private employee, 200,000 THB, 10 years → 34 + 21 + 15 = 70
+  national_id: "1100000000032"
+  phone: "+66800000022"
+  occupation: private_employee
+  monthly_income_cents: 20000000
+  years_in_current_job: 4
+  years_experience_total: 10
+  status: completed
+  consent_at: 2026-11-11T10:00:00+07:00
+  confirmed_at: 2026-11-11T10:05:00+07:00
+  assessment:
+    score: 70
+    grade: B
+    score_version: 1
+    inputs: { occupation: private_employee, monthly_income_cents: 20000000, years_experience_total: 10, phone_verified: false }
+    reasons: { income: 34, occupation: 21, experience: 15, phone: 0 }
+    created_at: 2026-11-11T10:04:00+07:00
+- user_id: 23 # grade C: business owner, 100,000 THB, 6 years → 26 + 17 + 11 = 54
+  national_id: "1100000000041"
+  phone: "+66800000023"
+  occupation: business_owner
+  monthly_income_cents: 10000000
+  years_in_current_job: 6
+  years_experience_total: 6
+  status: completed
+  consent_at: 2026-11-11T10:00:00+07:00
+  confirmed_at: 2026-11-11T10:05:00+07:00
+  assessment:
+    score: 54
+    grade: C
+    score_version: 1
+    inputs: { occupation: business_owner, monthly_income_cents: 10000000, years_experience_total: 6, phone_verified: false }
+    reasons: { income: 26, occupation: 17, experience: 11, phone: 0 }
+    created_at: 2026-11-11T10:04:00+07:00
+- user_id: 24 # grade D: private employee, 30,000 THB, 3 years → 10 + 21 + 7 = 38
+  national_id: "1100000000059"
+  phone: "+66800000024"
+  occupation: private_employee
+  monthly_income_cents: 3000000
+  years_in_current_job: 1
+  years_experience_total: 3
+  status: completed
+  consent_at: 2026-11-11T10:00:00+07:00
+  confirmed_at: 2026-11-11T10:05:00+07:00
+  assessment:
+    score: 38
+    grade: D
+    score_version: 1
+    inputs: { occupation: private_employee, monthly_income_cents: 3000000, years_experience_total: 3, phone_verified: false }
+    reasons: { income: 10, occupation: 21, experience: 7, phone: 0 }
+    created_at: 2026-11-11T10:04:00+07:00
+- user_id: 25 # grade E: student, 10,000 THB, 1 year → 4 + 4 + 3 = 11
+  national_id: "1100000000067"
+  phone: "+66800000025"
+  occupation: student
+  monthly_income_cents: 1000000
+  years_in_current_job: 1
+  years_experience_total: 1
+  status: completed
+  consent_at: 2026-11-11T10:00:00+07:00
+  confirmed_at: 2026-11-11T10:05:00+07:00
+  assessment:
+    score: 11
+    grade: E
+    score_version: 1
+    inputs: { occupation: student, monthly_income_cents: 1000000, years_experience_total: 1, phone_verified: false }
+    reasons: { income: 4, occupation: 4, experience: 3, phone: 0 }
+    created_at: 2026-11-11T10:04:00+07:00
