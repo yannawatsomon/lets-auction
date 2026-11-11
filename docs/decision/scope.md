@@ -44,11 +44,14 @@ draft gives them, and each bullet becomes Decided only when a collaborator confi
   list. Source: onboarding flow draft
   [`docs/design/product-onboarding-flow.md`](../design/product-onboarding-flow.md), 2026-11-11
   (the 5-image cap is from the Milestone 1 design draft; the video cap and image minimum are new).
+  File formats, sizes, documents and the rest of the onboarding rules are proposed in
+  [`product-onboarding.md`](product-onboarding.md).
 
 ## Open questions
 
 - Product media: file formats and sizes, a limit on documents, and whether the 20M THB English
-  items must include documents. See the open questions in the onboarding flow draft.
+  items must include documents → answered as proposals in
+  [`product-onboarding.md`](product-onboarding.md), waiting for a collaborator to confirm.
 - Page 6 shows a credit card option, but Milestone 1 uses slips. Hide it until a gateway exists?
 - Is there a platform fee (deducted from the seller or added for the buyer)? If yes, `orders`
   and `payouts` need a `fee` column.
