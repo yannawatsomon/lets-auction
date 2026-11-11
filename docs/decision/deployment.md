@@ -21,6 +21,8 @@ The app needs a public URL. The owner already connected the repo to Railway.
 
 - Secrets (`RAILS_MASTER_KEY`, `DATABASE_URL`, ...) are Railway variables, never committed.
   `config/master.key` is git-ignored and stays that way.
+- Optional Railway variable `MOCK_PRODUCT_ONBOARDING=true` shows the mock product-onboarding
+  pages in production (sellers only; see `product-onboarding.md`). Unset by default.
 - The app's health endpoint is `/up` (whether Railway uses it as a health check is open).
 
 ## Open questions
