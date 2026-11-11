@@ -1,8 +1,9 @@
 Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
 
-  # MOCK login, never in production (ai/knowledge/mock-data.md).
-  if Rails.env.local?
+  # MOCK login: development/test, or production with MOCK_PRODUCT_ONBOARDING=true, where only
+  # sellers can sign in (ai/knowledge/mock-data.md).
+  if Rails.env.local? || Rails.configuration.x.mock_product_onboarding
     resource :mock_session, only: %i[new create destroy], path: "mock-login"
   end
 
@@ -20,7 +21,7 @@ Rails.application.routes.draw do
   get "payment/quote", to: "payments#quote"
   post "payment/preview", to: "payments#preview"
 
-  # Product onboarding milestone: http://127.0.0.1:3000/product-onboarding (mock data, not in production).
+  # Product onboarding milestone: http://127.0.0.1:3000/product-onboarding (mock data; in production only with MOCK_PRODUCT_ONBOARDING=true).
   namespace :product_onboarding, path: "product-onboarding" do
     root "items#index"
     resources :items, only: %i[new create]

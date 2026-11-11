@@ -66,6 +66,19 @@ client → `stack.md`.
   table and Active Storage tables on this branch conflicted with other milestones' schema
   changes). Source: requested by yannawatsomon, 2026-11-11. The bullets below describe the real
   implementation that replaces the mock.
+- **The mock product-onboarding pages can be switched on in production with an env var.**
+  What: when the Railway variable `MOCK_PRODUCT_ONBOARDING=true` is set, `/product-onboarding`
+  is served in production and the mock login is drawn there, **offering sellers only**. Without
+  the variable production behaves as before (404). Admin and buyer mock users are never
+  accepted in production, so every admin page still answers 404 and no real data is reachable;
+  the product data and uploads are the in-memory mocks above. Why: the team wants to show the
+  mock wizard on the Railway URL before real auth and storage exist. Trade-off: anyone who finds
+  the URL can sign in as a fake seller and submit mock products (in memory, lost on restart or
+  redeploy, no real files stored, no rate limit); turn the variable off once real auth lands.
+  Alternative rejected: reusing the full mock login in production (it would let anyone open the
+  admin pages and write real auction rows). Supersedes the "do not add an env-var switch" note
+  in `ai/knowledge/mock-data.md` for this one flag. Source: requested by yannawatsomon in chat,
+  2026-11-11.
 - **Files go through Rails' built-in Active Storage with direct upload.** What: `POST
   /uploads` validates kind, type and size, then returns a signed upload URL; the item stores an
   attachment, not a raw URL (`item_media` has a file attachment instead of a `url` column).

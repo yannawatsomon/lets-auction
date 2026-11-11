@@ -15,7 +15,15 @@ class ApplicationController < ActionController::Base
   # MOCK login: only outside production, until real auth lands (ai/knowledge/mock-data.md).
   def mock_login_enabled? = Rails.env.local?
 
+  # The mock product-onboarding pages and the seller-only mock login. Also on in production when
+  # MOCK_PRODUCT_ONBOARDING=true (docs/decision/product-onboarding.md).
+  def mock_onboarding_enabled? = mock_login_enabled? || Rails.configuration.x.mock_product_onboarding
+
+  # Outside development/test only sellers may be the mock user, so admin pages stay 404.
+  def mock_user_allowed?(user) = user.present? && (mock_login_enabled? || user.seller?)
+
   def set_current_user
-    Current.user = mock_login_enabled? ? MockData.user(session[:mock_user_id]) : nil
+    user = MockData.user(session[:mock_user_id]) if mock_onboarding_enabled?
+    Current.user = mock_user_allowed?(user) ? user : nil
   end
 end

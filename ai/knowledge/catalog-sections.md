@@ -28,6 +28,12 @@ supplies one server timestamp and the latest effective lot closing time.
 
 ## Temporary development preview
 
+The homepage `/` now renders the same catalog page through `catalog/page` and the
+`CatalogPage` controller concern. Home filter submissions and clear links use `/`;
+the development preview keeps its own URL. `Catalog::DemoLots.call(now:)` returns
+synthetic inventory only in development/test. Production renders empty catalog
+sections and no demo banner until real authorized inventory is integrated.
+
 `/catalog-preview` renders nine synthetic lots through the real sections service.
 The route and controller are restricted to development and do not persist data.
 The sample times are relative to each request, so reloading recreates the sample
