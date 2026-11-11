@@ -59,7 +59,9 @@ Rails.application.routes.draw do
   # Product onboarding milestone: http://127.0.0.1:3000/product-onboarding (mock data; in production only with MOCK_PRODUCT_ONBOARDING=true).
   namespace :product_onboarding, path: "product-onboarding" do
     root "items#index"
-    resources :items, only: %i[new create]
+    resources :items, only: %i[new create edit update destroy] do
+      post :resubmit, on: :member
+    end
     resources :uploads, only: %i[create update], param: :key
   end
 

@@ -9,7 +9,7 @@ ai/
 ├── knowledge/   # Reusable notes: how things work, gotchas, external references
 └── playbooks/   # Step-by-step procedures agents/humans follow
 docs/decision/   # Decisions + reasons (one file per topic, indexed in README.md)
-.claude/skills/  # Reusable agent skills (SKILL.md) — index in ../AGENTS.md, credits in ../THIRD_PARTY.md
+.claude/skills/  # Two optional skills: security-review, record-decision
 ```
 
 ## What goes where

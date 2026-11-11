@@ -158,6 +158,38 @@ class ProductOnboardingItemTest < ActiveSupport::TestCase
 
   # --- review history ---
 
+  # --- editing ---
+
+  test "revise! changes the details and the files together" do
+    @item.sync_media!(media_entries(images: 2))
+    keep = @item.media.last.to_h
+    fresh = media_entry("video")
+
+    @item.revise!({ title: "New title", min_price_cents: 250_000, seller_id: 12 }, media: [ keep, fresh ])
+
+    assert_equal "New title", @item.title
+    assert_equal 250_000, @item.min_price_cents
+    assert_equal 11, @item.seller_id
+    assert_equal [ keep[:key], fresh[:key] ], @item.media.map(&:key)
+  end
+
+  test "revise! changes nothing when the details or the files are invalid" do
+    @item.sync_media!(media_entries(images: 2))
+    before = [ @item.title, @item.min_price_cents, @item.media.map(&:key) ]
+
+    assert_raises(ActiveModel::ValidationError) { @item.revise!({ title: "Changed", min_price_cents: 0 }, media: media_entries) }
+    assert_raises(ActiveModel::ValidationError) { @item.revise!({ title: "Changed" }, media: media_entries(images: 0)) }
+
+    assert_equal before, [ @item.title, @item.min_price_cents, @item.media.map(&:key) ]
+  end
+
+  test "revise! refuses a product that is no longer editable" do
+    @item.transition!(:approved)
+
+    assert_raises(ProductOnboarding::Item::NotEditable) { @item.revise!({ title: "Changed" }, media: media_entries) }
+    assert_equal "Rare watch", @item.title
+  end
+
   test "record_review! appends to the history in order and returns the review" do
     first = @item.record_review!(admin_id: 1, action: "request_info", note: "Add the serial number")
     second = @item.record_review!(admin_id: 2, action: "approve")

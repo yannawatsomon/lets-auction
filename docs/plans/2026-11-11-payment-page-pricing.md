@@ -1,7 +1,5 @@
 # Payment page and pricing Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use subagent-driven-development (recommended) or executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** Build a responsive Thai payment-page prototype for issue #45 using mock order data and server-recalculated pricing.
 
 **Architecture:** Keep the page in Rails views and use a non-persistent mock order plus a plain pricing object. A small PaymentsController serves the page, a quote endpoint, and a no-payment preview submission; Stimulus handles page interactions without implementing a gateway.

@@ -1,7 +1,5 @@
 # Catalog Filters Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use executing-plans to implement this plan task-by-task.
-
 **Goal:** Search and combine catalog filters for #41 and the type-filter portion of #63.
 
 **Architecture:** Catalog::Filters validates GET inputs and filters caller-authorized lots in memory before delegating time grouping/sorting to Catalog::Sections. Preview renders a reusable filter form and the resulting sections.

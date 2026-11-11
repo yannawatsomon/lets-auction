@@ -1,7 +1,5 @@
 # Catalog Homepage Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use executing-plans to implement this plan task-by-task.
-
 **Goal:** Replace the homepage with the existing catalog page requested by the user.
 
 **Architecture:** Shared controller concern and page partial serve both homepage and development preview. Demo lots move into a provider that returns no data outside local environments.

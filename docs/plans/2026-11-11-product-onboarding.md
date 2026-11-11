@@ -1,7 +1,5 @@
 # Product Onboarding Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use subagent-driven-development (recommended) or executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** A seller can list a product (1-5 images, 0-2 videos, details, minimum price, optional documents), an admin can approve / reject / request more evidence, and the seller is told the outcome.
 
 **Architecture:** Rails models own the rules (media limits under a row lock, status transitions, append-only review history). Uploads use Active Storage direct upload behind our own `POST /uploads` so type and size are checked before a signed URL is issued. Seller and admin screens are Rails views (Hotwire) unless #47 decides on a separate JSON client. One PR per task.
@@ -108,7 +106,9 @@ Built as pure Ruby, no storage, no Active Storage: `ProductOnboarding::UploadPol
 - [ ] **Step 7: Run** the same command plus `bin/rails test` **Expected:** PASS. Run the `security-review` skill on this task (file uploads) and record findings in the PR.
 - [ ] **Step 8: Ask before committing.**
 
-### Task 4: Seller dashboard (#51)
+### Task 4: Seller dashboard (#51) - done on mock data
+
+Built on `/product-onboarding`: a seller sees only their own products (status filter, the admin's note, actions per status); anyone else keeps the mock overview. `GET /product-onboarding/items/:id/edit` reuses the wizard form (existing files keep their keys; new files upload first), `PATCH` saves through `Item#revise!` (details and files together, nothing changes if either is invalid, only while `pending_review` or `info_requested`), `POST .../resubmit` moves `info_requested` back to `pending_review`, `DELETE` withdraws until the product is in an auction. Another seller's product, a buyer and a guest all get 404. Checked in a real browser (edit, resubmit, withdraw). The steps below describe the full version.
 
 **Files:**
 - Create: `app/controllers/seller/items_controller.rb` (index, show, update, destroy, `resubmit`), `app/views/seller/items/index.html.erb`, `show.html.erb`, `app/controllers/concerns/require_role.rb`

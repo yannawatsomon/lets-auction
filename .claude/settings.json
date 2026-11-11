@@ -18,16 +18,7 @@
       "Bash(gh api * --method DELETE*)"
     ],
     "ask": [
-      "Bash(git commit)",
-      "Bash(git commit *)",
-      "Bash(git push)",
-      "Bash(git push *)",
-      "Bash(gh pr create*)",
-      "Bash(gh pr edit*)",
       "Bash(gh pr merge*)",
-      "Bash(gh pr close*)",
-      "Bash(gh pr ready*)",
-      "Bash(gh api *)",
       "Bash(gh repo edit*)",
       "Bash(gh repo delete*)",
       "Bash(gh secret *)",
@@ -36,14 +27,7 @@
       "Bash(railway *)",
       "Bash(kamal *)",
       "Bash(bin/kamal *)",
-      "Bash(*RAILS_ENV=production*)",
-      "Bash(bundle add *)",
-      "Bash(bundle remove *)",
-      "Bash(bundle update*)",
-      "Edit(/Gemfile)",
-      "Edit(/Gemfile.lock)",
-      "Edit(/.github/**)",
-      "Edit(/.claude/settings.json)"
+      "Bash(*RAILS_ENV=production*)"
     ]
   }
 }
