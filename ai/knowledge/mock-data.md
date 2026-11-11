@@ -23,8 +23,14 @@ instead of waiting or stubbing those tables (2026-11-11).
 
 **Safety:** the mock login route is drawn only when `Rails.env.local?` (development/test), and
 `ApplicationController#mock_login_enabled?` returns false in production, so production has no
-logged-in user and every admin page answers 404. Do not add an env-var switch to enable it in
-production.
+logged-in user and every admin page answers 404. Do not add an env-var switch that enables the
+full mock login in production.
+
+**One exception (2026-11-11, `docs/decision/product-onboarding.md`):** setting the Railway
+variable `MOCK_PRODUCT_ONBOARDING=true` (`config/initializers/mock_product_onboarding.rb`)
+serves `/product-onboarding` and the mock login in production, but only **sellers** can sign in
+there (`ApplicationController#set_current_user` drops any other mock user outside
+development/test). Admin pages therefore stay 404. Remove the variable when real auth lands.
 
 **Gotchas:**
 
