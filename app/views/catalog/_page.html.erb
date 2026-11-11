@@ -14,10 +14,21 @@
   </header>
 
   <%= render "catalog/filters", filters: @filters, categories: @categories, url: @catalog_url %>
-  <% if @filters.errors.any? %>
+  <% if @catalog_load_error %>
+    <div id="catalog-load-error" class="catalog-preview__empty" role="alert">
+      <p>โหลดรายการสินค้าไม่สำเร็จ กรุณาลองใหม่อีกครั้ง</p>
+      <%= link_to "ลองใหม่", catalog_navigation_url(@catalog_url, @filters, @pagination.query) %>
+    </div>
+  <% elsif @filters.errors.any? || @pagination.errors.any? %>
     <p role="alert">กรุณาแก้ไขตัวกรองที่ระบุด้านบน</p>
+    <% if @pagination.errors.any? %>
+      <div id="catalog-pagination-errors" role="alert">
+        <% @pagination.errors.each do |error| %><p><%= error.message %></p><% end %>
+        <%= link_to "เริ่มแสดงรายการใหม่", catalog_navigation_url(@catalog_url, @filters, {}) %>
+      </div>
+    <% end %>
   <% else %>
-    <p role="status">พบสินค้า <%= @sections.values.sum(&:size) %> รายการ</p>
+    <p id="catalog-total" role="status">พบสินค้า <%= @sections.values.sum(&:size) %> รายการ</p>
   <% end %>
 
   <% labels = {
@@ -26,20 +37,32 @@
     ended: ["ผ่านไปแล้ว", "เรียงเวลาปิดล่าสุดก่อน", "จบแล้ว"]
   } %>
   <% @sections.each do |status, lots| %>
+    <% visible_lots = @pagination.items(status, lots) %>
     <section aria-labelledby="section-<%= status %>">
       <div class="catalog-preview__section-heading">
         <h2 id="section-<%= status %>"><%= labels.fetch(status)[0] %> <span><%= lots.size %> รายการ</span></h2>
         <p><%= labels.fetch(status)[1] %></p>
       </div>
       <% if lots.empty? %>
-        <p class="catalog-preview__empty"><%= @filters.errors.any? ? "กรุณาแก้ไขตัวกรองเพื่อแสดงสินค้า" : "ไม่พบสินค้าที่ตรงกับตัวกรองในสถานะนี้" %></p>
+        <p class="catalog-preview__empty"><%= @filters.errors.any? || @pagination.errors.any? ? "กรุณาแก้ไขตัวกรองหรือจำนวนหน้าเพื่อแสดงสินค้า" : "ไม่พบสินค้าที่ตรงกับตัวกรองในสถานะนี้" %></p>
       <% end %>
       <div class="catalog-grid">
-        <% lots.each do |lot| %>
+        <% visible_lots.each do |lot| %>
           <%= render "catalog/card", lot: lot, status: status, auction_type: lot.auction_type,
             image_path: lot.id == 3 ? asset_path("catalog-preview-camera.svg") : nil %>
         <% end %>
       </div>
+      <% if lots.any? %>
+        <div class="catalog-section-navigation">
+          <p>แสดง <%= visible_lots.size %> จาก <%= lots.size %> รายการ</p>
+          <% if @pagination.more?(status, lots) %>
+            <%= link_to "โหลดเพิ่มเติม", catalog_navigation_url(@catalog_url, @filters, @pagination.next_query(status), anchor: "section-#{status}"),
+              class: "catalog-load-more", aria: { label: "โหลดเพิ่มเติม: #{labels.fetch(status)[0]}" } %>
+          <% elsif visible_lots.size < lots.size %>
+            <p>กรุณาเพิ่มตัวกรองเพื่อดูสินค้าที่เหลือ</p>
+          <% end %>
+        </div>
+      <% end %>
     </section>
   <% end %>
 </main>

@@ -1,10 +1,14 @@
 module Catalog
-  # Synthetic catalog inventory must never appear in production.
+  # Read-only synthetic inventory, visibly marked as a demo on the catalog page.
   class DemoLots
     Lot = Data.define(:id, :name, :category, :auction_type, :starts_at, :ends_at)
 
+    def self.enabled?
+      Rails.env.local? || Rails.configuration.x.catalog_demo_in_production == true
+    end
+
     def self.call(now:)
-      return [] unless Rails.env.local?
+      return [] unless enabled?
 
       samples = [
         [ 3, "กล้องถ่ายภาพ", "กล้อง", "english", -2.hours, 90.minutes ],
@@ -17,8 +21,11 @@ module Catalog
         [ 7, "เก้าอี้สำนักงาน", "เฟอร์นิเจอร์", "english", -2.days, -1.hour ],
         [ 6, "รถจักรยานยนต์", "ยานยนต์", "english", 2.days, 3.days ]
       ]
-      samples.map do |id, name, category, auction_type, starts, ends|
-        Lot.new(id, name, category, auction_type, now + starts, now + ends)
+      samples.flat_map do |id, name, category, auction_type, starts, ends|
+        5.times.map do |copy|
+          title = copy.zero? ? name : "#{name} · ตัวอย่าง #{copy + 1}"
+          Lot.new(id + copy * 100, title, category, auction_type, now + starts, now + ends)
+        end
       end
     end
   end

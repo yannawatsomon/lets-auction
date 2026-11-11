@@ -31,8 +31,32 @@ supplies one server timestamp and the latest effective lot closing time.
 The homepage `/` now renders the same catalog page through `catalog/page` and the
 `CatalogPage` controller concern. Home filter submissions and clear links use `/`;
 the development preview keeps its own URL. `Catalog::DemoLots.call(now:)` returns
-synthetic inventory only in development/test. Production renders empty catalog
-sections and no demo banner until real authorized inventory is integrated.
+synthetic inventory in local environments and, temporarily, in production by default
+at the user's request. `CATALOG_DEMO=false` disables the production demo and restores
+empty sections with no demo banner. This does not enable login or bidding.
+
+Demo inventory now contains 45 synthetic lots (15 per status) to exercise
+pagination; the initial page displays up to 12 per section, or 36 cards total.
+
+## Independent Load more
+
+`Catalog::Pagination` accepts `ongoing_page`, `upcoming_page`, and `ended_page` as
+decimal strings from 1 through 100; missing values start at 1. Counters are cumulative:
+page 2 displays the first 24 matching lots, not a replacement page. Filtering and
+sorting happen before slicing. The shared view retains full section totals separately.
+
+Load more is a normal GET link that preserves all seven filter fields and other section
+counters, with a section anchor. Filter submissions do not carry page counters, so they
+reset all sections. At 100 pages, users are prompted to narrow filters if more items remain.
+
+Inventory providers may raise `Catalog::InventoryUnavailable` for a transient outage.
+The shared page returns HTTP 503, suppresses result counts, and offers a retry preserving
+filters/counters. Other exceptions are not swallowed. This is a server-side inventory
+failure path; total network loss still uses normal browser navigation recovery.
+
+Tests that temporarily set `Rails.env = "production"` must first call
+`Rails.application.reload_routes_unless_loaded`. Otherwise lazy route loading can build
+production routes in a test worker, removing mock-login helpers from later tests.
 
 `/catalog-preview` renders nine synthetic lots through the real sections service.
 The route and controller are restricted to development and do not persist data.

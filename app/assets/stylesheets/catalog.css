@@ -19,5 +19,9 @@
 .catalog-card dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 12px; font-size: 13px; }
 .catalog-card dt { color: #526879; }
 .catalog-card dd { margin: 0; text-align: right; overflow-wrap: anywhere; }
+.catalog-section-navigation { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 16px; color: #526879; }
+.catalog-load-more { display: inline-block; min-height: 44px; box-sizing: border-box; padding: 10px 20px; border: 1px solid #173e87; border-radius: 6px; color: #173e87; text-decoration: none; }
+.catalog-load-more:hover { background: #e9f1ff; }
+.catalog-load-more:focus-visible { outline: 3px solid #275cc5; outline-offset: 3px; }
 @media (max-width: 800px) { .catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 540px) { .catalog-grid { grid-template-columns: minmax(0, 1fr); } }
