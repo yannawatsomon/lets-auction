@@ -5,13 +5,21 @@ This repo is **public** — never commit secrets, tokens, `.env` files or person
 ## Flow
 
 1. Pick or open an issue.
-2. Branch from latest `main`: `feat/<name>`, `fix/<name>` or `docs/<name>`.
+2. Branch from latest `main`, named `<github-handle>-<type>-[<issue>-]<detail>`:
+   - lowercase; type is `feat`, `fix`, `docs`, `chore`, `refactor`, `test` or `ci`;
+   - `<issue>` is the optional issue number, `<detail>` is 2-5 words of `a-z`, `0-9`, `-`
+     (no underscores, no dates);
+   - e.g. `yannawatsomon-fix-add-db-schema` or `yannawatsomon-fix-12-add-db-schema`.
+
+   CI (`branch_name`) checks the name. See `docs/decision/repo-and-collaboration.md`.
 3. Make small, focused commits (imperative subject, e.g. `Add bid validation`).
 4. Check `docs/decision/README.md`. If your change touches a Decided topic, update or
    supersede the decision doc in the same PR.
-5. Run the checks locally: `bin/rails db:test:prepare test`, `bin/rubocop`, `bin/brakeman`.
+5. Rebase your branch on the latest `main` (your own branch only; if already pushed use
+   `git push --force-with-lease`, never `--force`), then run the checks locally:
+   `bin/rails db:test:prepare test`, `bin/rubocop`, `bin/brakeman`.
 6. Open a PR using the template. CI must pass and at least one approval is required;
-   squash-merge. **Merging to `main` auto-deploys to Railway.**
+   squash-merge, then delete the branch. **Merging to `main` auto-deploys to Railway.**
 
 ## Local setup
 

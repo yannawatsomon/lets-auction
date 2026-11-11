@@ -9,7 +9,7 @@ Statuses: `Open` → `Decided` → `Superseded`. Only a human collaborator moves
 
 | Topic | File | Status | Summary |
 |---|---|---|---|
-| Repo & collaboration | [repo-and-collaboration.md](repo-and-collaboration.md) | Decided | Public GitHub repo, PR flow on protected `main` with required CI |
+| Repo & collaboration | [repo-and-collaboration.md](repo-and-collaboration.md) | Decided | Public GitHub repo, PR flow on protected `main` with required CI; branches `<handle>-<type>-[<issue>-]<detail>` (CI-checked), short-lived |
 | AI agent hub | [ai-agent-hub.md](ai-agent-hub.md) | Decided | `AGENTS.md` entry point + `ai/` hub + `.claude/skills/`; tool files only point back |
 | Stack | [stack.md](stack.md) | Decided | Ruby on Rails (Ruby 4.0.5, Rails 8.1), GitHub Actions CI — confirm with a collaborator |
 | Deployment | [deployment.md](deployment.md) | Decided | Railway, auto-deploy from `main`; production DB still open |
@@ -20,6 +20,8 @@ Statuses: `Open` → `Decided` → `Superseded`. Only a human collaborator moves
 
 - Repo: `github.com/yannawatsomon/lets-auction`, public (continues `we-auction`, 2026-11-11).
 - Merging to `main` deploys to production (Railway), so CI must be green first.
+- Branch names: `<github-handle>-<type>-[<issue>-]<detail>`, e.g. `yannawatsomon-fix-add-db-schema`
+  (2026-11-11).
 - Agent-agnostic: any agent reads `AGENTS.md`; Claude Code is the confirmed primary tool.
 - Files in English; Thai terms go in `ai/context/glossary.md`.
 

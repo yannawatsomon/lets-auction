@@ -57,6 +57,12 @@ Add them via PR when needed.
 ## Working rules
 
 - Branch from `main`; never push to `main` directly. Open a PR (see `CONTRIBUTING.md`).
+- Name branches `<github-handle>-<type>-[<issue>-]<detail>` in lowercase, type =
+  `feat|fix|docs|chore|refactor|test|ci`, detail = 2-5 words of `a-z0-9-` (no underscores or
+  dates), e.g. `yannawatsomon-fix-add-db-schema`. Use the GitHub handle of the human you work
+  for. Details: `docs/decision/repo-and-collaboration.md`. CI (`branch_name`) rejects other names.
+- Keep branches short-lived: rebase your own branch on the latest `main` before opening the PR
+  (`git push --force-with-lease` if already pushed, never `--force`), delete it after merge.
 - Small, focused PRs. One concern per PR.
 - Never commit secrets, tokens, `.env` files or personal data — **this repo is public.**
 - Stack is **Ruby on Rails** (see `docs/decision/stack.md`), deployed to Railway from `main`
