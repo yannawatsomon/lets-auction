@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="th">
+  <head>
+    <title><%= [content_for(:title), "Bidding · Lets Auction"].compact.join(" · ") %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+    <link rel="icon" href="/icon.png" type="image/png">
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+  <body class="bidding">
+    <header class="bidding-topbar">
+      <%= link_to "Lets Auction · Bidding", bidding_auctions_path, class: "bidding-brand" %>
+      <nav aria-label="เมนูหลัก">
+        <%= link_to "งานประมูล", bidding_auctions_path, "aria-current": (controller_name == "auctions" ? "page" : nil) %>
+        <% if current_user&.buyer? %>
+          <%= link_to "คำเชิญของฉัน", bidding_invitations_path, "aria-current": (controller_name == "invitations" ? "page" : nil) %>
+        <% end %>
+      </nav>
+      <div class="bidding-who">
+        <% if current_user %>
+          <span><%= current_user.display_name %></span>
+          <% if current_user.buyer? && (grade = BuyerStanding.grade(current_user)) %><span class="bidding-pill">เกรด <%= grade %></span><% end %>
+          <% if mock_login_enabled? %><%= button_to "ออกจากระบบ (mock)", mock_session_path, method: :delete, class: "bidding-btn bidding-btn--link", form_class: "bidding-inline" %><% end %>
+        <% elsif mock_login_enabled? %>
+          <%= link_to "เข้าสู่ระบบ (mock)", new_mock_session_path %>
+        <% end %>
+      </div>
+    </header>
+    <main class="bidding-page">
+      <%= render "bidding/flash" %>
+      <%= yield %>
+    </main>
+  </body>
+</html>

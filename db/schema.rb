@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_11_080100) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_11_093000) do
   create_table "auction_lots", force: :cascade do |t|
     t.integer "auction_id", null: false
     t.bigint "item_id", null: false
@@ -19,8 +19,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_11_080100) do
     t.bigint "bid_increment_cents"
     t.bigint "current_price_cents"
     t.bigint "leader_bid_id"
-    t.datetime "ends_at", null: false
-    t.datetime "original_ends_at", null: false
     t.string "status", default: "scheduled", null: false
     t.integer "bid_count", default: 0, null: false
     t.datetime "created_at", null: false
@@ -35,6 +33,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_11_080100) do
     t.check_constraint "status IN ('scheduled', 'live', 'closed', 'sold', 'unsold', 'cancelled')", name: "auction_lots_status_valid"
   end
 
+  create_table "auction_participants", force: :cascade do |t|
+    t.integer "auction_id", null: false
+    t.bigint "user_id", null: false
+    t.string "source", null: false
+    t.string "status", null: false
+    t.bigint "invited_by_id"
+    t.datetime "accepted_at"
+    t.datetime "revoked_at"
+    t.bigint "revoked_by_id"
+    t.string "grade_at_entry", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["auction_id", "user_id"], name: "index_auction_participants_on_auction_id_and_user_id", unique: true
+    t.index ["auction_id"], name: "index_auction_participants_on_auction_id"
+    t.index ["user_id", "status"], name: "index_auction_participants_on_user_id_and_status"
+    t.check_constraint "(source = 'registered' AND status IN ('registered', 'revoked')) OR (source = 'invited' AND status IN ('invited', 'accepted', 'revoked'))", name: "participants_status_matches_source"
+    t.check_constraint "source <> 'invited' OR invited_by_id IS NOT NULL", name: "participants_invite_has_inviter"
+    t.check_constraint "source IN ('registered', 'invited')", name: "participants_source_valid"
+    t.check_constraint "status IN ('registered', 'invited', 'accepted', 'revoked')", name: "participants_status_valid"
+  end
+
   create_table "auctions", force: :cascade do |t|
     t.string "title", null: false
     t.text "description"
@@ -43,9 +62,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_11_080100) do
     t.string "status", default: "draft", null: false
     t.datetime "starts_at", null: false
     t.datetime "ends_at", null: false
-    t.integer "extension_window_sec", default: 120, null: false
-    t.integer "extension_sec", default: 120, null: false
-    t.integer "extension_cap_sec", default: 1800, null: false
     t.bigint "created_by_id", null: false
     t.datetime "scheduled_at"
     t.datetime "cancelled_at"
@@ -62,4 +78,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_11_080100) do
   end
 
   add_foreign_key "auction_lots", "auctions"
+  add_foreign_key "auction_participants", "auctions"
 end
