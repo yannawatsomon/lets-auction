@@ -26,7 +26,7 @@ Shared domain models keep plain names because other milestones read them: `Aucti
 ## Gotchas
 
 - `application.css` (the generic `.topbar`, `.btn`, `.card`… from #28) and
-  `shared/_flash` / `MoneyHelper#baht` are **shared**: product onboarding builds on them.
+  `shared/_flash` / `ApplicationHelper#baht` are **shared**: product onboarding and payment build on them.
   Bidding pages no longer use them (they use `bidding.css`), but don't delete or rename them.
 
 - Propshaft's `stylesheet_link_tag :app` loads **every** file in `app/assets/stylesheets` on
