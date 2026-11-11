@@ -1,6 +1,7 @@
-<% content_for :title, "ลงสินค้าใหม่" %>
+<%# Shared by new and edit: @item is set only when editing a product. %>
+<% content_for :title, @item ? "แก้ไขสินค้า" : "ลงสินค้าใหม่" %>
 <div class="head">
-  <h1>ลงสินค้าใหม่</h1>
+  <h1><%= @item ? "แก้ไขสินค้า" : "ลงสินค้าใหม่" %></h1>
   <%= link_to "← กลับไปรายการ", product_onboarding_root_path, class: "btn" %>
 </div>
 <p class="hint">ข้อมูลจำลอง (mock) · ไฟล์ที่เลือกจะอัปโหลดทันที แต่ยังไม่ได้เก็บไว้จริง</p>
@@ -11,11 +12,12 @@
   </div>
 <% end %>
 
-<%= form_with url: product_onboarding_items_path, scope: :item, class: "card wizard",
+<%= form_with url: (@item ? product_onboarding_item_path(@item) : product_onboarding_items_path),
+      method: (@item ? :patch : :post), scope: :item, class: "card wizard",
       data: { controller: "product-wizard", action: "submit->product-wizard#submit",
               product_wizard_uploads_url_value: product_onboarding_uploads_path,
               product_wizard_limits_value: wizard_limits.to_json,
-              product_wizard_existing_value: @uploads.map { |u| { key: u.key, kind: u.kind, filename: u.filename } }.to_json } do |f| %>
+              product_wizard_existing_value: @files.to_json } do |f| %>
   <ol class="steps" aria-label="ขั้นตอน">
     <% [ "รูปภาพ", "วิดีโอ", "รายละเอียด", "ตรวจสอบ" ].each_with_index do |name, i| %>
       <li data-product-wizard-target="dot"><%= i + 1 %> · <%= name %></li>
@@ -67,12 +69,16 @@
   <fieldset data-product-wizard-target="step" hidden>
     <legend>ขั้นที่ 4 · ตรวจสอบและส่ง</legend>
     <div data-product-wizard-target="summary"></div>
-    <p class="hint">เมื่อส่งแล้ว สินค้าจะอยู่ในสถานะ “รอตรวจสอบ” และผู้ซื้อยังมองไม่เห็นจนกว่าแอดมินอนุมัติ</p>
+    <% if @item %>
+      <p class="hint">บันทึกแล้วสถานะสินค้าไม่เปลี่ยน<%= " · กด “ส่งตรวจสอบอีกครั้ง” ที่หน้ารายการเมื่อแก้ครบตามที่แอดมินขอ" if @item.info_requested? %></p>
+    <% else %>
+      <p class="hint">เมื่อส่งแล้ว สินค้าจะอยู่ในสถานะ “รอตรวจสอบ” และผู้ซื้อยังมองไม่เห็นจนกว่าแอดมินอนุมัติ</p>
+    <% end %>
   </fieldset>
 
   <div class="actions">
     <button type="button" class="btn" data-product-wizard-target="back" data-action="product-wizard#back" hidden>ย้อนกลับ</button>
     <button type="button" class="btn primary" data-product-wizard-target="next" data-action="product-wizard#next">ถัดไป</button>
-    <button type="submit" class="btn primary" data-product-wizard-target="submit" hidden>ส่งให้แอดมินตรวจสอบ</button>
+    <button type="submit" class="btn primary" data-product-wizard-target="submit" hidden><%= @item ? "บันทึกการแก้ไข" : "ส่งให้แอดมินตรวจสอบ" %></button>
   </div>
 <% end %>

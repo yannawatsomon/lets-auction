@@ -12,6 +12,9 @@ module ProductOnboarding
     include ActiveModel::Attributes
 
     class InvalidTransition < StandardError; end
+    class NotEditable < StandardError; end
+
+    REVISABLE = %i[title category description contact_channel min_price_cents].freeze
 
     KINDS = %w[image video document].freeze
     # Allowed number of files per kind. Documents: at most 10 (proposed in docs/decision/product-onboarding.md).
@@ -62,16 +65,39 @@ module ProductOnboarding
       super
     end
 
+    # Once the Store has given it an id, Rails route helpers treat it like a saved record
+    # (`edit_product_onboarding_item_path(item)`).
+    def persisted? = id.present?
+
     def editable? = pending_review? || info_requested?
+
+    def can_transition_to?(to) = TRANSITIONS.fetch(status, []).include?(to.to_s)
 
     def transition!(to)
       to = to.to_s
       @lock.synchronize do
-        unless TRANSITIONS.fetch(status, []).include?(to)
-          raise InvalidTransition, "cannot move a product from #{status} to #{to}"
-        end
+        raise InvalidTransition, "cannot move a product from #{status} to #{to}" unless can_transition_to?(to)
 
         self.status = to
+      end
+      self
+    end
+
+    # Edits the details and the files together, only while the seller may edit. If either is
+    # invalid nothing changes. The minimum price is the seller's: no one else edits it.
+    def revise!(attributes, media:)
+      @lock.synchronize do
+        raise NotEditable, "a product that is #{status} cannot be edited" unless editable?
+
+        previous = REVISABLE.index_with { |name| public_send(name) }
+        assign_attributes(attributes.slice(*REVISABLE))
+        begin
+          validate!
+          sync_media!(media)
+        rescue ActiveModel::ValidationError
+          assign_attributes(previous)
+          raise
+        end
       end
       self
     end

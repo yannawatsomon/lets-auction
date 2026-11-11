@@ -1,6 +1,7 @@
+<% seller_view = current_user&.seller? %>
 <% content_for :title, "ลงสินค้า" %>
 <div class="head">
-  <h1>ลงสินค้าเพื่อประมูล</h1>
+  <h1><%= seller_view ? "สินค้าของฉัน" : "ลงสินค้าเพื่อประมูล" %></h1>
   <span class="chip type">ข้อมูลจำลอง</span>
   <% if current_user&.seller? %>
     <%= link_to "+ ลงสินค้าใหม่", new_product_onboarding_item_path, class: "btn primary" %>
@@ -30,7 +31,7 @@
     <p class="hint">ไม่มีสินค้าในสถานะนี้</p>
   <% else %>
     <table class="list">
-      <thead><tr><th>สินค้า</th><th>หมวด</th><th>ผู้ขาย</th><th>ราคาขั้นต่ำ</th><th>ไฟล์</th><th>สถานะ</th><th>หมายเหตุแอดมิน</th></tr></thead>
+      <thead><tr><th>สินค้า</th><th>หมวด</th><th>ผู้ขาย</th><th>ราคาขั้นต่ำ</th><th>ไฟล์</th><th>สถานะ</th><th>หมายเหตุแอดมิน</th><% if seller_view %><th><span class="sr-only">จัดการ</span></th><% end %></tr></thead>
       <tbody>
         <% @items.each do |item| %>
           <tr>
@@ -41,6 +42,18 @@
             <td><%= media_summary(item) %></td>
             <td><%= product_status_chip(item) %></td>
             <td><%= item.reviews.last&.note || "—" %></td>
+            <% if seller_view %>
+              <td class="row-actions">
+                <% if item.editable? %><%= link_to "แก้ไข", edit_product_onboarding_item_path(item), class: "btn" %><% end %>
+                <% if item.info_requested? %>
+                  <%= button_to "ส่งตรวจสอบอีกครั้ง", resubmit_product_onboarding_item_path(item), class: "btn primary", form: { class: "inline" } %>
+                <% end %>
+                <% if item.can_transition_to?(:withdrawn) %>
+                  <%= button_to "ถอนสินค้า", product_onboarding_item_path(item), method: :delete, class: "btn danger",
+                        form: { class: "inline", data: { turbo_confirm: "ถอนสินค้านี้?" } } %>
+                <% end %>
+              </td>
+            <% end %>
           </tr>
         <% end %>
       </tbody>
