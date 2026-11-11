@@ -21,6 +21,7 @@ module CatalogPage
       @sections = @sections.transform_values { [] }
       response.status = :unprocessable_content
     end
+    @highlights = Catalog::Highlights.call(sections: @sections)
   rescue Catalog::InventoryUnavailable
     @categories = [ @filters.category ].reject(&:empty?)
     @sections = {}

@@ -109,3 +109,22 @@ either endpoint optional. Minute-only timestamps need `:00` appended before Ruby
 On a checkout newly updated from main, prepare the local development database with
 `bin/rails db:migrate`; otherwise Rails blocks the preview with PendingMigrationError
 even though the preview itself does not query auction tables.
+
+## Homepage highlights (#63, 2026-11-11)
+
+The overview renders Highlights above its three status sections. Full `/catalog` listings
+retain their existing pagination without repeating Highlights. `Catalog::Highlights` consumes
+the complete filtered sections before overview truncation or pagination, and retains each
+lot's status from `Catalog::Sections`. It ranks public positive integer `min_price_cents`
+descending, breaks ties by ascending lot ID, deduplicates IDs and selects at most five total.
+Only the filtered ongoing section is eligible (`starts_at <= server now < ends_at`).
+Upcoming and ended status filters therefore produce empty Highlights. The existing section
+classifier owns time boundaries; refresh removes closed products automatically. Absent,
+zero, negative or malformed prices are omitted.
+It never reads bids or private valuation fields. Highlights may repeat products from the
+regular sections; the result count counts unique regular inventory only.
+
+The horizontal track supports native touch scrolling and focused keyboard scrolling, with
+progressively enhanced previous/next buttons and reduced-motion support. It lives inside
+the refreshed results fragment, so the same filters and server clock apply on every refresh.
+Browser visual, touch and keyboard interaction verification remains part of #44.

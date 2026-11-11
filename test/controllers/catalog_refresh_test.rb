@@ -6,7 +6,7 @@ class CatalogRefreshTest < ActionDispatch::IntegrationTest
     travel_to base + 14.minutes
     get root_path, params: { q: "รถยนต์", status: "ongoing" }
     assert_response :success
-    assert_select "article.catalog-card", count: 3
+    assert_select ".catalog-overview-section article.catalog-card", count: 3
     travel_to base + 15.minutes
     get root_path, params: { q: "รถยนต์", status: "ongoing", now: "2000-01-01T00:00:00Z" }
     assert_response :success

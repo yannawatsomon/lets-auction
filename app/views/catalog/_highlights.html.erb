@@ -1,0 +1,20 @@
+<section class="catalog-highlights" aria-labelledby="catalog-highlights-title" data-controller="catalog-carousel">
+  <div class="catalog-preview__section-heading">
+    <h2 id="catalog-highlights-title">สินค้ามูลค่าสูง <span>HIGHLIGHTS</span></h2>
+    <p>ราคาเริ่มต้นสูงสุดที่อยู่ระหว่างประมูล · สูงสุด 5 รายการ</p>
+    <div class="catalog-highlights__controls" data-catalog-carousel-target="controls" hidden>
+      <button type="button" aria-label="เลื่อนสินค้ามูลค่าสูงไปก่อนหน้า" data-action="catalog-carousel#previous">←</button>
+      <button type="button" aria-label="เลื่อนสินค้ามูลค่าสูงไปถัดไป" data-action="catalog-carousel#next">→</button>
+    </div>
+  </div>
+  <% if highlights.empty? %>
+    <p class="catalog-preview__empty">ไม่พบสินค้าที่อยู่ระหว่างประมูลที่ตรงกับตัวกรอง</p>
+  <% else %>
+    <div class="catalog-highlights__track" tabindex="0" role="region" aria-label="สินค้ามูลค่าสูง เลื่อนซ้ายหรือขวาเพื่อดูเพิ่มเติม" data-catalog-carousel-target="track">
+      <% highlights.each do |entry| %>
+        <%= render "catalog/card", lot: entry.lot, status: entry.status, auction_type: entry.lot.auction_type,
+          image_path: entry.lot.id == 3 ? asset_path("catalog-preview-camera.svg") : nil, min_price_cents: entry.lot.min_price_cents %>
+      <% end %>
+    </div>
+  <% end %>
+</section>

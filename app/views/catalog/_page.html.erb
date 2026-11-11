@@ -53,6 +53,7 @@
       <h2>รายการสินค้าประมูล <span id="catalog-total" role="status"><%= @sections.values.sum(&:size) %> รายการ</span></h2>
       <% unless @catalog_overview %><%= link_to "← กลับหน้ารวมสินค้า", root_path, class: "catalog-back" %><% end %>
     </div>
+    <%= render "catalog/highlights", highlights: @highlights if @catalog_overview %>
   <% end %>
 
   <% labels = {
