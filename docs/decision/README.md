@@ -17,6 +17,7 @@ Statuses: `Open` → `Decided` → `Superseded`. Only a human collaborator moves
 | Scope | [scope.md](scope.md) | Open | Milestone 1 rules proposed: sealed + invite-only English auctions, admin-approved results, slip payments |
 | Bidding | [bidding.md](bidding.md) | Open | Sealed + invite-only English rules: satang `bigint`, encrypted sealed amounts, no bid count before publish, row-lock + 2-min extension for English (#27) |
 | Product onboarding | [product-onboarding.md](product-onboarding.md) | Open | Seller product listing + admin verification: 1-5 images, 0-2 videos, file limits, no draft status, Active Storage direct upload, orphan purge after 48h, note required on reject/request-info (#47) |
+| User onboarding | [user-onboarding.md](user-onboarding.md) | Decided | Every buyer onboards (national ID, phone, income); rule-based 0–100 score; grade A (with proof of income) → sealed + English, B–D → sealed, E → none; no OTP in M1; national ID encrypted, masked, filtered from logs |
 | Auth | [auth.md](auth.md) | Open | JWT API vs Rails built-in session auth; depends on frontend approach |
 | Real-time & jobs | [realtime.md](realtime.md) | Open | Proposed Action Cable (Solid Cable) + Solid Queue jobs |
 | License | — | Open | Public repo with no license = all rights reserved; pick one deliberately |

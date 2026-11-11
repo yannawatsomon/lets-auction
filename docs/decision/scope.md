@@ -23,8 +23,11 @@ draft gives them, and each bullet becomes Decided only when a collaborator confi
   listed again in a new event, so items and lots are separate records. Source: design draft,
   2026-11-11.
 - **Participation.** What: sealed — buyer registers for the event before bidding; English —
-  admin invites each buyer. No deposit or KYC in Milestone 1. Trade-off: no protection against
-  a winner who never pays on a 20M THB lot. Source: design draft, 2026-11-11.
+  admin invites each buyer. No deposit in Milestone 1. ~~No KYC in Milestone 1.~~ **Changed
+  (2026-11-11):** every buyer completes onboarding (national ID, income, credit grade) before
+  joining an auction, and only grade A buyers can be invited to English lots, see
+  [`user-onboarding.md`](user-onboarding.md). Trade-off: no deposit, so a winner who never pays still
+  costs the seller time. Source: design draft, 2026-11-11.
 - **Sealed bidding.** What: one bid per lot, nobody's amount or the bid count is visible until
   results are published; a tie goes to the earliest bid. Source: design draft, 2026-11-11.
 - **English bidding.** What: live price updates; a bid in the last 2 minutes extends that lot by
@@ -56,5 +59,6 @@ draft gives them, and each bullet becomes Decided only when a collaborator confi
 - Is there a platform fee (deducted from the seller or added for the buyer)? If yes, `orders`
   and `payouts` need a `fee` column.
 - Is "next rank pays their own bid" correct?
-- Deposit or KYC for the 20M THB English lots — needed before launch?
+- Deposit for the 20M THB English lots — needed before launch? (KYC is answered by
+  [`user-onboarding.md`](user-onboarding.md).)
 - Who confirms these proposals? (Then fill `ai/context/project.md`.)
