@@ -81,6 +81,26 @@ Tracked by the User Onboarding milestone (#15–#21, #66).
 - **Money in satang.** What: store monthly income as satang `bigint`, like bid amounts in
   [`bidding.md`](bidding.md). Why: no rounding errors and one money rule across the app.
   Source: eyetanamas-max in chat, 2026-11-11.
+- **Step 2 rules: income typed in baht, both experience fields, score answers reset the score.**
+  What: monthly income is typed as a whole number of baht (0–1,000,000,000; commas and spaces
+  allowed) and stored as satang; the score bands are applied by the system. Total experience
+  is required (0–60 years) and feeds the score; years in the current job are optional and
+  can't exceed it. Step 2 needs step 1 first. Changing occupation, income or total experience
+  after `scored` or `completed` sends the buyer back to `employment_done`, so they need a new
+  score and a new confirm before joining auctions again; changing only the current-job years
+  keeps the status. Why: an exact figure can be checked against grade A proof of income.
+  Trade-off: a typed figure invites rounding up. Alternative rejected: picking an income
+  band (less to check against proof). Source: eyetanamas-max in chat, 2026-11-12 (#18).
+- **Step 3: the buyer presses "calculate" on its own page; every calculation counts toward
+  the limit.** What: step 3 shows the answers that feed the score and the tries left ("x of 3
+  in 30 days", a rolling window counting every calculation, the first one included), then a
+  button. Scoring is allowed only at `employment_done`, so an unchanged profile can't burn a
+  try; the result shows the score, grade and points per part. The check and the append run
+  under one store lock so two clicks can't both pass the limit. Why: the buyer sees what the
+  score is based on before spending a try. Trade-off: a buyer who gets the first score
+  wrong has 2 retries in that window, not 3. Alternative rejected: scoring automatically when
+  step 2 is saved (every step 2 save would use a try). Source: eyetanamas-max in chat,
+  2026-11-12 (#19).
 - **Build on mock data first; no database tables yet.** What: `UserOnboarding` (ActiveModel)
   and `CreditAssessment` (immutable `Data`) live in `OnboardingStore`, an in-memory store
   seeded from `db/mock/user_onboardings.yml` with one fake buyer per grade A–E and one who

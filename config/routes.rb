@@ -48,6 +48,8 @@ Rails.application.routes.draw do
   resource :onboarding, only: :show, path: "user-onboarding"
   namespace :onboarding, path: "user-onboarding" do
     resource :identity, only: %i[edit update]
+    resource :employment, only: %i[edit update]
+    resource :score, only: %i[show create]
   end
 
   root "home#index"
