@@ -1,0 +1,56 @@
+<% content_for :title, "อาชีพและรายได้" %>
+<%= render "onboarding/intro" %>
+<%= render "onboarding/steps", onboarding: @saved, current: 2 %>
+
+<section class="card ob-card">
+  <%= form_with scope: :employment, url: onboarding_employment_path, method: :patch, class: "ob-form" do |f| %>
+    <h2>อาชีพและรายได้</h2>
+
+    <% if %w[scored completed].include?(@saved.status) %>
+      <div class="ob-note">ถ้าเปลี่ยนอาชีพ รายได้ หรือประสบการณ์รวม ต้องคำนวณคะแนนและยืนยันผลใหม่ และระหว่างนั้นจะยังเข้าร่วมประมูลไม่ได้</div>
+    <% end %>
+    <% if @onboarding.errors.any? %>
+      <div class="flash alert" role="alert">กรุณาแก้ข้อมูลที่ไม่ถูกต้อง</div>
+    <% end %>
+
+    <% typed = params[:employment] || {} %>
+    <div class="fields-2">
+      <div class="field">
+        <%= f.label :occupation, "อาชีพ *" %>
+        <%= f.select :occupation, UserOnboarding::OCCUPATION_LABELS.map { |k, v| [v, k] },
+              { include_blank: "เลือกอาชีพ", selected: typed[:occupation] || @saved.occupation },
+              required: true, "aria-invalid": @onboarding.errors[:occupation].any? %>
+        <% @onboarding.errors[:occupation].each do |m| %><span class="field-error"><%= m %></span><% end %>
+      </div>
+
+      <div class="field">
+        <%= f.label :monthly_income, "รายได้ต่อเดือน (บาท) *" %>
+        <%= f.text_field :monthly_income, value: typed[:monthly_income] || @saved.monthly_income, inputmode: "numeric",
+              placeholder: "เช่น 45000", required: true, "aria-invalid": @onboarding.errors[:monthly_income].any? %>
+        <span class="hint">รายได้รวมก่อนหักภาษี เป็นจำนวนเต็มบาท</span>
+        <% @onboarding.errors[:monthly_income].each do |m| %><span class="field-error"><%= m %></span><% end %>
+      </div>
+
+      <div class="field">
+        <%= f.label :years_experience_total, "ประสบการณ์ทำงานรวม (ปี) *" %>
+        <%= f.number_field :years_experience_total, value: typed[:years_experience_total] || @saved.years_experience_total,
+              min: 0, max: UserOnboarding::MAX_YEARS, step: 1, required: true,
+              "aria-invalid": @onboarding.errors[:years_experience_total].any? %>
+        <% @onboarding.errors[:years_experience_total].each do |m| %><span class="field-error"><%= m %></span><% end %>
+      </div>
+
+      <div class="field">
+        <%= f.label :years_in_current_job, "อายุงานที่ปัจจุบัน (ปี)" %>
+        <%= f.number_field :years_in_current_job, value: typed[:years_in_current_job] || @saved.years_in_current_job,
+              min: 0, max: UserOnboarding::MAX_YEARS, step: 1, "aria-invalid": @onboarding.errors[:years_in_current_job].any? %>
+        <span class="hint">ไม่บังคับ</span>
+        <% @onboarding.errors[:years_in_current_job].each do |m| %><span class="field-error"><%= m %></span><% end %>
+      </div>
+    </div>
+
+    <div class="ob-nav">
+      <%= link_to "ย้อนกลับ", edit_onboarding_identity_path, class: "btn" %>
+      <%= f.submit "บันทึกและไปต่อ", class: "btn primary" %>
+    </div>
+  <% end %>
+</section>

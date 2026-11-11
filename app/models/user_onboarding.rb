@@ -24,7 +24,51 @@ class UserOnboarding
   validates :status, inclusion: { in: STATUSES }
   validates :occupation, inclusion: { in: OCCUPATIONS }, allow_nil: true
 
+  OCCUPATION_LABELS = {
+    "government" => "ข้าราชการ / รัฐวิสาหกิจ", "private_employee" => "พนักงานบริษัทเอกชน",
+    "business_owner" => "เจ้าของกิจการ", "retired" => "เกษียณ", "freelancer" => "ฟรีแลนซ์",
+    "student" => "นักศึกษา", "other" => "อื่นๆ"
+  }.freeze
+  MAX_MONTHLY_INCOME_BAHT = 1_000_000_000
+  MAX_YEARS = 60
+  # Step 2 answers that feed the score; changing one after scoring needs a new score.
+  SCORE_INPUTS = %w[occupation monthly_income_cents years_experience_total].freeze
+
   def completed? = status == "completed"
+
+  # Saved income in whole baht, for the form.
+  def monthly_income = monthly_income_cents && monthly_income_cents / 100
+
+  # Step 2 (#18). Income is whole baht (commas/spaces allowed), stored as satang. Changing an
+  # answer that feeds the score after scoring sends the buyer back to employment_done; years in
+  # the current job don't feed the score. Returns false with errors and changes nothing.
+  def update_employment(occupation:, monthly_income:, years_experience_total:, years_in_current_job:)
+    errors.clear
+    if status == "not_started"
+      errors.add(:base, "กรุณายืนยันตัวตนในขั้นที่ 1 ก่อน")
+      return false
+    end
+
+    errors.add(:occupation, "กรุณาเลือกอาชีพ") unless OCCUPATIONS.include?(occupation)
+    income = whole_number(monthly_income.to_s.gsub(/[\s,]/, ""), 0..MAX_MONTHLY_INCOME_BAHT)
+    errors.add(:monthly_income, "กรอกรายได้เป็นจำนวนเต็มบาท 0 ถึง 1,000,000,000") unless income
+    total = whole_number(years_experience_total, 0..MAX_YEARS)
+    errors.add(:years_experience_total, "กรอกจำนวนปี 0 ถึง #{MAX_YEARS}") unless total
+    current = years_in_current_job.to_s.strip.empty? ? nil : whole_number(years_in_current_job, 0..MAX_YEARS)
+    if years_in_current_job.to_s.strip.present? && current.nil?
+      errors.add(:years_in_current_job, "กรอกจำนวนปี 0 ถึง #{MAX_YEARS}")
+    elsif current && total && current > total
+      errors.add(:years_in_current_job, "ต้องไม่เกินประสบการณ์รวม")
+    end
+    return false if errors.any?
+
+    before = attributes.slice(*SCORE_INPUTS)
+    assign_attributes(occupation: occupation, monthly_income_cents: income * 100,
+      years_experience_total: total, years_in_current_job: current)
+    score_changed = before != attributes.slice(*SCORE_INPUTS)
+    self.status = "employment_done" if status == "identity_done" || (score_changed && %w[scored completed].include?(status))
+    true
+  end
 
   # Step 1 (#17). A blank national_id keeps the saved one. The ID is locked once completed
   # (an admin fixes mistakes); the phone can change any time without a new score. Consent is
@@ -54,6 +98,15 @@ class UserOnboarding
   end
 
   private
+
+  # "12" → 12 when it is a whole number inside range; anything else → nil (reject, don't fix).
+  def whole_number(value, range)
+    text = value.to_s.strip
+    return nil unless text.match?(/\A\d+\z/)
+
+    number = text.to_i
+    range.cover?(number) ? number : nil
+  end
 
   def check_national_id(typed_id)
     if typed_id.nil?
