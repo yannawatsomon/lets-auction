@@ -137,7 +137,24 @@ Checked against `.claude/skills/security-review` over all bidding code.
   `assume_ssl = true` is likely needed with it). Append-only for `bids` / `audit_logs` is
   model-only until Postgres (`REVOKE UPDATE, DELETE`). Registration/accept aren't rate-limited
   (low risk: one row per buyer per auction).
-- Still to test with #36: winner doesn't pay → next rank.
+- Winner doesn't pay → next rank: tested with #36 (`test/services/bidding/results_test.rb`).
+
+## Results, offers and next rank (#36)
+
+- Admin: `/admin/bidding/auctions/:id/results` (mockup A3) only once the auction is
+  `awaiting_approval` / `published`; opening it is audit-logged. Disqualify a bidder before
+  approval (reason required) → `Bidding::Results.disqualify!`. Approve → `Results.approve!`:
+  auction `published`, each closed lot offered to its best non-disqualified rank at **their own
+  bid**, due in 48 h, `OrderExpireJob` at the deadline, `auction.result_published` broadcast.
+- Buyer: `/bidding/lots/:id/result` (mockup B6): 403 `not_revealed` until published; then the
+  offer (amount, deadline, decline button, link to `/payment`) or "not won" with own rank and
+  the total number of bidders (allowed after publishing). Never another buyer's sealed amount.
+- Decline (`POST /bidding/orders/:id/decline`, own offer only) or expiry (job or the sweep) →
+  next rank is offered; nobody left → lot `unsold`, product back to `approved`. Admin "mark
+  paid" (mock until payment records real payments) → lot and product `sold`.
+- **Offers/orders are mock data:** `Bidding::OrderStore` in memory (no table, `bidding.md`),
+  reset by restarts; tests call `Bidding::OrderStore.reset!`. Fields: lot, buyer, seller,
+  `amount_cents`, rank, `payment_due_at`, status. Payment (#45) reads it to build totals.
 
 ## Audit log (shared)
 

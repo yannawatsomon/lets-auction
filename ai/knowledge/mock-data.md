@@ -16,6 +16,9 @@ instead of waiting or stubbing those tables (2026-11-11).
 - `BuyerStanding` (`app/models/buyer_standing.rb`) — what bidding asks about a buyer:
   onboarding finished, grade (both from `OnboardingStore`) and proof of income approved
   (bidding's own mock `db/mock/bidding_income_proofs.yml`, only buyer 21, until #66).
+- `Bidding::OrderStore` (`app/models/bidding/order_store.rb`) — bidding's offers/orders after
+  results are approved (#36): who was offered which lot, at what amount, until when, and
+  whether they paid, declined or let it expire. In memory, no table.
 - `MockData` (`app/models/mock_data.rb`) — read-only `MockData.user(id)`, `MockData.item(id)`,
   `MockData.approved_items`. Bidding code reaches users/items only through these, plus
   `AuctionLot#item` and `Auction#created_by`.
