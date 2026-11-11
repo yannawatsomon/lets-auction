@@ -14,20 +14,29 @@ class Auction < ApplicationRecord
   }, default: "draft", validate: true
 
   has_many :lots, -> { order(:lot_no) }, class_name: "AuctionLot", inverse_of: :auction, dependent: :restrict_with_exception
+  has_many :participants, class_name: "AuctionParticipant", dependent: :restrict_with_exception
 
   before_validation :force_english_invite_only
 
   validates :title, presence: true, length: { maximum: 200 }
   validates :starts_at, :ends_at, :created_by_id, presence: true
-  validates :extension_window_sec, :extension_sec, :extension_cap_sec,
-    numericality: { only_integer: true, greater_than_or_equal_to: 0 }
   validate :ends_after_starts
   validate :only_draft_is_editable, on: :update
   validate :type_fixed_once_lots_exist, on: :update
 
-  after_update :sync_lot_end_times, if: -> { draft? && saved_change_to_ends_at? }
+  # Auctions a buyer can see listed: sealed events that are open or announced.
+  # English events stay invisible except to invited buyers and admins.
+  scope :listed_for_buyers, -> { sealed_first_price.where(status: %w[scheduled live awaiting_approval published]) }
 
   def created_by = MockData.user(created_by_id)
+
+  def visible_to?(user)
+    return true if user&.admin? && !draft?
+    return false if draft? || cancelled?
+    return true if sealed_first_price?
+
+    user.present? && participants.where(user_id: user.id).where.not(status: "revoked").exists?
+  end
   def lots_full? = lots.size >= MAX_LOTS
 
   # Item ids already in this auction, for the "add item" list.
@@ -43,9 +52,7 @@ class Auction < ApplicationRecord
       item_id: item.id,
       lot_no: next_lot_no,
       min_price_cents: item.min_price_cents,
-      bid_increment_cents: english? ? bid_increment_cents : nil,
-      ends_at: ends_at,
-      original_ends_at: ends_at
+      bid_increment_cents: english? ? bid_increment_cents : nil
     )
     lots.reset
     lot
@@ -72,8 +79,14 @@ class Auction < ApplicationRecord
       if english? && lots.any? { |l| l.bid_increment_cents.blank? }
         raise Error, "ทุกล็อตแบบ English ต้องกำหนดขั้นบิดขั้นต่ำ"
       end
+      # The seller may have withdrawn an item while the auction was a draft.
+      gone = lots.reject { |l| l.item&.approved? }
+      if gone.any?
+        raise Error, "ล็อต #{gone.map(&:lot_no).join(', ')} ไม่พร้อมแล้ว (สินค้าถูกถอนหรือไม่ได้ Approve) เอาออกก่อนเผยแพร่"
+      end
 
       update_columns(status: "scheduled", scheduled_at: now, updated_at: now)
+      lots.each { |l| AuctionItems.mark_in_auction!(l.item) }
     end
   end
 
@@ -83,7 +96,10 @@ class Auction < ApplicationRecord
     with_lock do
       raise Error, "ยกเลิกได้เฉพาะงานที่ยังไม่เริ่ม" unless draft? || scheduled?
 
-      lots.each { |l| l.update!(status: "cancelled") }
+      lots.each do |l|
+        l.update!(status: "cancelled")
+        AuctionItems.release!(l.item)
+      end
       update_columns(status: "cancelled", cancel_reason: reason.strip, cancelled_at: now, updated_at: now)
     end
   end
@@ -115,9 +131,5 @@ class Auction < ApplicationRecord
     return unless auction_type_changed? && lots.exists?
 
     errors.add(:auction_type, "เปลี่ยนวิธีประมูลไม่ได้เมื่อมีสินค้าในงานแล้ว")
-  end
-
-  def sync_lot_end_times
-    lots.each { |l| l.update!(ends_at: ends_at, original_ends_at: ends_at) }
   end
 end
