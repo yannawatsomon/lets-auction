@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_11_100000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_11_110000) do
   create_table "auction_lots", force: :cascade do |t|
     t.integer "auction_id", null: false
     t.bigint "item_id", null: false
@@ -76,6 +76,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_11_100000) do
     t.check_constraint "status <> 'cancelled' OR cancel_reason IS NOT NULL", name: "auctions_cancel_has_reason"
     t.check_constraint "status IN ('draft', 'scheduled', 'live', 'awaiting_approval', 'published', 'cancelled')", name: "auctions_status_valid"
     t.check_constraint "visibility IN ('public', 'invite_only')", name: "auctions_visibility_valid"
+  end
+
+  create_table "audit_logs", force: :cascade do |t|
+    t.bigint "actor_id"
+    t.string "action", null: false
+    t.string "entity_type", null: false
+    t.bigint "entity_id", null: false
+    t.json "data", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.index ["action", "created_at"], name: "index_audit_logs_on_action_and_created_at"
+    t.index ["entity_type", "entity_id"], name: "index_audit_logs_on_entity_type_and_entity_id"
   end
 
   create_table "bids", force: :cascade do |t|

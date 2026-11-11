@@ -19,6 +19,17 @@ class AuctionLot < ApplicationRecord
 
   def item = AuctionItems.find(item_id)
 
+  # Server time decides (bidding.md): open from the auction's start until its end, as long as
+  # neither the auction nor the lot was cancelled or already closed. Statuses move with the
+  # open/close jobs (#35); time is checked here so a late job never lets a bid in early or late.
+  def accepting_bids?(now = Time.current)
+    (auction.scheduled? || auction.live?) && (scheduled? || live?) &&
+      auction.starts_at <= now && now < auction.ends_at
+  end
+
+  # Receipt number printed on the bid receipt, e.g. "L12-B345".
+  def receipt_no_for(bid) = "L#{id}-B#{bid.id}"
+
   # Every lot ends with its auction; English lots never extend (bidding.md, 2026-11-11).
   delegate :starts_at, :ends_at, to: :auction
 end

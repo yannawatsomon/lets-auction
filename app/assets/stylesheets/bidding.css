@@ -128,3 +128,20 @@ a.bidding-cover { text-decoration: none; color: inherit; display: flex; flex-dir
   .bidding-topbar, .bidding-page { padding-left: 16px; padding-right: 16px; }
   .bidding h1 { font-size: 24px; }
 }
+
+/* Bid room (#31), adapted from mockup "SealedBid". */
+.bidding-lot__media { height: 320px; }
+.bidding-rules { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; font-size: 15px; color: var(--bidding-body); line-height: 1.6; }
+.bidding-rules strong { color: var(--bidding-ink); }
+.bidding-amount-input { font-size: 24px !important; font-weight: 600; }
+.bidding-amount-big { font-size: 36px; font-weight: 700; }
+.bidding-btn--big { min-height: 52px; font-size: 17px; }
+.bidding-card--confirm { border: 2px solid var(--bidding-ink); max-width: 560px; }
+.bidding-card--sealed { border-color: #1F6B45; }
+.bidding-ok-title { color: #1F6B45; }
+.bidding-receipt { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; background: var(--bidding-cream); border-radius: 8px; padding: 16px; font-size: 14px; }
+.bidding-receipt dt { color: var(--bidding-body); }
+.bidding-receipt dd { margin: 0; text-align: right; }
+.bidding-mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+.bidding-check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.5; min-height: 44px; }
+.bidding-check input { width: 20px; height: 20px; margin: 0; }

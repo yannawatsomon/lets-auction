@@ -30,6 +30,12 @@ Rails.application.routes.draw do
     resources :invitations, only: :index do
       post :accept, on: :member
     end
+    resources :lots, only: :show do
+      resources :bids, only: :create do
+        post :review, on: :collection
+      end
+    end
+    resources :bids, only: :index
   end
 
   get "payment", to: "payments#show"
