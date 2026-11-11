@@ -15,6 +15,7 @@ Statuses: `Open` → `Decided` → `Superseded`. Only a human collaborator moves
 | Stack | [stack.md](stack.md) | Decided | Ruby on Rails (Ruby 4.0.5, Rails 8.1), GitHub Actions CI — confirm with a collaborator |
 | Deployment | [deployment.md](deployment.md) | Decided | Railway, auto-deploy from `main`; production DB still open |
 | Scope | [scope.md](scope.md) | Open | Milestone 1 rules proposed: sealed + invite-only English auctions, admin-approved results, slip payments |
+| Bidding | [bidding.md](bidding.md) | Open | Sealed + invite-only English rules: satang `bigint`, encrypted sealed amounts, no bid count before publish, row-lock + 2-min extension for English (#27) |
 | Auth | [auth.md](auth.md) | Open | JWT API vs Rails built-in session auth; depends on frontend approach |
 | Real-time & jobs | [realtime.md](realtime.md) | Open | Proposed Action Cable (Solid Cable) + Solid Queue jobs |
 | License | — | Open | Public repo with no license = all rights reserved; pick one deliberately |

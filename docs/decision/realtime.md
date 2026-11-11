@@ -25,6 +25,16 @@ libraries and conflict with `stack.md`. The Rails app already ships `solid_cable
   if the lot was extended, instead of cancelling jobs. Trade-off: needs a worker running in
   production. Alternative rejected: BullMQ / pg-boss (Node.js, violates `stack.md`).
 
+- **Sealed lots use no WebSocket for bids.** What: `AuctionChannel` sends only `lot.state`,
+  `lot.closed` and `auction.result_published` for sealed lots; the page counts down from
+  `server_time`. Why: any per-bid event would leak bid activity (see `bidding.md`). Source:
+  design draft, `bidding.md` proposal (#27).
+- **Run Solid Queue inside Puma at first.** What: `SOLID_QUEUE_IN_PUMA` (already wired in
+  `config/puma.rb`), one Railway service. Why: simplest setup for a few live lots. Trade-off:
+  a web restart also restarts the job runner; `LotCloseJob` must be idempotent anyway.
+  Alternative: a separate worker service, once load or reliability needs it. Source: proposed
+  in `bidding.md` (#27).
+
 ## Open questions
 
 - Railway: run jobs inside Puma (`SOLID_QUEUE_IN_PUMA`, already wired in `config/puma.rb`) or as
