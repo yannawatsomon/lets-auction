@@ -145,3 +145,11 @@ a.bidding-cover { text-decoration: none; color: inherit; display: flex; flex-dir
 .bidding-mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
 .bidding-check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.5; min-height: 44px; }
 .bidding-check input { width: 20px; height: 20px; margin: 0; }
+
+/* English live room + bid history (#34), adapted from mockup "Lot". */
+.bidding-live { display: flex; flex-direction: column; gap: 16px; }
+.bidding-history { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; font-size: 15px; }
+.bidding-history__row { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--bidding-line-soft); }
+.bidding-history__row:last-child { border-bottom: 0; }
+.bidding-history__row--mine .bidding-history__who { font-weight: 600; }
+.bidding [hidden] { display: none !important; }

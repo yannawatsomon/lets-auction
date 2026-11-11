@@ -48,6 +48,55 @@ Active Record Encryption in one `text` column, and bids are append-only. Decisio
   `POST …/bids`. Countdown (`bidding-countdown` Stimulus controller) uses the server time
   sent with the page, never the browser clock as truth.
 
+## Placing an English bid (#32)
+
+- Same endpoint (`POST /bidding/lots/:id/bids`); `Bidding::PlaceEnglishBid` when the auction is
+  English. Shared bits (key, baht → satang, replay, not-the-seller) live in
+  `Bidding::BidRequest`.
+- Order in one transaction: `lock!` the lot → invited **and accepted** → open by server time
+  (no extensions) → not the seller → not the current leader → amount ≥
+  `AuctionLot#next_minimum_cents` (first bid = minimum price, then current price + increment)
+  → insert → update `current_price_cents`, `leader_bid_id`, `bid_count` → audit log.
+- The lot update is a compare-and-set on `bid_count`; if another bid moved the lot first, the
+  bid is rolled back with `price_moved` (409). This keeps it correct even where row locks are
+  ignored (SQLite) — Rails 8 also runs SQLite write transactions as IMMEDIATE.
+- Error codes: `not_invited`, `bidding_closed`, `own_item`, `already_leading`, `bid_too_low`,
+  `price_moved`, `idempotency_conflict`.
+- Gotcha for tests: `travel_to` drops sub-seconds, so `travel_to(auction.ends_at)` can land
+  just *before* the end. Use `ends_at + 1.second` to test "closed".
+
+## Live updates (#33)
+
+- `Bidding::AuctionChannel` (`{ channel: "Bidding::AuctionChannel", auction_id }`): admins, or
+  active participants (registered sealed / accepted English). Everyone else is rejected.
+  Streams: `bidding:auction:<id>` and, for buyers, `bidding:auction:<id>:user:<user_id>`.
+- `Bidding::Broadcaster` builds every message. `lot.state` on subscribe (with `server_time`);
+  `bid.accepted` + `bid.outbid` (to the old leader only) after an English bid **commits**;
+  `lot_closed` / `result_published` are ready for #35 / #36. Sealed auctions get no bid events
+  and their `lot.state` has no price or count. Leaders are masked as "ผู้ประมูล N" (position in
+  the participant list).
+- `ApplicationCable::Connection` reads the mock user from the encrypted session cookie with the
+  same rules as `ApplicationController` (production: sellers only, behind the flag).
+- Gotchas: the cable test cookie jar can't hold encrypted cookies, so the session lookup is
+  `Connection.user_from_session` and is tested directly, plus one integration test that decrypts
+  the real login cookie. When building an `HTTP_COOKIE` header by hand, `CGI.escape` the value.
+
+## English live room (#34)
+
+- `bidding/lots/_english_panel` renders the current state; the `bidding-live-lot` Stimulus
+  controller (`app/javascript/controllers/bidding_live_lot_controller.js`) subscribes to
+  `Bidding::AuctionChannel` and updates price, next minimum, count, masked leader, "you're
+  leading" / outbid, closed state, and reloads the history fragment after each `bid.accepted`.
+  On reconnect the channel re-sends `lot.state`, so the page catches up.
+- "Am I leading?" works without user ids on the socket: the page gets the viewer's own masked
+  label (`BidHistory#viewer_label`) and compares it with the broadcast leader.
+- History: `GET /bidding/lots/:id/bids` (`LotsController#history`), English only, invited or
+  admin, newest first, 20 per page, HTML fragment or JSON. Sealed lots → 404.
+- `@rails/actioncable` is pinned from the Rails gem's own `actioncable.esm.js` (no npm, no gem).
+- The bid form stays in the page while you lead (hidden), so it can reappear when you're outbid.
+- No browser/system tests yet (`test/system/` doesn't exist); the JS is checked by
+  `node --check` only. Try it by hand: two browsers, two invited buyers, one English lot.
+
 ## Audit log (shared)
 
 `audit_logs` / `AuditLog.record!(action:, entity:, actor:, data:)` is append-only and meant for

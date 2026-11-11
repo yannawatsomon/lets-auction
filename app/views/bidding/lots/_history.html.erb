@@ -1,0 +1,19 @@
+<%# English bid history (#34): newest first, bidders masked, your own bids say "คุณ". %>
+<ol class="bidding-history" aria-label="ประวัติการบิด">
+  <% if history.rows.empty? %>
+    <li class="bidding-hint">ยังไม่มีการเสนอราคา</li>
+  <% end %>
+  <% history.rows.each do |row| %>
+    <li class="bidding-history__row <%= 'bidding-history__row--mine' if row.mine %>">
+      <span class="bidding-history__who"><%= row.bidder || "ผู้ประมูล" %></span>
+      <span><%= bidding_baht(row.amount_cents) %></span>
+      <time class="bidding-hint bidding-mono" datetime="<%= row.placed_at.iso8601(3) %>"><%= row.placed_at.in_time_zone.strftime("%H:%M:%S") %></time>
+    </li>
+  <% end %>
+</ol>
+<% if history.page > 1 || history.next_page? %>
+  <nav class="bidding-actions" aria-label="หน้าประวัติ">
+    <% if history.page > 1 %><%= link_to "← ใหม่กว่า", bidding_lot_path(lot, history_page: history.page - 1), class: "bidding-btn" %><% end %>
+    <% if history.next_page? %><%= link_to "เก่ากว่า →", bidding_lot_path(lot, history_page: history.page + 1), class: "bidding-btn" %><% end %>
+  </nav>
+<% end %>

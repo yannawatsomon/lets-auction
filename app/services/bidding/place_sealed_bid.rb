@@ -6,6 +6,8 @@ module Bidding
   # Idempotency: the same buyer + key returns the first bid again (`replayed: true`); the same
   # key with a different lot or amount is a conflict. Never logs or audits the amount.
   class PlaceSealedBid
+    include BidRequest
+
     Result = Data.define(:bid, :replayed)
 
     def self.call(...) = new(...).call
@@ -20,11 +22,10 @@ module Bidding
     end
 
     def call
-      raise Error.new("idempotency_key_required", "คำขอไม่สมบูรณ์ ยังไม่ได้ยื่นซอง ลองโหลดหน้าใหม่แล้วยื่นอีกครั้ง", :bad_request) if @key.empty? || @key.length > 200
-      amount = Baht.parse(@amount_text)
-      raise Error.new("amount_invalid", "ราคาต้องเป็นจำนวนเงินบาท ทศนิยมไม่เกิน 2 ตำแหน่ง ยังไม่ได้ยื่นซอง", :unprocessable_content) unless amount&.positive?
+      check_key!(@key)
+      amount = parse_amount!(@amount_text)
 
-      if (earlier = replay(amount))
+      if (earlier = replay(user: @user, key: @key, lot: @lot, amount:))
         return Result.new(bid: earlier, replayed: true)
       end
       raise Error.new("terms_not_accepted", "กรุณายืนยันว่าเข้าใจกติกาก่อนยื่นซอง ยังไม่ได้ยื่นซอง", :unprocessable_content) unless @accept_terms
@@ -32,7 +33,7 @@ module Bidding
       bid = ActiveRecord::Base.transaction do
         check_participant!
         check_open!
-        check_not_seller!
+        check_not_seller!(@lot, @user)
         check_amount!(amount)
         check_no_earlier_bid!
         created = Bid.create!(lot: @lot, user_id: @user.id, amount:, idempotency_key: @key, created_at: @now)
@@ -43,21 +44,13 @@ module Bidding
       Result.new(bid:, replayed: false)
     rescue ActiveRecord::RecordNotUnique
       # Two requests at once: the database let only one through.
-      earlier = replay(amount)
+      earlier = replay(user: @user, key: @key, lot: @lot, amount:)
       return Result.new(bid: earlier, replayed: true) if earlier
 
       raise already_bid
     end
 
     private
-
-    def replay(amount)
-      earlier = Bid.find_by(user_id: @user.id, idempotency_key: @key)
-      return unless earlier
-      return earlier if earlier.lot_id == @lot.id && earlier.amount == amount
-
-      raise Error.new("idempotency_conflict", "คำขอนี้ถูกใช้กับซองอื่นแล้ว ซองเดิมของคุณยังอยู่ครบ โหลดหน้าใหม่แล้วตรวจสอบ", :conflict)
-    end
 
     def check_participant!
       raise Error.new("wrong_auction_type", "ล็อตนี้ไม่ใช่การประมูลแบบยื่นซอง", :unprocessable_content) unless @lot.auction.sealed_first_price?
@@ -72,12 +65,6 @@ module Bidding
 
       message = @now < @lot.auction.starts_at ? "ยังไม่ถึงเวลาเปิดรับซอง ยังไม่ได้ยื่นซอง" : "ปิดรับซองแล้ว ยังไม่ได้ยื่นซอง"
       raise Error.new("bidding_closed", message, :conflict)
-    end
-
-    def check_not_seller!
-      return unless @lot.item&.seller_id == @user.id
-
-      raise Error.new("own_item", "ยื่นซองในสินค้าของตัวเองไม่ได้", :forbidden)
     end
 
     def check_amount!(amount)

@@ -31,6 +31,7 @@ Rails.application.routes.draw do
       post :accept, on: :member
     end
     resources :lots, only: :show do
+      get :bids, on: :member, action: :history # English bid history (#34)
       resources :bids, only: :create do
         post :review, on: :collection
       end
