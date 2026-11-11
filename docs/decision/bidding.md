@@ -1,6 +1,6 @@
 # Bidding (sealed + English)
 
-**Status:** Open · **Effort:** L · **Deadline risk:** High — every bidding model, endpoint, job
+**Status:** Open (partly Decided, see below) · **Effort:** L · **Deadline risk:** High — every bidding model, endpoint, job
 and test in the `bidding` milestone (#28–#37) depends on these answers
 
 ## Context
@@ -14,17 +14,69 @@ invite-only English. Two sources describe bidding and disagree on several points
   (Nov 2026), shared by @guy127. It is not in the repo. It was written for a Go backend, so its
   stack choice is ignored here (`stack.md` is Decided: Rails); only its bidding rules are used.
 
-Everything below is a **proposal**. Each bullet becomes Decided only when a collaborator
-confirms it in a PR (see `README.md`). Tracking issue: #27.
+The **Decisions** section was confirmed by @guy127 in chat on 2026-11-11 (issue #27).
+Everything under **Proposals** is still a proposal; each bullet becomes Decided only when a
+collaborator confirms it in a PR (see `README.md`).
 
-## Proposals — both auction types
+## Decisions
 
 - **Money is an integer number of satang.** What: `bigint` columns named `*_cents` (e.g.
-  `amount_cents`, `min_price_cents`), formatted as THB only in views. Why: no rounding errors in
-  bid comparison or fees; one rule for every money column. Trade-off: deviates from the draft's
-  `numeric(14,2)`; every column and API field needs the unit in its name. Alternative rejected:
-  `numeric(14,2)` (exact too, but mixing it with integer math in Ruby invites bugs). Source:
-  SPEC invariant 4.
+  `amount_cents`, `min_price_cents`), formatted as THB with two decimals in views. Input
+  without decimals gets `.00` added automatically: typing `500` means 500.00 THB =
+  `50000` satang; `500.5` means 500.50 THB. More than two decimals is rejected. Why: no
+  rounding errors in bid comparison or fees; one rule for every money column; users can type
+  whole baht. Trade-off: deviates from the draft's `numeric(14,2)`; every column and API field
+  needs the unit in its name; the form/API must convert baht text to satang. Alternative
+  rejected: `numeric(14,2)` (exact too, but mixing it with integer math in Ruby invites bugs).
+  Source: SPEC invariant 4; confirmed by @guy127, 2026-11-11.
+- **Sealed: bidders never see the bid count before results are published.** What: no
+  bidder-facing page, API response or channel shows how many bids (or bidders) a sealed lot
+  has, nor anyone else's amount; a bidder sees only their own bid receipt. Admin pages may
+  show the count. Once the auction is `published`, bidders may see the bid count. Why: the count leaks demand and helps nobody bid honestly. Trade-off: less
+  "activity" signal for bidders. Alternative rejected: SPEC's public `bid_count`. Source:
+  draft; confirmed by @guy127, 2026-11-11.
+- **Bid amounts are encrypted at rest in one `text` column, no nonce column.** What:
+  `bids.amount_cents` is a `text` column holding Active Record Encryption ciphertext
+  (`encrypts :amount_cents`, cast to integer in Ruby). Encryption applies to the whole
+  attribute, so English bids are encrypted too. Ranking decrypts in Ruby (`LotCloseJob`, the
+  admin results page). English bid checks use the plain `auction_lots.current_price_cents`,
+  not the `bids` table. `amount_cents > 0` is a model validation, not a DB `CHECK`. No
+  `nonce` column, since the commitment hash is not being built. Why: a DB dump or a stray
+  query must not reveal open sealed bids; Rails ships this, no new gem; one column keeps one
+  bid path for both types. Trade-off: no SQL sort, index or `CHECK` on bid amounts (ranking
+  in Ruby is fine for ≤ a few hundred bids per lot); English amounts are encrypted though they
+  are not secret; adding a hash later needs a migration and old bids would have none.
+  Alternative rejected: plain column + DB permissions only (draft) — weaker against dumps and
+  admin queries; separate encrypted column for sealed only — two amount columns and a
+  NULL-one-or-the-other rule. Source: SPEC invariant 6; confirmed by @guy127, 2026-11-11
+  (encryption, then `text` type over a separate column).
+- **English extensions stop 30 minutes after the original end.** What: the anti-sniping rule
+  (a bid with ≤ 120 s left moves `ends_at` to `now() + 120 s`) applies only while the new
+  `ends_at` would be ≤ `original_ends_at + 30 min`; the lot keeps `original_ends_at` for this.
+  The last extension is clamped to that limit. Why: a lot must not run forever in a bidding
+  war. Trade-off: a bid in the final seconds after the cap can still "snipe". Alternative
+  rejected: no cap (earlier proposal); cap by number of extensions. Source: confirmed by
+  @guy127, 2026-11-11.
+- ~~**No deposit or KYC for now, including ฿20M+ English lots.**~~ **Superseded in part
+  (2026-11-11):** no deposit still holds; KYC is replaced by buyer onboarding, see the next
+  bullet and [`user-onboarding.md`](user-onboarding.md). Original: What: invite + accept is the
+  only gate. Why: no collateral system exists; the admin chooses who is invited. Trade-off: a
+  winner who never pays costs time (the lot passes to the next rank). Source: confirmed by
+  @guy127, 2026-11-11 ("not yet"; revisit before real high-value use).
+- **Only onboarded buyers can join; the grade decides the participant list; no deposit.**
+  What: a buyer can register for a sealed event only after completing onboarding with grade
+  A–D. The admin can invite to English lots only grade A buyers whose proof of income is
+  approved. Registration (sealed) and invite + accept (English) still apply on top. No deposit.
+  The grade is checked when the buyer registers or is invited, not on every bid. Why: everyone
+  who can join an auction has passed onboarding. Trade-off: a buyer can't bid until onboarding
+  is done. Source: eyetanamas-max, agreed with @guy127, 2026-11-11.
+- **No two-admin reveal and no commitment hash.** What: one admin can view sealed rankings
+  once the lot is `closed`; bid receipts carry no hash. Why: few admins; the hash only adds
+  value if bidders verify it. Trade-off: one person can see sealed amounts before results
+  are published; no user-verifiable proof a bid wasn't changed. Alternative rejected: SPEC
+  phase 2 two-admin reveal and `sha256(...)` receipt. Source: confirmed by @guy127, 2026-11-11.
+
+## Proposals — both auction types
 - **Server time only.** What: open/close checks use the database `now()`; bid ordering uses
   `clock_timestamp()` at insert. Clients get `server_time` for countdowns and never send a
   time. Source: draft and SPEC agree.
@@ -39,9 +91,10 @@ confirms it in a PR (see `README.md`). Tracking issue: #27.
   sellers cannot register for or accept an invitation to an event that contains their item.
   Detecting linked accounts (same IP/device) is out of scope for this milestone. Source: draft
   and SPEC; linked-account detection is SPEC phase 3.
-- **No OTP, deposit, credit limit or tier check before bidding in this milestone.** Why: no
-  SMS provider or collateral system exists yet; `scope.md` proposes no deposit/KYC for
-  Milestone 1. Trade-off: no protection against a winner who doesn't pay (see Open questions).
+- **No OTP, deposit, credit limit or per-bid tier check in this milestone.** What: the
+  onboarding grade is checked once, at registration or invite (see Decisions), so the bid
+  endpoint only checks the participant status. Why: no SMS provider or collateral system
+  exists yet; `scope.md` proposes no deposit for Milestone 1. Trade-off: no protection against a winner who doesn't pay (see Open questions).
   Alternative rejected: SPEC's OTP + credit-lock flow (blocked on providers and on the
   collateral decision). Source: draft; SPEC lists collateral as undecided.
 - **One endpoint for both types.** What: `POST /lots/:id/bids`; the logic branches on the
@@ -55,28 +108,7 @@ confirms it in a PR (see `README.md`). Tracking issue: #27.
   agree.
 - **Bid amount must be ≥ the lot's minimum price.** No upper limit in this milestone (the
   SPEC's "≤ remaining credit" depends on the credit system above).
-- **Nothing about other bids is visible before results are published.** What: no API,
-  page or channel returns other people's amounts **or the bid count** for a sealed lot until
-  the auction is `published`. A bidder sees only their own bid receipt. Why: the count leaks
-  demand and helps nobody bid honestly. Trade-off: the SPEC allows showing `bid_count`.
-  Alternative rejected: showing the count (SPEC). Source: draft.
-- **Sealed amounts are encrypted at rest.** What: Active Record Encryption on the sealed
-  amount column; ranking decrypts in `LotCloseJob` only. Why: a DB dump or a stray query must
-  not reveal open bids; Rails ships this, no new gem. Trade-off: can't sort or index by amount
-  in SQL for sealed lots, so ranking happens in Ruby (≤ a few hundred bids per lot, fine).
-  Alternative rejected: plain column + DB permissions only (draft) — weaker against dumps and
-  admin queries. Source: SPEC invariant 6 (encrypt the amount).
-- **Commitment hash is deferred.** What: SPEC's
-  `sha256(lot_id | user_id | amount | nonce | submitted_at)` on the bid receipt is not built in
-  this milestone. Why: it adds value only once bidders can verify it after reveal; the receipt
-  page can add it later without a data migration if the nonce column exists from the start.
-  Trade-off: no user-verifiable proof that a bid wasn't changed. Proposed: add a `nonce`
-  column now, compute the hash later. Source: SPEC; deferral proposed here.
-- **One admin can view rankings once the lot is closed; two-admin reveal is deferred.**
-  What: the admin results page works when the lot is `closed`. Why: the team has few admins
-  for now and the draft assumes one. Trade-off: one person can see sealed amounts before
-  results are published. Alternative rejected for now: SPEC's two different admins approving
-  the reveal (SPEC phase 2). Source: draft.
+- Visibility, encryption, commitment hash and admin reveal: see **Decisions** above.
 
 ## Proposals — English (invite-only)
 
@@ -86,8 +118,8 @@ confirms it in a PR (see `README.md`). Tracking issue: #27.
   increments by price band (more rules, not needed for 3 lots). Source: draft.
 - **The current leader cannot bid again.** Source: draft.
 - **Anti-sniping extension.** What: a bid with ≤ 120 s left moves that lot's `ends_at` to
-  `now() + 120 s`. No cap on the number of extensions (see Open questions). Source: draft,
-  `scope.md`.
+  `now() + 120 s`, capped at 30 minutes after the original end (see **Decisions**). Source:
+  draft, `scope.md`.
 - **No proxy/auto-bid.** Why: keeps the bid path simple and auditable. Source: proposed here.
 - **Concurrency via row lock.** What: `SELECT … FOR UPDATE` on the lot row, then validate,
   insert the bid, update `current_price` / `leader_bid_id` / `bid_count`, write the audit log,
@@ -106,23 +138,25 @@ Bid validation order (one transaction):
 | 2 | lot `live` and `now() < ends_at` | same, after `FOR UPDATE` on the lot |
 | 3 | not the item's seller | not the item's seller |
 | 4 | `amount >= min_price`; no previous bid (DB index backs this) | `amount >= current_price + increment` (or `>= min_price` for the first bid); not the current leader |
-| 5 | — | extend `ends_at` if ≤ 120 s left |
+| 5 | — | extend `ends_at` if ≤ 120 s left, to `min(now() + 120 s, original_ends_at + 30 min)` |
 | 6 | insert bid + audit log, commit | insert bid, update lot + audit log, commit, broadcast |
 
 Error codes (`{ "error": "...", "message": "<Thai>" }`): `not_registered`, `not_invited`,
 `bidding_closed`, `own_item`, `amount_below_start`, `already_bid`, `bid_too_low`,
 `already_leading`, `idempotency_conflict`.
 
+Amount input → satang:
+
+| Typed | Means | Stored `*_cents` |
+|---|---|---|
+| `500` | 500.00 THB | `50000` |
+| `500.5` | 500.50 THB | `50050` |
+| `1,250.75` | 1,250.75 THB | `125075` |
+| `500.123` | rejected (more than two decimals) | — |
+
 ## Open questions
 
-- **Deposit or KYC for the ฿20M+ English lots** before real use? Without it a winner who never
-  pays only costs time (the lot passes to the next rank). Owner: team. Blocks: launch, not code.
-- **Cap on English extensions?** (e.g. stop extending after 30 minutes past the original end.)
-  Blocks: #32.
-- **Confirm satang `bigint`** over the draft's `numeric(14,2)`. This also affects
-  `items.min_price` in the product onboarding milestone. Blocks: #28, #30.
-- **Confirm "no bid count before publish"** for sealed lots (draft) over SPEC's `bid_count`.
-  Blocks: #31.
-- **Confirm encryption of sealed amounts** (and adding `nonce` now). Blocks: #30.
-- **When to add two-admin reveal and commitment hash** — next milestone or later?
+- **Remaining proposals** (everything under Proposals) still need a collaborator to confirm.
+- **Deposit** — revisit before real ฿20M+ use (decided "not yet"). KYC is answered by
+  [`user-onboarding.md`](user-onboarding.md).
 - Real-time and job runtime: see `realtime.md` (proposal: Solid Queue inside Puma at first).

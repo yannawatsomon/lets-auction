@@ -141,7 +141,7 @@ stateDiagram-v2
 | GET | `/me/invitations` | event ที่ได้รับเชิญ (English) | 1 |
 | POST | `/me/invitations/{id}/accept` | ตอบรับคำเชิญ | - |
 | GET | `/lots/{lotId}` | สถานะ lot: countdown, ราคาขั้นต่ำ, ราคาปัจจุบัน (English เท่านั้น), bid ของฉัน | 4 |
-| POST | `/lots/{lotId}/bids` | ยื่นราคา body `{amount}` | 4 |
+| POST | `/lots/{lotId}/bids` | ยื่นราคา body `{amount}` เป็นบาท (ไม่ใส่ทศนิยมจะถือเป็น `.00`, เกิน 2 ตำแหน่ง reject) server แปลงเป็น `amount_cents` | 4 |
 | GET | `/lots/{lotId}/bids` | ประวัติ bid (English เท่านั้น ชื่อผู้เสนอถูกปิดบัง) | 4 |
 | GET | `/me/bids` | bid ทั้งหมดของฉัน | - |
 | GET | `/lots/{lotId}/result` | ผลของฉัน: ชนะ, แพ้ หรือรอประกาศ | 5 |
@@ -202,8 +202,8 @@ stateDiagram-v2
 | Event | ส่งเมื่อ | ข้อมูล | Sealed | English |
 | --- | --- | --- | --- | --- |
 | `lot.state` | ต่อ connection ครั้งแรก | สถานะ lot ทั้งหมด, `server_time` | ใช่ | ใช่ |
-| `bid.accepted` | มี bid ใหม่ผ่าน validation | `lot_id`, `current_price`, `bid_count`, `leader_masked` | ไม่ส่ง | ใช่ |
-| `bid.outbid` | ราคาของฉันถูกแซง (ส่งเฉพาะคน) | `lot_id`, `current_price` | ไม่ส่ง | ใช่ |
+| `bid.accepted` | มี bid ใหม่ผ่าน validation | `lot_id`, `current_price_cents`, `bid_count`, `leader_masked` | ไม่ส่ง | ใช่ |
+| `bid.outbid` | ราคาของฉันถูกแซง (ส่งเฉพาะคน) | `lot_id`, `current_price_cents` | ไม่ส่ง | ใช่ |
 | `lot.extended` | มี bid ในช่วง 2 นาทีสุดท้าย | `lot_id`, `ends_at` ใหม่ | ไม่ส่ง | ใช่ |
 | `lot.closed` | หมดเวลา | `lot_id` | ใช่ | ใช่ |
 | `auction.result_published` | แอดมิน approve ผล | `auction_id` ให้ client เรียก `/lots/{id}/result` | ใช่ | ใช่ |
@@ -254,19 +254,19 @@ erDiagram
 | ผู้ใช้ | `addresses` | ที่อยู่จัดส่ง + tax\_id, tax\_name สำหรับใบกำกับภาษี |
 | ผู้ใช้ | `notifications` | type, payload (jsonb), read\_at |
 | สินค้า | `categories` | name, parent\_id |
-| สินค้า | `items` | seller\_id, category\_id, title, description, min\_price, status |
+| สินค้า | `items` | seller\_id, category\_id, title, description, min\_price\_cents, status |
 | สินค้า | `item_media` | kind (image, video, document), url, sort\_order; รูปไม่เกิน 5 ตรวจที่ API |
 | สินค้า | `item_reviews` | admin\_id, action (approve, reject, request\_info), note; เก็บทุกครั้งเป็นประวัติ |
 | สินค้า | `item_subscriptions` | user\_id + item\_id (ปุ่ม SUBSCRIBE หน้า 3) |
 | ประมูล | `auctions` | auction\_type, visibility, status, starts\_at, ends\_at, extension settings, results\_approved\_by |
-| ประมูล | `auction_lots` | item\_id, lot\_no, min\_price (snapshot), bid\_increment, current\_price, leader\_bid\_id, ends\_at, status, version |
+| ประมูล | `auction_lots` | item\_id, lot\_no, min\_price\_cents (snapshot), bid\_increment\_cents, current\_price\_cents, leader\_bid\_id, ends\_at, status, version |
 | ประมูล | `auction_participants` | source (registered, invited), status (invited, accepted, registered, revoked) |
-| ประมูล | `bids` | lot\_id, user\_id, amount, auction\_type, idempotency\_key; append-only ห้าม update หรือ delete |
-| ประมูล | `lot_results` | rank, user\_id, bid\_id, amount, status (pending, offered, paid, expired, declined); เก็บทุกอันดับเพื่อส่งสิทธิ์ต่อ |
-| การเงิน | `orders` | lot\_result\_id, buyer\_id, seller\_id, amount, fulfillment, shipping snapshot, want\_tax\_invoice, payment\_due\_at, status |
-| การเงิน | `payments` | method, amount, slip\_url, status, reviewed\_by |
+| ประมูล | `bids` | lot\_id, user\_id, amount\_cents, auction\_type, idempotency\_key; append-only ห้าม update หรือ delete |
+| ประมูล | `lot_results` | rank, user\_id, bid\_id, amount\_cents, status (pending, offered, paid, expired, declined); เก็บทุกอันดับเพื่อส่งสิทธิ์ต่อ |
+| การเงิน | `orders` | lot\_result\_id, buyer\_id, seller\_id, amount\_cents, fulfillment, shipping snapshot, want\_tax\_invoice, payment\_due\_at, status |
+| การเงิน | `payments` | method, amount\_cents, slip\_url, status, reviewed\_by |
 | การเงิน | `receipts` | doc\_type (receipt, tax\_invoice), doc\_no (รันเลขไม่ซ้ำ), pdf\_url |
-| การเงิน | `payouts` | amount ที่โอนให้ผู้ขาย, transfer\_ref, transferred\_at |
+| การเงิน | `payouts` | amount\_cents ที่โอนให้ผู้ขาย, transfer\_ref, transferred\_at |
 | ระบบ | `audit_logs` | actor\_id, action, entity, entity\_id, data; ทุกการ approve, ยื่นราคา, ตรวจสลิป |
 | ระบบ | `idempotency_keys` | key, user\_id, response; หมดอายุ 24 ชม. |
 
@@ -278,7 +278,7 @@ erDiagram
 > Rails migration (ได้ `db/schema.rb`) หลังตัดสินเรื่อง database แล้ว ถ้าเลือก SQLite ต้องหาวิธีอื่นแทน
 > enum, `citext` และ `clock_timestamp()`
 
-เงินทุกช่องใช้ `numeric(14,2)` หน่วยบาท เวลาทุกช่องใช้ `timestamptz` และ constraint สำคัญอยู่ใน DB ไม่พึ่ง API อย่างเดียว
+เงินทุกช่องใช้ `bigint` หน่วยสตางค์ ชื่อลงท้าย `_cents` (ดู [`bidding.md`](../decision/bidding.md)) แสดงเป็นบาททศนิยม 2 ตำแหน่งเฉพาะตอนแสดงผล เวลาทุกช่องใช้ `timestamptz` และ constraint สำคัญอยู่ใน DB ไม่พึ่ง API อย่างเดียว
 
 ```sql
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
@@ -360,7 +360,7 @@ CREATE TABLE items (
   category_id     int  NOT NULL REFERENCES categories(id),
   title           text NOT NULL,
   description     text NOT NULL,
-  min_price       numeric(14,2) NOT NULL CHECK (min_price > 0),
+  min_price_cents       bigint NOT NULL CHECK (min_price_cents > 0),
   contact_channel text,
   status          item_status NOT NULL DEFAULT 'pending_review',
   created_at      timestamptz NOT NULL DEFAULT now(),
@@ -420,11 +420,12 @@ CREATE TABLE auction_lots (
   auction_id     uuid NOT NULL REFERENCES auctions(id),
   item_id        uuid NOT NULL REFERENCES items(id),
   lot_no         smallint NOT NULL CHECK (lot_no BETWEEN 1 AND 10),
-  min_price      numeric(14,2) NOT NULL,
-  bid_increment  numeric(14,2),            -- English เท่านั้น
-  current_price  numeric(14,2),            -- English เท่านั้น
+  min_price_cents      bigint NOT NULL,
+  bid_increment_cents  bigint,            -- English เท่านั้น
+  current_price_cents  bigint,            -- English เท่านั้น
   leader_bid_id  uuid,
-  ends_at        timestamptz NOT NULL,     -- English ขยายเวลาได้ต่อ lot
+  original_ends_at timestamptz NOT NULL,   -- ใช้คุมเพดานขยายเวลา +30 นาที
+  ends_at        timestamptz NOT NULL,     -- English ขยายเวลาได้ต่อ lot ไม่เกิน original_ends_at + 30 นาที
   status         lot_status NOT NULL DEFAULT 'scheduled',
   bid_count      int NOT NULL DEFAULT 0,
   version        int NOT NULL DEFAULT 0,
@@ -451,7 +452,7 @@ CREATE TABLE bids (
   lot_id          uuid NOT NULL REFERENCES auction_lots(id),
   user_id         uuid NOT NULL REFERENCES users(id),
   auction_type    auction_type NOT NULL,   -- copy จาก auction เพื่อใช้ใน partial index
-  amount          numeric(14,2) NOT NULL CHECK (amount > 0),
+  amount_cents    text NOT NULL,           -- ciphertext ของ Active Record Encryption (bidding.md); ตรวจ > 0 ที่ model
   idempotency_key text NOT NULL,
   created_at      timestamptz NOT NULL DEFAULT clock_timestamp(),
   UNIQUE (user_id, idempotency_key)
@@ -459,8 +460,8 @@ CREATE TABLE bids (
 -- sealed: ยื่นได้ครั้งเดียวต่อ lot
 CREATE UNIQUE INDEX one_sealed_bid_per_user ON bids (lot_id, user_id)
   WHERE auction_type = 'sealed_first_price';
--- ใช้จัดอันดับ: ราคาสูงสุดก่อน เท่ากันใครยื่นก่อนชนะ
-CREATE INDEX bids_ranking ON bids (lot_id, amount DESC, created_at ASC);
+-- amount เข้ารหัสอยู่ จึง sort ใน SQL ไม่ได้: ดึง bid ของ lot ตามเวลาแล้วจัดอันดับใน Ruby
+CREATE INDEX bids_by_lot ON bids (lot_id, created_at);
 ALTER TABLE auction_lots ADD FOREIGN KEY (leader_bid_id) REFERENCES bids(id);
 
 CREATE TABLE lot_results (
@@ -469,7 +470,7 @@ CREATE TABLE lot_results (
   rank            int  NOT NULL,
   user_id         uuid NOT NULL REFERENCES users(id),
   bid_id          uuid NOT NULL REFERENCES bids(id),
-  amount          numeric(14,2) NOT NULL,
+  amount_cents          bigint NOT NULL,
   status          result_status NOT NULL DEFAULT 'pending',
   offered_at      timestamptz,
   UNIQUE (lot_id, rank),
@@ -483,7 +484,7 @@ CREATE TABLE orders (
   lot_id            uuid NOT NULL REFERENCES auction_lots(id),
   buyer_id          uuid NOT NULL REFERENCES users(id),
   seller_id         uuid NOT NULL REFERENCES users(id),
-  amount            numeric(14,2) NOT NULL,
+  amount_cents            bigint NOT NULL,
   fulfillment       fulfillment_type,
   address_id        uuid REFERENCES addresses(id),
   shipping_snapshot jsonb,
@@ -501,7 +502,7 @@ CREATE TABLE payments (
   id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   order_id     uuid NOT NULL REFERENCES orders(id),
   method       payment_method NOT NULL,
-  amount       numeric(14,2) NOT NULL,
+  amount_cents       bigint NOT NULL,
   slip_url     text,
   status       payment_status NOT NULL DEFAULT 'pending',
   reviewed_by  uuid REFERENCES users(id),
@@ -524,7 +525,7 @@ CREATE TABLE payouts (
   id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   order_id       uuid UNIQUE NOT NULL REFERENCES orders(id),
   seller_id      uuid NOT NULL REFERENCES users(id),
-  amount         numeric(14,2) NOT NULL,
+  amount_cents         bigint NOT NULL,
   status         payout_status NOT NULL DEFAULT 'pending',
   transfer_ref   text,
   transferred_at timestamptz
@@ -561,20 +562,21 @@ CREATE TABLE idempotency_keys (
 1. ผู้ใช้เป็น buyer, บัญชี active และอยู่ใน `auction_participants` สถานะ registered หรือ accepted
 2. lot อยู่สถานะ live และ `now() < ends_at` ตามเวลา server (ไม่เชื่อเวลาจาก client)
 3. ผู้ซื้อไม่ใช่เจ้าของสินค้า (ป้องกันการปั่นราคา)
-4. Sealed: `amount >= min_price` และยังไม่เคยยื่น lot นี้ (unique index กันซ้ำอีกชั้น)
-5. English: `SELECT … FOR UPDATE` ที่แถว lot ก่อน แล้วตรวจ `amount >= current_price + bid_increment` (bid แรกใช้ `>= min_price`) และผู้เสนอไม่ใช่ leader คนปัจจุบัน
+4. Sealed: `amount_cents >= min_price_cents` และยังไม่เคยยื่น lot นี้ (unique index กันซ้ำอีกชั้น)
+5. English: `SELECT … FOR UPDATE` ที่แถว lot ก่อน แล้วตรวจ `amount_cents >= current_price_cents + bid_increment_cents` (bid แรกใช้ `>= min_price_cents`) และผู้เสนอไม่ใช่ leader คนปัจจุบัน
 6. English: ถ้า `ends_at - now() <= 120 วินาที` ให้เลื่อน `ends_at` ออกไปอีก 120 วินาที (`LotCloseJob` จะเห็นเวลาใหม่เองตอนทำงาน)
 7. insert `bids`, อัปเดต lot, เขียน `audit_logs` แล้ว commit จากนั้นจึง broadcast ทาง WebSocket
 
 **การจัดอันดับเมื่อ lot ปิด**
 
-เรียง bid ตาม `amount DESC, created_at ASC` แล้วเขียนลง `lot_results` ทุกอันดับ รอบ English ใช้ bid สูงสุดของแต่ละคนเพียงอันเดียว เมื่อแอดมิน approve ผล ระบบสร้าง order ให้อันดับ 1 พร้อม `payment_due_at = now() + 48 ชม.` ถ้าไม่จ่าย order ใบถัดไปไปที่อันดับ 2 และต่อไปเรื่อยๆ
+ถอดรหัส `amount_cents` ใน Ruby แล้วเรียง bid ตาม `amount_cents DESC, created_at ASC` (ใน SQL ทำไม่ได้เพราะเข้ารหัสอยู่) แล้วเขียนลง `lot_results` ทุกอันดับ รอบ English ใช้ bid สูงสุดของแต่ละคนเพียงอันเดียว เมื่อแอดมิน approve ผล ระบบสร้าง order ให้อันดับ 1 พร้อม `payment_due_at = now() + 48 ชม.` ถ้าไม่จ่าย order ใบถัดไปไปที่อันดับ 2 และต่อไปเรื่อยๆ
 
 **ความลับของราคา sealed**
 
 - API ไม่คืนราคาของคนอื่นและไม่คืนจำนวนผู้ยื่นจนกว่า auction จะเป็น published
 - ผู้ยื่นเห็นเฉพาะราคาของตัวเอง แอดมินเห็นตารางอันดับได้เมื่อ lot ปิดแล้วเท่านั้น
 - จำกัดสิทธิ์ query ตาราง `bids` ใน production เฉพาะ service account
+- `bids.amount_cents` เข้ารหัสด้วย Active Record Encryption (ทั้ง sealed และ English) dump DB แล้วไม่เห็นราคา
 
 **คำถามที่ยังเปิดอยู่**
 

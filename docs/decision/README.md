@@ -15,7 +15,7 @@ Statuses: `Open` → `Decided` → `Superseded`. Only a human collaborator moves
 | Stack | [stack.md](stack.md) | Decided | Ruby on Rails (Ruby 4.0.5, Rails 8.1), GitHub Actions CI — confirm with a collaborator |
 | Deployment | [deployment.md](deployment.md) | Decided | Railway, auto-deploy from `main`; production DB still open |
 | Scope | [scope.md](scope.md) | Open | Milestone 1 rules proposed: sealed + invite-only English auctions, admin-approved results, slip payments |
-| Bidding | [bidding.md](bidding.md) | Open | Sealed + invite-only English rules: satang `bigint`, encrypted sealed amounts, no bid count before publish, row-lock + 2-min extension for English (#27) |
+| Bidding | [bidding.md](bidding.md) | Open (partly Decided) | Decided: satang `bigint` (`.00` auto-added on input), no bid count on bidder pages for sealed lots until published, encrypted bid amounts in a `text` column (no nonce), English extensions capped at +30 min, no deposit/KYC, no two-admin reveal or commitment hash. Rest still proposed (#27) |
 | Product onboarding | [product-onboarding.md](product-onboarding.md) | Open | Seller product listing + admin verification: 1-5 images, 0-2 videos, file limits, no draft status, Active Storage direct upload, orphan purge after 48h, note required on reject/request-info (#47) |
 | User onboarding | [user-onboarding.md](user-onboarding.md) | Decided | Every buyer onboards (national ID, phone, income); rule-based 0–100 score; grade A (with proof of income) → sealed + English, B–D → sealed, E → none; no OTP in M1; national ID encrypted, masked, filtered from logs |
 | Auth | [auth.md](auth.md) | Open | JWT API vs Rails built-in session auth; depends on frontend approach |

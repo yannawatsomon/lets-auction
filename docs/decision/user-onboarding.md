@@ -8,20 +8,23 @@ Every auction in Milestone 1 needs some protection against a winner who never pa
 all the invite-only English lots of 20M THB or more. The requirement draft
 [`docs/design/user-onboarding.md`](../design/user-onboarding.md) describes a 4-step onboarding:
 national ID and phone → occupation, income and experience → credit score → result and confirm.
-It replaces "No deposit or KYC in Milestone 1" in [`scope.md`](scope.md) for the KYC part.
+It replaces the "no KYC" part of [`scope.md`](scope.md) and of
+[`bidding.md`](bidding.md) (no deposit still holds there).
 Tracked by the User Onboarding milestone (#15–#21, #66).
 
 ## Decisions
 
 - **Every buyer completes onboarding; sellers and admins skip it.** What: a buyer must reach
-  `completed` before registering for a sealed event or accepting an English invite. Browsing
-  stays open. Why: protects sellers on every auction type, not only the 20M THB lots.
+  `completed` before registering for a sealed event or being invited to an English lot.
+  Browsing stays open. The rules in `bidding.md` still apply on top: register for sealed,
+  invite + accept for English. Why: protects sellers on every auction type, not only the 20M THB lots.
   Trade-off: more friction before a buyer's first bid. Alternative rejected: English buyers
   only (sealed sellers stay unprotected); buyers and sellers (sellers don't need a credit
   check to list). Source: eyetanamas-max in chat, 2026-11-11.
 - **The credit grade decides which auctions a buyer can join.** What: A → sealed and English;
-  B, C, D → sealed only; E → no auctions yet. English stays invite-only: the admin can invite
-  only grade A buyers. Why: ties the riskiest lots to the strongest profiles without a deposit.
+  B, C, D → sealed only; E → no auctions yet. The grade decides who can be on the participant
+  list: a buyer below the grade can't register (sealed) and the admin can't invite them
+  (English, grade A only). It is checked at registration or invite, not on every bid. Why: ties the riskiest lots to the strongest profiles without a deposit.
   Trade-off: a fixed formula can exclude good buyers. Alternative rejected: a per-user bid limit
   (more rules in every bid check), pass/fail only (too coarse for 20M THB lots), admin-only
   information (no automatic protection). Source: eyetanamas-max in chat, 2026-11-11.
