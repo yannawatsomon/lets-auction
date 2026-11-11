@@ -1,0 +1,96 @@
+# Requirement: User Onboarding (4 step)
+
+> **สถานะ: Draft** · ร่างเมื่อ 2026-11-11 · การตัดสินใจอยู่ใน
+> [`docs/decision/user-onboarding.md`](../decision/user-onboarding.md) (#15) ถ้าขัดกันให้ยึด decision doc
+> เอกสารนี้เขียนเป็นภาษาไทยตามที่ผู้เขียนขอ (ดูคำถามเรื่องภาษาใน `docs/decision/README.md`)
+
+## เป้าหมาย
+
+ผู้ใช้ต้องผ่าน onboarding 4 step ก่อนใช้งาน:
+
+1. กรอกเลขบัตรประชาชนไทยและเบอร์โทรศัพท์
+2. กรอกอาชีพ รายได้ และประสบการณ์ทำงาน
+3. ระบบคำนวณ credit score
+4. แสดงผลลัพธ์และให้ผู้ใช้ยืนยัน
+
+## สรุปการตัดสินใจ (2026-11-11)
+
+รายละเอียดและเหตุผลอยู่ใน [`docs/decision/user-onboarding.md`](../decision/user-onboarding.md)
+
+1. **Buyer ทุกคนต้องทำ onboarding** ก่อนเข้า auction ใดๆ ส่วน seller และ admin ไม่ต้องทำ
+   แทนที่ข้อเสนอ "ไม่มี KYC ใน Milestone 1" ใน [`scope.md`](../decision/scope.md) (ยังไม่มีมัดจำเหมือนเดิม)
+2. **เกรดกำหนดสิทธิ์**: A → sealed + English (ยังต้องให้ admin เชิญ), B–D → sealed, E → ยังประมูลไม่ได้
+3. **สูตร rule-based ของเราเอง สเกล 0–100**: รายได้ 50 (ขั้นสูงสุด 1 ล้านบาท/เดือน), อาชีพ 25,
+   ประสบการณ์ 15, เบอร์ยืนยัน OTP 10 เพราะใช้ข้อมูลเครดิตบูโร (NCB) ไม่ได้
+4. **ยังไม่มี OTP ใน Milestone 1** คะแนนสูงสุดตอนนี้จึงเป็น 90
+5. **แก้ข้อมูลแล้วคำนวณใหม่ได้ไม่เกิน 3 ครั้งต่อ 30 วัน** ทุกเกรด
+6. **เกรด A ต้องแนบหลักฐานรายได้** (สลิปเงินเดือน, statement 6 เดือน หรือหนังสือรับรองเงินเดือน)
+   ระหว่างรอ admin ตรวจนับเป็นเกรด B (เข้าได้แค่ sealed)
+7. **เลขบัตรประชาชน (PDPA)**: เข้ารหัส, ซ่อนบน UI และใน log, เก็บ consent, ใช้เลขปลอมใน test, เก็บรายได้เป็นสตางค์
+
+## Requirement แต่ละ step
+
+### Step 1: ยืนยันตัวตน
+
+- เลขบัตรประชาชน 13 หลัก ตรวจ checksum (mod 11) ฝั่ง server
+- 1 เลขบัตรผูกได้กับ 1 บัญชีเท่านั้น (unique)
+- เบอร์มือถือไทย 10 หลัก ขึ้นต้น 06/08/09 เก็บเป็นรูป `+66...`
+- ยังไม่ยืนยันเบอร์ด้วย OTP ใน Milestone 1 (`phone_verified_at` ว่างไว้)
+- Open: ต้องเก็บชื่อ-นามสกุล/วันเกิดด้วยไหม
+
+### Step 2: อาชีพและรายได้
+
+- อาชีพเลือกจาก list ที่กำหนด: พนักงานเอกชน, ข้าราชการ, เจ้าของกิจการ, ฟรีแลนซ์, นักศึกษา,
+  เกษียณ, อื่นๆ
+- รายได้ต่อเดือน (THB): กรอกตัวเลขจริงหรือเลือกเป็นช่วง (Open)
+- ประสบการณ์ทำงาน: จำนวนปีในงานปัจจุบันและปีรวม มี validation ช่วงค่า
+
+### Step 3: คำนวณ credit score
+
+- คำนวณฝั่ง server เท่านั้น ใส่ input เดิมต้องได้คะแนนเดิมเสมอ (deterministic)
+- เก็บ `score_version`, snapshot ของ input, คะแนน, เกรด (A–E) และเหตุผลที่ได้คะแนนนั้น
+- ใช้ตารางคะแนน `score_version = 1` ใน [`user-onboarding.md`](../decision/user-onboarding.md)
+- คำนวณใหม่ได้ไม่เกิน 3 ครั้งต่อ 30 วัน กันการลองแก้ข้อมูลเพื่อปั่นคะแนน
+
+### Step 4: แสดงผลและยืนยัน
+
+- แสดงคะแนน (0–100), เกรด, เหตุผล และประเภท auction ที่เข้าได้ตามเกรด
+- ผู้ใช้ติ๊ก consent แล้วกดยืนยัน → สถานะ `completed` (บันทึกเวลา)
+- ถ้าย้อนกลับไปแก้ step 1–2 ต้องคำนวณคะแนนใหม่
+- เกรด E ยังประมูลไม่ได้ แต่แก้ข้อมูลแล้วคำนวณใหม่ได้ (ภายใต้ลิมิตเดียวกัน)
+
+## Flow / Data / API (ร่าง)
+
+- **State:** `not_started → identity_done → employment_done → scored → completed`
+  บันทึกทีละ step ฝั่ง server ปิดแอปแล้วกลับมาทำต่อได้
+- **ตาราง `user_onboardings`:** `user_id`, `national_id` (Active Record Encryption + digest
+  สำหรับเช็ก unique), `phone`, `phone_verified_at`, `occupation`, `monthly_income`,
+  `years_experience`, `status`, `consent_at`, `confirmed_at`
+- **ตาราง `credit_assessments`:** append-only เก็บประวัติทุกครั้งที่คำนวณ ได้แก่ `score`,
+  `grade`, `score_version`, `inputs` (jsonb), `reasons`
+- **API** (ล้อตาม `/api/v1` ใน
+  [design draft](milestone-1-api-and-database.md) แต่วิธี auth ยังเป็น Open ดู
+  [`auth.md`](../decision/auth.md)):
+
+  | Method | Path | ใช้ทำอะไร |
+  |---|---|---|
+  | GET | `/onboarding` | ดูสถานะและข้อมูลที่กรอกไว้ |
+  | PATCH | `/onboarding/identity` | Step 1 |
+  | PATCH | `/onboarding/employment` | Step 2 |
+  | POST | `/onboarding/score` | Step 3 คำนวณคะแนน |
+  | POST | `/onboarding/confirm` | Step 4 ยืนยัน |
+
+- **Non-functional:**
+  - ใส่ `national_id` ใน `filter_parameters` ไม่ให้หลุดลง log
+  - บันทึก audit log ทุก step
+  - มี rate limit
+  - ทำ `security-review` ก่อน merge
+
+## ขั้นตอนต่อไป
+
+งานแตกเป็น issue ใน milestone User Onboarding: #15 decision (เอกสารนี้), #16 data model,
+#17–#20 step 1–4, #21 security review, #66 หลักฐานรายได้เกรด A
+
+## คำถามที่ยังเปิดอยู่
+
+ดู Open questions ใน [`user-onboarding.md`](../decision/user-onboarding.md) เช่น ชนิดและขนาดไฟล์หลักฐานรายได้, คะแนนมีอายุไหม, เก็บเลขบัตรนานแค่ไหนหลังปิดบัญชี

@@ -1,0 +1,50 @@
+name: Branch name
+
+# Enforces the branch naming rule in docs/decision/repo-and-collaboration.md:
+#   <github-handle>-<type>-[<issue>-]<detail>
+# Keep the regex below in sync with that file.
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  branch_name:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check branch name
+        env:
+          # Passed via env, never interpolated into the script: branch names are
+          # attacker-controlled input (script injection).
+          BRANCH: ${{ github.head_ref }}
+        run: |
+          # Dependabot names its own branches.
+          if [[ "$BRANCH" == dependabot/* ]]; then
+            echo "Skipping dependabot branch: $BRANCH"
+            exit 0
+          fi
+
+          pattern='^[a-z0-9]+(-[a-z0-9]+)*-(feat|fix|docs|chore|refactor|test|ci)(-[0-9]+)?(-[a-z0-9]+){2,5}$'
+
+          if [[ "$BRANCH" =~ $pattern ]]; then
+            echo "Branch name OK: $BRANCH"
+            exit 0
+          fi
+
+          {
+            echo "Branch name '$BRANCH' does not follow the naming rule."
+            echo
+            echo "  <github-handle>-<type>-[<issue>-]<detail>"
+            echo "  type:   feat | fix | docs | chore | refactor | test | ci"
+            echo "  detail: 2-5 words, a-z 0-9 and single hyphens (no underscores, no dates)"
+            echo "  e.g.    yannawatsomon-fix-add-db-schema"
+            echo "          yannawatsomon-fix-12-add-db-schema"
+            echo
+            echo "Rename it: git branch -m <new-name>, push it, and reopen the PR."
+            echo "See docs/decision/repo-and-collaboration.md"
+          } >&2
+          echo "::error title=Invalid branch name::'$BRANCH' does not match <github-handle>-<type>-[<issue>-]<detail>"
+          exit 1

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="th">
+  <head>
+    <title><%= [content_for(:title), "แอดมิน · Lets Auction"].compact.join(" · ") %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+    <link rel="icon" href="/icon.png" type="image/png">
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+  <body>
+    <header class="topbar">
+      <%= link_to admin_auctions_path, class: "brand" do %>
+        <span>Lets Auction</span><span class="pill-admin">ADMIN</span>
+      <% end %>
+      <nav aria-label="เมนูแอดมิน">
+        <%= link_to "จัดการ Auction", admin_auctions_path, "aria-current": (controller_name == "auctions" ? "page" : nil) %>
+      </nav>
+      <div class="who">
+        <span><%= current_user&.display_name %></span>
+        <% if mock_login_enabled? %>
+          <%= button_to "ออกจากระบบ (mock)", mock_session_path, method: :delete, class: "btn link", form_class: "inline" %>
+        <% end %>
+      </div>
+    </header>
+    <main class="page">
+      <%= render "shared/flash" %>
+      <%= yield %>
+    </main>
+  </body>
+</html>
