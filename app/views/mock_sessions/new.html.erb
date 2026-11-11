@@ -1,10 +1,23 @@
 <main class="page" style="max-width:640px">
   <%= render "shared/flash" %>
-  <h1>เข้าสู่ระบบจำลอง (เฉพาะ dev/test)</h1>
-  <p class="hint">หน้านี้ใช้แทนระบบ login จริงชั่วคราว และไม่มีใน production · ผู้ใช้ทั้งหมดเป็นข้อมูลจำลอง</p>
+  <% if mock_bidding_demo? %>
+    <h1>เข้าสู่ระบบจำลอง (เดโม)</h1>
+    <p class="hint">เดโมบน Railway · ผู้ใช้และข้อมูลทั้งหมดเป็นข้อมูลจำลอง · ใช้แทนระบบ login จริงชั่วคราว</p>
+  <% else %>
+    <h1>เข้าสู่ระบบจำลอง (เฉพาะ dev/test)</h1>
+    <p class="hint">หน้านี้ใช้แทนระบบ login จริงชั่วคราว และไม่มีใน production · ผู้ใช้ทั้งหมดเป็นข้อมูลจำลอง</p>
+  <% end %>
+  <% if @needs_unlock %>
+    <%= form_with url: unlock_mock_session_path, method: :post, class: "card" do %>
+      <label for="demo-password">รหัสเดโม (ขอจากทีม)</label>
+      <input id="demo-password" name="password" type="password" autocomplete="off" required class="btn" style="text-align:left">
+      <button class="btn primary">ปลดล็อกเดโม</button>
+    <% end %>
+  <% end %>
   <div class="card">
     <% @users.each do |u| %>
       <%= button_to "#{u.display_name} (#{u.role})", mock_session_path(user_id: u.id), class: "btn" %>
     <% end %>
+    <% if @users.empty? %><p class="hint">ใส่รหัสเดโมก่อนเพื่อเลือกผู้ใช้</p><% end %>
   </div>
 </main>

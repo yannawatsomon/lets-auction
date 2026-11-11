@@ -25,12 +25,15 @@
         <% if current_user %>
           <span><%= current_user.display_name %></span>
           <% if current_user.buyer? && (grade = BuyerStanding.grade(current_user)) %><span class="bidding-pill">เกรด <%= grade %></span><% end %>
-          <% if mock_login_enabled? %><%= button_to "ออกจากระบบ (mock)", mock_session_path, method: :delete, class: "bidding-btn bidding-btn--link", form_class: "bidding-inline" %><% end %>
-        <% elsif mock_login_enabled? %>
+          <% if mock_session_enabled? %><%= button_to "ออกจากระบบ (mock)", mock_session_path, method: :delete, class: "bidding-btn bidding-btn--link", form_class: "bidding-inline" %><% end %>
+        <% elsif mock_session_enabled? %>
           <%= link_to "เข้าสู่ระบบ (mock)", new_mock_session_path %>
         <% end %>
       </div>
     </header>
+    <% if mock_bidding_demo? %>
+      <div class="bidding-demo-banner" role="note">เดโม · ผู้ใช้และข้อมูลทั้งหมดเป็นข้อมูลจำลอง ไม่ใช่การประมูลจริง</div>
+    <% end %>
     <main class="bidding-page">
       <%= render "bidding/flash" %>
       <%= yield %>

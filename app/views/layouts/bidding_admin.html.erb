@@ -21,11 +21,14 @@
       </nav>
       <div class="bidding-who">
         <span><%= current_user&.display_name %></span>
-        <% if mock_login_enabled? %>
+        <% if mock_session_enabled? %>
           <%= button_to "ออกจากระบบ (mock)", mock_session_path, method: :delete, class: "bidding-btn bidding-btn--link", form_class: "bidding-inline" %>
         <% end %>
       </div>
     </header>
+    <% if mock_bidding_demo? %>
+      <div class="bidding-demo-banner" role="note">เดโม · ผู้ใช้และข้อมูลทั้งหมดเป็นข้อมูลจำลอง ไม่ใช่การประมูลจริง</div>
+    <% end %>
     <main class="bidding-page">
       <%= render "bidding/flash" %>
       <%= yield %>
