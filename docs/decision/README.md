@@ -13,7 +13,9 @@ Statuses: `Open` → `Decided` → `Superseded`. Only a human collaborator moves
 | AI agent hub | [ai-agent-hub.md](ai-agent-hub.md) | Decided | `AGENTS.md` entry point + `ai/` hub + `.claude/skills/`; tool files only point back |
 | Stack | [stack.md](stack.md) | Decided | Ruby on Rails (Ruby 4.0.5, Rails 8.1), GitHub Actions CI — confirm with a collaborator |
 | Deployment | [deployment.md](deployment.md) | Decided | Railway, auto-deploy from `main`; production DB still open |
-| Scope | — | Open | What lets-auction must do |
+| Scope | [scope.md](scope.md) | Open | Milestone 1 rules proposed: sealed + invite-only English auctions, admin-approved results, slip payments |
+| Auth | [auth.md](auth.md) | Open | JWT API vs Rails built-in session auth; depends on frontend approach |
+| Real-time & jobs | [realtime.md](realtime.md) | Open | Proposed Action Cable (Solid Cable) + Solid Queue jobs |
 | License | — | Open | Public repo with no license = all rights reserved; pick one deliberately |
 
 ## Key decisions at a glance
@@ -25,7 +27,11 @@ Statuses: `Open` → `Decided` → `Superseded`. Only a human collaborator moves
 
 ## Open questions
 
-- What is lets-auction exactly (scope, users, deadline)? → fill `ai/context/project.md`.
-- Production database (Postgres vs SQLite volume)? → `deployment.md`, `stack.md`.
+- What is lets-auction exactly (scope, users, deadline)? → `scope.md` (proposed), then fill
+  `ai/context/project.md`.
+- Production database (Postgres vs SQLite volume)? → `deployment.md`, `stack.md`. The Milestone 1
+  design draft assumes Postgres.
+- Language: the Milestone 1 design draft (`docs/design/`) is kept in Thai at the author's request
+  (2026-11-11), against "Files in English". Allow Thai for design docs, or translate later?
 - Which license? (public repo)
 - Who reviews? (CODEOWNERS not set yet)
