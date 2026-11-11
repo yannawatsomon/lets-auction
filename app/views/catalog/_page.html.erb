@@ -1,0 +1,45 @@
+<% content_for :title, "สินค้าประมูล | Lets Auction" %>
+
+<main class="catalog-preview" lang="th">
+  <header>
+    <p class="catalog-preview__eyebrow">LETS AUCTION</p>
+    <h1>สินค้าประมูล</h1>
+    <p>ค้นหาสินค้าและเลือกวิธีประมูลที่เหมาะกับคุณ</p>
+    <% if @demo_catalog %>
+    <aside>
+      ตัวอย่างชั่วคราว ไม่ใช่รายการประมูลจริง · โหลดหน้าใหม่เพื่อสร้างเวลาอ้างอิงใหม่<br>
+      เวลาอ้างอิง: <time datetime="<%= @now.iso8601 %>"><%= @now.in_time_zone("Asia/Bangkok").strftime("%d/%m/%Y %H:%M:%S") %></time> (เวลาไทย)
+    </aside>
+    <% end %>
+  </header>
+
+  <%= render "catalog/filters", filters: @filters, categories: @categories, url: @catalog_url %>
+  <% if @filters.errors.any? %>
+    <p role="alert">กรุณาแก้ไขตัวกรองที่ระบุด้านบน</p>
+  <% else %>
+    <p role="status">พบสินค้า <%= @sections.values.sum(&:size) %> รายการ</p>
+  <% end %>
+
+  <% labels = {
+    ongoing: ["อยู่ระหว่างประมูล", "เรียงเวลาปิดใกล้ที่สุดก่อน", "กำลังประมูล"],
+    upcoming: ["ยังไม่ถึงเวลาประมูล", "เรียงเวลาเริ่มใกล้ที่สุดก่อน", "ยังไม่เริ่ม"],
+    ended: ["ผ่านไปแล้ว", "เรียงเวลาปิดล่าสุดก่อน", "จบแล้ว"]
+  } %>
+  <% @sections.each do |status, lots| %>
+    <section aria-labelledby="section-<%= status %>">
+      <div class="catalog-preview__section-heading">
+        <h2 id="section-<%= status %>"><%= labels.fetch(status)[0] %> <span><%= lots.size %> รายการ</span></h2>
+        <p><%= labels.fetch(status)[1] %></p>
+      </div>
+      <% if lots.empty? %>
+        <p class="catalog-preview__empty"><%= @filters.errors.any? ? "กรุณาแก้ไขตัวกรองเพื่อแสดงสินค้า" : "ไม่พบสินค้าที่ตรงกับตัวกรองในสถานะนี้" %></p>
+      <% end %>
+      <div class="catalog-grid">
+        <% lots.each do |lot| %>
+          <%= render "catalog/card", lot: lot, status: status, auction_type: lot.auction_type,
+            image_path: lot.id == 3 ? asset_path("catalog-preview-camera.svg") : nil %>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+</main>
