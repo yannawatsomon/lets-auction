@@ -1,0 +1,79 @@
+<% content_for :title, @lot.item&.title || "ล็อต #{@lot.lot_no}" %>
+<%= link_to "← กลับไปหน้างาน", bidding_auction_path(@auction), class: "bidding-btn bidding-btn--link" %>
+
+<div class="bidding-row">
+  <div style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <span class="bidding-chip bidding-chip--type"><%= bidding_type_label(@auction) %></span>
+      <span class="bidding-hint">ล็อต <%= @lot.lot_no %> · <%= @lot.item&.category %> · <%= @auction.title %></span>
+    </div>
+    <h1><%= @lot.item&.title || "สินค้า ##{@lot.item_id}" %></h1>
+    <div class="bidding-cover__img bidding-lot__media" aria-hidden="true"></div>
+    <div class="bidding-stats">
+      <div class="bidding-stat"><div class="bidding-stat__k">ราคาเริ่มต้นขั้นต่ำ</div><div class="bidding-stat__v"><%= bidding_baht(@lot.min_price_cents) %></div></div>
+      <div class="bidding-stat"><div class="bidding-stat__k">เปิดรับซอง</div><div class="bidding-stat__v"><%= bidding_time(@auction.starts_at) %></div></div>
+      <div class="bidding-stat"><div class="bidding-stat__k">ปิดรับซอง</div><div class="bidding-stat__v"><%= bidding_time(@auction.ends_at) %></div></div>
+    </div>
+    <section class="bidding-card" aria-labelledby="rules-h">
+      <h2 id="rules-h">กติกาการยื่นซอง</h2>
+      <ul class="bidding-rules">
+        <li><strong>ยื่นได้ครั้งเดียว</strong> แก้ไขหรือถอนซองไม่ได้หลังยืนยัน</li>
+        <li><strong>ไม่มีใครเห็นราคาหรือจำนวนซอง</strong> จนกว่าแอดมินจะประกาศผล ราคาถูกเข้ารหัสไว้</li>
+        <li><strong>ราคาสูงสุดชนะ และจ่ายตามราคาที่ตัวเองยื่น</strong> ต้องไม่ต่ำกว่าราคาเริ่มต้นขั้นต่ำ</li>
+        <li><strong>ราคาเท่ากัน</strong> ผู้ยื่นก่อนชนะ (ตามเวลาของ server)</li>
+        <li><strong>ปิดตรงเวลา ไม่ต่อเวลา</strong> · ผู้ชนะต้องชำระภายใน 48 ชั่วโมง ถ้าไม่ชำระ สิทธิ์จะไปที่อันดับถัดไป</li>
+      </ul>
+    </section>
+  </div>
+
+  <aside style="display:flex;flex-direction:column;gap:16px">
+    <% if !@auction.sealed_first_price? %>
+      <div class="bidding-card"><div class="bidding-notice bidding-notice--warn">ล็อตนี้เป็นแบบ English (ขึ้นราคา) ห้องประมูลสดจะเปิดให้ใช้เร็ว ๆ นี้</div></div>
+    <% elsif @my_bid %>
+      <section class="bidding-card bidding-card--sealed" aria-labelledby="receipt-h">
+        <h2 id="receipt-h" class="bidding-ok-title">ยื่นซองเรียบร้อย</h2>
+        <p class="bidding-hint">ราคาถูกเข้ารหัสและปิดผนึกแล้ว · คุณจะเห็นผลเมื่อแอดมินประกาศ</p>
+        <dl class="bidding-receipt">
+          <dt>เลขที่ซอง</dt><dd class="bidding-mono"><%= @lot.receipt_no_for(@my_bid) %></dd>
+          <dt>เวลายื่น (server)</dt><dd class="bidding-mono"><%= bidding_time(@my_bid.created_at) %>:<%= @my_bid.created_at.in_time_zone.strftime("%S.%L") %></dd>
+          <dt>ราคาของคุณ</dt><dd><%= bidding_baht(@my_bid.amount) %></dd>
+        </dl>
+        <%= link_to "ดูซองทั้งหมดของฉัน", bidding_bids_path, class: "bidding-btn" %>
+      </section>
+    <% elsif current_user.nil? %>
+      <div class="bidding-card">
+        <div class="bidding-notice bidding-notice--warn">เข้าสู่ระบบก่อนเพื่อยื่นซอง</div>
+        <% if mock_login_enabled? %><%= link_to "เข้าสู่ระบบ", new_mock_session_path, class: "bidding-btn bidding-btn--primary" %><% end %>
+      </div>
+    <% elsif !@participant&.registered? %>
+      <div class="bidding-card">
+        <div class="bidding-notice bidding-notice--warn">ต้องลงทะเบียนเข้างานนี้ก่อนจึงจะยื่นซองได้</div>
+        <%= link_to "ไปหน้างานเพื่อลงทะเบียน", bidding_auction_path(@auction), class: "bidding-btn bidding-btn--primary" %>
+      </div>
+    <% elsif @now < @auction.starts_at %>
+      <div class="bidding-card">
+        <div class="bidding-notice bidding-notice--warn">ยังไม่เปิดรับซอง · เปิดใน
+          <strong data-controller="bidding-countdown" data-bidding-countdown-deadline-value="<%= @auction.starts_at.iso8601 %>" data-bidding-countdown-server-time-value="<%= @now.iso8601(3) %>"><%= bidding_time(@auction.starts_at) %></strong>
+        </div>
+      </div>
+    <% elsif !@lot.accepting_bids?(@now) %>
+      <div class="bidding-card"><div class="bidding-notice bidding-notice--warn">ปิดรับซองแล้ว · รอแอดมินประกาศผล</div></div>
+    <% else %>
+      <%= form_with url: review_bidding_lot_bids_path(@lot), method: :post, class: "bidding-card", data: { turbo: false } do %>
+        <div class="bidding-head">
+          <h2>ยื่นซองราคา</h2>
+          <span class="bidding-hint">ปิดรับใน
+            <strong data-controller="bidding-countdown" data-bidding-countdown-deadline-value="<%= @auction.ends_at.iso8601 %>" data-bidding-countdown-server-time-value="<%= @now.iso8601(3) %>"><%= bidding_time(@auction.ends_at) %></strong>
+          </span>
+        </div>
+        <%= hidden_field_tag :idempotency_key, @idempotency_key %>
+        <div class="bidding-field">
+          <label for="bid-amount">ราคาที่ยื่น (บาท)</label>
+          <input id="bid-amount" name="amount" inputmode="decimal" autocomplete="off" required class="bidding-amount-input" aria-describedby="bid-amount-hint">
+          <span id="bid-amount-hint" class="bidding-hint">ไม่ต่ำกว่า <%= bidding_baht(@lot.min_price_cents) %> · พิมพ์ 500 = ฿ 500.00 · ทศนิยมไม่เกิน 2 ตำแหน่ง</span>
+        </div>
+        <button class="bidding-btn bidding-btn--primary bidding-btn--big">ตรวจสอบก่อนยื่น</button>
+      <% end %>
+    <% end %>
+  </aside>
+</div>

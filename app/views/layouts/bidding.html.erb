@@ -18,6 +18,7 @@
         <%= link_to "งานประมูล", bidding_auctions_path, "aria-current": (controller_name == "auctions" ? "page" : nil) %>
         <% if current_user&.buyer? %>
           <%= link_to "คำเชิญของฉัน", bidding_invitations_path, "aria-current": (controller_name == "invitations" ? "page" : nil) %>
+          <%= link_to "ซองของฉัน", bidding_bids_path, "aria-current": (controller_name == "bids" ? "page" : nil) %>
         <% end %>
       </nav>
       <div class="bidding-who">

@@ -41,7 +41,7 @@
     <div class="bidding-pick">
       <span class="bidding-pick__thumb" aria-hidden="true"></span>
       <span class="bidding-pick__body">
-        <span class="bidding-pick__title">ล็อต <%= lot.lot_no %> · <%= lot.item&.title || "สินค้า ##{lot.item_id}" %></span>
+        <span class="bidding-pick__title"><%= link_to "ล็อต #{lot.lot_no} · #{lot.item&.title || "สินค้า ##{lot.item_id}"}", bidding_lot_path(lot) %></span>
         <span class="bidding-pick__sub"><%= lot.item&.category %> · ราคาเริ่มต้นขั้นต่ำ <%= bidding_baht(lot.min_price_cents) %></span>
       </span>
     </div>

@@ -1,0 +1,28 @@
+<% content_for :title, "ซองของฉัน" %>
+<h1>ซองของฉัน</h1>
+<p class="bidding-hint">เห็นเฉพาะราคาของคุณเอง · ผลจะแสดงเมื่อแอดมินประกาศ</p>
+<div class="bidding-card bidding-card--scroll">
+  <% if @bids.empty? %>
+    <p class="bidding-hint">ยังไม่ได้ยื่นซอง · <%= link_to "ดูงานประมูล", bidding_auctions_path %></p>
+  <% else %>
+    <table class="bidding-table">
+      <thead><tr><th>เลขที่ซอง</th><th>สินค้า</th><th>งาน</th><th>เวลายื่น</th><th>ราคาของฉัน</th><th>สถานะ</th></tr></thead>
+      <tbody>
+        <% @bids.each do |b| %>
+          <tr>
+            <td class="bidding-mono"><%= b.lot.receipt_no_for(b) %></td>
+            <td><%= link_to(b.lot.item&.title || "ล็อต #{b.lot.lot_no}", bidding_lot_path(b.lot)) %></td>
+            <td><%= b.lot.auction.title %></td>
+            <td><%= bidding_time(b.created_at) %></td>
+            <td><%= bidding_baht(b.amount) %></td>
+            <td><%= b.lot.auction.published? ? "ประกาศผลแล้ว" : "รอประกาศผล" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+</div>
+<nav class="bidding-actions" aria-label="หน้า">
+  <% if @page > 1 %><%= link_to "← ก่อนหน้า", bidding_bids_path(page: @page - 1), class: "bidding-btn" %><% end %>
+  <% if @next_page %><%= link_to "ถัดไป →", bidding_bids_path(page: @page + 1), class: "bidding-btn" %><% end %>
+</nav>
