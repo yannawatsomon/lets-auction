@@ -1,0 +1,36 @@
+# MOCK DATA — stands in for the real `items` table until product onboarding's data model lands
+# (#48). Read by ProductOnboarding::Store. See ai/knowledge/product-onboarding-integration-points.md.
+# Fake products only (public repo). min_price_cents is satang (docs/decision/bidding.md).
+# `images`, `videos` and `documents` are file counts; the Store builds mock files from them.
+# Seller ids 11 and 12 and admin ids 1 and 2 come from db/mock/users.yml.
+# Ids start at 201 so they do not clash with db/mock/items.yml (bidding's mock products).
+- id: 201
+  seller_id: 11
+  category: "นาฬิกา"
+  title: "Vintage dress watch, 1972 (sample)"
+  description: "Steel case, original strap, running. Light scratches on the crystal."
+  min_price_cents: 8500000
+  status: pending_review
+  images: 3
+  documents: 1
+- id: 202
+  seller_id: 11
+  category: "อัญมณี"
+  title: "Gold signet ring (sample)"
+  description: "18k gold, size 54. Inherited, no box."
+  min_price_cents: 2400000
+  status: info_requested
+  images: 2
+  reviews:
+    - { admin_id: 1, action: request_info, note: "Please add a photo of the hallmark." }
+- id: 203
+  seller_id: 12
+  category: "ศิลปะ"
+  title: "Oil painting, harbour at dusk (sample)"
+  description: "Oil on canvas, 60 x 80 cm, signed lower right."
+  min_price_cents: 15000000
+  status: approved
+  images: 5
+  videos: 1
+  reviews:
+    - { admin_id: 2, action: approve }

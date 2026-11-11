@@ -54,6 +54,18 @@ client → `stack.md`.
   unattached stored files older than 48 hours. Why: stops storage filling with abandoned
   uploads. Trade-off: a seller who comes back after two days re-uploads. Alternative
   rejected: a manual clean-up. Source: issue #49, 2026-11-11.
+- **Product data runs on mock data until the structure between milestones is agreed.** What:
+  `ProductOnboarding::Item`, `Review` and `Store` are plain Ruby objects seeded from
+  `db/mock/product_items.yml`, with no migrations and no `db/schema.rb` change, following the
+  `MockData` pattern already on `main` (`ai/knowledge/mock-data.md`). Public methods mirror
+  what the real model will offer, so an ActiveRecord model can replace them in one place. Why:
+  several milestones are building at once and each schema change conflicts with the others
+  (`db/schema.rb`), while the users, auth and database decisions are still open. Trade-off:
+  nothing is saved between restarts, row locks and database constraints are not exercised, and
+  the swap to real tables is still to do. Alternative rejected: migrations now (a stub `users`
+  table and Active Storage tables on this branch conflicted with other milestones' schema
+  changes). Source: requested by yannawatsomon, 2026-11-11. The bullets below describe the real
+  implementation that replaces the mock.
 - **Files go through Rails' built-in Active Storage with direct upload.** What: `POST
   /uploads` validates kind, type and size, then returns a signed upload URL; the item stores an
   attachment, not a raw URL (`item_media` has a file attachment instead of a `url` column).
