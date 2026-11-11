@@ -4,6 +4,8 @@ class AuctionLot < ApplicationRecord
   OPEN_STATUSES = %w[scheduled live closed].freeze
 
   belongs_to :auction, inverse_of: :lots
+  belongs_to :leader_bid, class_name: "Bid", optional: true
+  has_many :bids, foreign_key: :lot_id, inverse_of: :lot, dependent: :restrict_with_exception
 
   enum :status, {
     scheduled: "scheduled", live: "live", closed: "closed",

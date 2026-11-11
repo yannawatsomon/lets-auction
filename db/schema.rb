@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_11_093000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_11_100000) do
   create_table "auction_lots", force: :cascade do |t|
     t.integer "auction_id", null: false
     t.bigint "item_id", null: false
@@ -27,6 +27,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_11_093000) do
     t.index ["auction_id", "lot_no"], name: "index_auction_lots_on_auction_id_and_lot_no", unique: true
     t.index ["auction_id"], name: "index_auction_lots_on_auction_id"
     t.index ["item_id"], name: "one_open_lot_per_item", unique: true, where: "status IN ('scheduled', 'live', 'closed')"
+    t.index ["leader_bid_id"], name: "index_auction_lots_on_leader_bid_id"
     t.check_constraint "bid_increment_cents IS NULL OR bid_increment_cents > 0", name: "auction_lots_increment_positive"
     t.check_constraint "lot_no BETWEEN 1 AND 10", name: "auction_lots_max_ten"
     t.check_constraint "min_price_cents > 0", name: "auction_lots_min_price_positive"
@@ -77,6 +78,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_11_093000) do
     t.check_constraint "visibility IN ('public', 'invite_only')", name: "auctions_visibility_valid"
   end
 
+  create_table "bids", force: :cascade do |t|
+    t.integer "lot_id", null: false
+    t.bigint "user_id", null: false
+    t.string "auction_type", null: false
+    t.text "amount_cents", null: false
+    t.string "idempotency_key", null: false
+    t.datetime "created_at", null: false
+    t.index ["lot_id", "created_at"], name: "index_bids_on_lot_id_and_created_at"
+    t.index ["lot_id", "user_id"], name: "one_sealed_bid_per_user", unique: true, where: "auction_type = 'sealed_first_price'"
+    t.index ["user_id", "idempotency_key"], name: "index_bids_on_user_id_and_idempotency_key", unique: true
+    t.check_constraint "auction_type IN ('sealed_first_price', 'english')", name: "bids_type_valid"
+    t.check_constraint "length(idempotency_key) BETWEEN 1 AND 200", name: "bids_idempotency_key_length"
+  end
+
   add_foreign_key "auction_lots", "auctions"
+  add_foreign_key "auction_lots", "bids", column: "leader_bid_id"
   add_foreign_key "auction_participants", "auctions"
+  add_foreign_key "bids", "auction_lots", column: "lot_id"
 end
