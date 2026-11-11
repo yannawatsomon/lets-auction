@@ -6,8 +6,6 @@ class AuctionLot < ApplicationRecord
   belongs_to :auction, inverse_of: :lots
   belongs_to :leader_bid, class_name: "Bid", optional: true
   has_many :bids, foreign_key: :lot_id, inverse_of: :lot, dependent: :restrict_with_exception
-  has_many :results, -> { order(:rank) }, class_name: "LotResult", foreign_key: :lot_id, inverse_of: :lot,
-    dependent: :restrict_with_exception
 
   enum :status, {
     scheduled: "scheduled", live: "live", closed: "closed",
@@ -27,6 +25,22 @@ class AuctionLot < ApplicationRecord
   def accepting_bids?(now = Time.current)
     (auction.scheduled? || auction.live?) && (scheduled? || live?) &&
       auction.starts_at <= now && now < auction.ends_at
+  end
+
+  # One bidder's place on this lot (#35). Not stored anywhere: the team builds on mock data and
+  # adds no new tables for now (bidding.md), and the ranking is deterministic, so it is computed
+  # from the bids whenever needed and survives restarts. Rank 1 = would-be winner.
+  Result = Data.define(:rank, :user_id, :bid) do
+    def amount_cents = bid.amount
+    def user = MockData.user(user_id)
+  end
+
+  # Ranked results once bids exist: amount desc → earliest → lowest id; English keeps each
+  # bidder's best bid. Decrypts in Ruby (amounts are encrypted).
+  def results
+    Bid.ranking(bids.to_a, one_per_user: auction.english?).each_with_index.map do |bid, i|
+      Result.new(rank: i + 1, user_id: bid.user_id, bid:)
+    end
   end
 
   # English: the lowest amount the next bid may be (bidding.md). First bid: the minimum price.

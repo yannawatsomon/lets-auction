@@ -63,6 +63,18 @@ collaborator confirms it in a PR (see `README.md`).
   price) is offered the lot and pays the amount they bid; repeat until someone pays or nobody
   is left (lot `unsold`). Why: the seller still sells without a new auction. Source: @guy127 in
   chat, 2026-11-11 (answers the open question in `scope.md`).
+- **No new database tables or migrations for now; mockup first.** What: the team wants to work
+  on the mockup and mock data before touching the database. The bidding tables already on
+  `main` stay as they are (`auctions`, `auction_lots`, `auction_participants`, `bids`,
+  `audit_logs`), but nothing new is added: rankings are computed from `bids` when needed
+  (`AuctionLot#results`, deterministic, survives restarts) instead of a `lot_results` table (it
+  reached `main` with #96 minutes before this rule; dropped again by migration
+  `20261111130000_drop_lot_results`, a one-off exception approved by @guy127), and
+  offers/payment state (#36) use in-memory mock data like the other milestones. Why: the other
+  milestones run on mock data only, and the table structure between milestones isn't agreed.
+  Trade-off: mock state is lost on restart; ranking is recomputed (fine for a few hundred bids a
+  lot). Alternative rejected: converting the existing tables back to mock (large rework of
+  #28–#35 for no user-visible gain). Source: @guy127 in chat, 2026-11-11.
 - **Orders are mock data for now.** What: bidding creates orders through an in-memory mock
   (like `ProductOnboarding::Store`), not an `orders` table, until the payment milestone agrees
   the table. An order carries `lot_id`, `buyer_id`, `seller_id`, `amount_cents` (the bid),
