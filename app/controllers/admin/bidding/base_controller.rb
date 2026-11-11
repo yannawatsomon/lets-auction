@@ -3,6 +3,7 @@ module Admin
     # Base for the bidding admin pages (/admin/bidding/...). Named per milestone so other
     # milestones can have their own admin base controller.
     class BaseController < ApplicationController
+      include BiddingAudit
       layout "bidding_admin"
       before_action :require_admin
 

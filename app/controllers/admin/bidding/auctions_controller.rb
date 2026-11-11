@@ -30,6 +30,7 @@ module Admin
       def create
         @auction = Auction.new(auction_params.merge(created_by_id: current_user.id))
         if @auction.save
+          audit!("auction.created", @auction, { auction_type: @auction.auction_type })
           redirect_to admin_bidding_auction_path(@auction), notice: "สร้างงานแล้ว เลือกสินค้าเข้างานได้เลย"
         else
           render :new, status: :unprocessable_content
@@ -42,6 +43,7 @@ module Admin
 
       def update
         if @auction.update(auction_params)
+          audit!("auction.updated", @auction, { changed: @auction.saved_changes.keys - %w[updated_at] })
           redirect_to admin_bidding_auction_path(@auction), notice: "บันทึกแล้ว"
         else
           render :edit, status: :unprocessable_content
@@ -50,11 +52,13 @@ module Admin
 
       def schedule
         @auction.schedule!
+        audit!("auction.scheduled", @auction, { lots: @auction.lots.map(&:id) })
         redirect_to admin_bidding_auction_path(@auction), notice: "เผยแพร่งานแล้ว จะเริ่มตามเวลาที่ตั้งไว้"
       end
 
       def cancel
         @auction.cancel!(reason: params[:cancel_reason])
+        audit!("auction.cancelled", @auction, { reason: @auction.cancel_reason })
         redirect_to admin_bidding_auction_path(@auction), notice: "ยกเลิกงานแล้ว"
       end
 

@@ -10,6 +10,13 @@ module Bidding
     before_action :require_login
     before_action :set_lot, only: %i[review create]
 
+    # Bid spam guard (#37, security-review §5): per buyer, across all lots. In-process store like
+    # Onboarding::IdentitiesController's; move to the shared cache with the database.
+    RATE_LIMIT_STORE = ActiveSupport::Cache::MemoryStore.new
+    RATE_LIMIT = 30
+    rate_limit to: RATE_LIMIT, within: 1.minute, only: %i[review create], store: RATE_LIMIT_STORE,
+      by: -> { current_user.id }, with: -> { too_many_requests }
+
     def index
       @page = [ params[:page].to_i, 1 ].max
       rows = Bid.where(user_id: current_user.id).includes(lot: :auction).order(created_at: :desc)
@@ -51,6 +58,14 @@ module Bidding
     end
 
     private
+
+    def too_many_requests
+      message = "เสนอราคาถี่เกินไป ยังไม่ได้บันทึกคำขอนี้ รอ 1 นาทีแล้วลองใหม่"
+      respond_to do |f|
+        f.html { redirect_to(@lot ? bidding_lot_path(@lot) : bidding_auctions_path, alert: message, status: :see_other) }
+        f.json { render json: { error: "rate_limited", message: }, status: :too_many_requests }
+      end
+    end
 
     def set_lot
       @lot = AuctionLot.includes(:auction).find_by(id: params[:lot_id])
