@@ -27,6 +27,11 @@ class AuctionLot < ApplicationRecord
       auction.starts_at <= now && now < auction.ends_at
   end
 
+  # English: the lowest amount the next bid may be (bidding.md). First bid: the minimum price.
+  def next_minimum_cents
+    bid_count.zero? || current_price_cents.nil? ? min_price_cents : current_price_cents + bid_increment_cents.to_i
+  end
+
   # Receipt number printed on the bid receipt, e.g. "L12-B345".
   def receipt_no_for(bid) = "L#{id}-B#{bid.id}"
 

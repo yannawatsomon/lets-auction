@@ -27,8 +27,8 @@
   </div>
 
   <aside style="display:flex;flex-direction:column;gap:16px">
-    <% if !@auction.sealed_first_price? %>
-      <div class="bidding-card"><div class="bidding-notice bidding-notice--warn">ล็อตนี้เป็นแบบ English (ขึ้นราคา) ห้องประมูลสดจะเปิดให้ใช้เร็ว ๆ นี้</div></div>
+    <% if @auction.english? %>
+      <%= render "english_panel" %>
     <% elsif @my_bid %>
       <section class="bidding-card bidding-card--sealed" aria-labelledby="receipt-h">
         <h2 id="receipt-h" class="bidding-ok-title">ยื่นซองเรียบร้อย</h2>

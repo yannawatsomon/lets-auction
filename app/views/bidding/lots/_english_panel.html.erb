@@ -1,0 +1,45 @@
+<%# English bid panel (#32), adapted from mockup "Lot". Live updates and masked history: #33/#34. %>
+<% leading = @lot.leader_bid&.user_id == current_user&.id %>
+<section class="bidding-card" aria-labelledby="eng-h">
+  <div class="bidding-head">
+    <h2 id="eng-h">
+      <% if @lot.accepting_bids?(@now) %><span class="bidding-chip bidding-chip--live">● LIVE</span><% else %>ประมูลขึ้นราคา<% end %>
+    </h2>
+    <span class="bidding-hint">
+      <% if @now < @auction.starts_at %>เปิดใน<% else %>ปิดใน<% end %>
+      <strong data-controller="bidding-countdown" data-bidding-countdown-deadline-value="<%= (@now < @auction.starts_at ? @auction.starts_at : @auction.ends_at).iso8601 %>" data-bidding-countdown-server-time-value="<%= @now.iso8601(3) %>"><%= bidding_time(@now < @auction.starts_at ? @auction.starts_at : @auction.ends_at) %></strong>
+    </span>
+  </div>
+  <div>
+    <div class="bidding-hint"><%= @lot.bid_count.zero? ? "ราคาเริ่มต้น" : "ราคาปัจจุบัน" %></div>
+    <div class="bidding-amount-big"><%= bidding_baht(@lot.bid_count.zero? ? @lot.min_price_cents : @lot.current_price_cents) %></div>
+    <% if leading %><div class="bidding-ok-title"><strong>คุณเป็นผู้นำอยู่</strong></div><% end %>
+  </div>
+  <div class="bidding-stats">
+    <div class="bidding-stat"><div class="bidding-stat__k">ขั้นบิดขั้นต่ำ</div><div class="bidding-stat__v"><%= bidding_baht(@lot.bid_increment_cents) %></div></div>
+    <div class="bidding-stat"><div class="bidding-stat__k">จำนวนครั้งที่เสนอ</div><div class="bidding-stat__v"><%= @lot.bid_count %> ครั้ง</div></div>
+  </div>
+
+  <% if current_user.nil? %>
+    <div class="bidding-notice bidding-notice--warn">เข้าสู่ระบบก่อนเพื่อเสนอราคา</div>
+  <% elsif @participant&.invited? %>
+    <div class="bidding-notice bidding-notice--warn">ตอบรับคำเชิญก่อนจึงจะเสนอราคาได้</div>
+    <%= button_to "ตอบรับคำเชิญ", accept_bidding_invitation_path(@participant), class: "bidding-btn bidding-btn--primary" %>
+  <% elsif !@participant&.accepted? %>
+    <div class="bidding-notice bidding-notice--warn">งานนี้เปิดเฉพาะผู้ที่ได้รับเชิญ</div>
+  <% elsif !@lot.accepting_bids?(@now) %>
+    <div class="bidding-notice bidding-notice--warn"><%= @now < @auction.starts_at ? "ยังไม่เปิดประมูล" : "ปิดประมูลแล้ว · รอแอดมินประกาศผล" %></div>
+  <% elsif leading %>
+    <div class="bidding-notice bidding-notice--ok">คุณเสนอราคาสูงสุดอยู่ รอดูว่าจะมีใครเสนอแซงหรือไม่</div>
+  <% else %>
+    <%= form_with url: bidding_lot_bids_path(@lot), method: :post, class: "bidding-field", data: { turbo_confirm: "ยืนยันเสนอราคานี้? ยกเลิกไม่ได้" } do %>
+      <%= hidden_field_tag :idempotency_key, @idempotency_key %>
+      <label for="eng-amount">จำนวนเงินที่เสนอ (บาท)</label>
+      <input id="eng-amount" name="amount" inputmode="decimal" autocomplete="off" required class="bidding-amount-input"
+        value="<%= Baht.format(@lot.next_minimum_cents) %>" aria-describedby="eng-hint">
+      <span id="eng-hint" class="bidding-hint">ขั้นต่ำครั้งนี้ <%= bidding_baht(@lot.next_minimum_cents) %> · เสนอแล้วยกเลิกไม่ได้</span>
+      <button class="bidding-btn bidding-btn--primary bidding-btn--big">ยืนยันเสนอราคา</button>
+    <% end %>
+  <% end %>
+  <p class="bidding-hint">ปิดตรงเวลา ไม่ต่อเวลา · ผู้ชนะต้องชำระภายใน 48 ชั่วโมง</p>
+</section>

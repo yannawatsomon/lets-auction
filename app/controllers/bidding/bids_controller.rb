@@ -1,6 +1,7 @@
 module Bidding
-  # Sealed bids (issue #31). HTML: form → review (nothing saved) → create. JSON:
-  # POST /bidding/lots/:lot_id/bids with header Idempotency-Key and { amount, accept_terms }.
+  # Bids (sealed #31, English #32): one endpoint, the logic branches on the auction type.
+  # Sealed HTML: form → review (nothing saved) → create. English HTML: one confirmed form.
+  # JSON: POST /bidding/lots/:lot_id/bids with header Idempotency-Key and { amount, accept_terms }.
   # Errors are { error, message } with a Thai message.
   class BidsController < ApplicationController
     layout "bidding"
@@ -30,18 +31,21 @@ module Bidding
     end
 
     def create
-      result = PlaceSealedBid.call(
-        lot: @lot, user: current_user, amount_text: params[:amount],
-        idempotency_key: request.headers["Idempotency-Key"].presence || params[:idempotency_key],
-        accept_terms: params[:accept_terms]
-      )
+      key = request.headers["Idempotency-Key"].presence || params[:idempotency_key]
+      result =
+        if @lot.auction.english?
+          PlaceEnglishBid.call(lot: @lot, user: current_user, amount_text: params[:amount], idempotency_key: key)
+        else
+          PlaceSealedBid.call(lot: @lot, user: current_user, amount_text: params[:amount], idempotency_key: key,
+            accept_terms: params[:accept_terms])
+        end
       respond_to do |f|
-        f.html { redirect_to bidding_lot_path(@lot), notice: result.replayed ? "ซองนี้ยื่นไว้แล้ว" : "ยื่นซองเรียบร้อย ราคาถูกเข้ารหัสและปิดผนึกแล้ว" }
+        f.html { redirect_to bidding_lot_path(@lot), notice: placed_notice(result), status: :see_other }
         f.json { render json: receipt_json(result.bid), status: result.replayed ? :ok : :created }
       end
     rescue Bidding::Error => e
       respond_to do |f|
-        f.html { redirect_to bidding_lot_path(@lot), alert: e.message }
+        f.html { redirect_to bidding_lot_path(@lot), alert: e.message, status: :see_other }
         f.json { render json: { error: e.code, message: e.message }, status: e.http_status }
       end
     end
@@ -51,6 +55,12 @@ module Bidding
     def set_lot
       @lot = AuctionLot.includes(:auction).find_by(id: params[:lot_id])
       head(:not_found) unless @lot && @lot.auction.visible_to?(current_user)
+    end
+
+    def placed_notice(result)
+      return "คำขอนี้บันทึกไว้แล้ว" if result.replayed
+
+      @lot.auction.english? ? "เสนอราคาแล้ว คุณเป็นผู้นำอยู่" : "ยื่นซองเรียบร้อย ราคาถูกเข้ารหัสและปิดผนึกแล้ว"
     end
 
     def receipt_json(bid)
