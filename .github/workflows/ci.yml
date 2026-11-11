@@ -96,5 +96,5 @@ jobs:
           # REDIS_URL: redis://localhost:6379/0
         run: bin/rails db:test:prepare test
 
-      - name: Test catalog refresh scheduling
-        run: node --test test/javascript/catalog_refresh_loop_test.mjs
+      - name: Test catalog JavaScript behavior
+        run: node --test test/javascript/*_test.mjs
