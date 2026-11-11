@@ -65,6 +65,22 @@ Active Record Encryption in one `text` column, and bids are append-only. Decisio
 - Gotcha for tests: `travel_to` drops sub-seconds, so `travel_to(auction.ends_at)` can land
   just *before* the end. Use `ends_at + 1.second` to test "closed".
 
+## Live updates (#33)
+
+- `Bidding::AuctionChannel` (`{ channel: "Bidding::AuctionChannel", auction_id }`): admins, or
+  active participants (registered sealed / accepted English). Everyone else is rejected.
+  Streams: `bidding:auction:<id>` and, for buyers, `bidding:auction:<id>:user:<user_id>`.
+- `Bidding::Broadcaster` builds every message. `lot.state` on subscribe (with `server_time`);
+  `bid.accepted` + `bid.outbid` (to the old leader only) after an English bid **commits**;
+  `lot_closed` / `result_published` are ready for #35 / #36. Sealed auctions get no bid events
+  and their `lot.state` has no price or count. Leaders are masked as "ผู้ประมูล N" (position in
+  the participant list).
+- `ApplicationCable::Connection` reads the mock user from the encrypted session cookie with the
+  same rules as `ApplicationController` (production: sellers only, behind the flag).
+- Gotchas: the cable test cookie jar can't hold encrypted cookies, so the session lookup is
+  `Connection.user_from_session` and is tested directly, plus one integration test that decrypts
+  the real login cookie. When building an `HTTP_COOKIE` header by hand, `CGI.escape` the value.
+
 ## Audit log (shared)
 
 `audit_logs` / `AuditLog.record!(action:, entity:, actor:, data:)` is append-only and meant for
