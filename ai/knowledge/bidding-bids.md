@@ -81,6 +81,22 @@ Active Record Encryption in one `text` column, and bids are append-only. Decisio
   `Connection.user_from_session` and is tested directly, plus one integration test that decrypts
   the real login cookie. When building an `HTTP_COOKIE` header by hand, `CGI.escape` the value.
 
+## English live room (#34)
+
+- `bidding/lots/_english_panel` renders the current state; the `bidding-live-lot` Stimulus
+  controller (`app/javascript/controllers/bidding_live_lot_controller.js`) subscribes to
+  `Bidding::AuctionChannel` and updates price, next minimum, count, masked leader, "you're
+  leading" / outbid, closed state, and reloads the history fragment after each `bid.accepted`.
+  On reconnect the channel re-sends `lot.state`, so the page catches up.
+- "Am I leading?" works without user ids on the socket: the page gets the viewer's own masked
+  label (`BidHistory#viewer_label`) and compares it with the broadcast leader.
+- History: `GET /bidding/lots/:id/bids` (`LotsController#history`), English only, invited or
+  admin, newest first, 20 per page, HTML fragment or JSON. Sealed lots → 404.
+- `@rails/actioncable` is pinned from the Rails gem's own `actioncable.esm.js` (no npm, no gem).
+- The bid form stays in the page while you lead (hidden), so it can reappear when you're outbid.
+- No browser/system tests yet (`test/system/` doesn't exist); the JS is checked by
+  `node --check` only. Try it by hand: two browsers, two invited buyers, one English lot.
+
 ## Audit log (shared)
 
 `audit_logs` / `AuditLog.record!(action:, entity:, actor:, data:)` is append-only and meant for
