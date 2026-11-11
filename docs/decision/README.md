@@ -11,7 +11,7 @@ Statuses: `Open` → `Decided` → `Superseded`. Only a human collaborator moves
 |---|---|---|---|
 | Repo & collaboration | [repo-and-collaboration.md](repo-and-collaboration.md) | Decided | Public GitHub repo, PR flow on protected `main` with required CI; branches `<handle>-<type>-[<issue>-]<detail>` (CI-checked), short-lived |
 | AI agent hub | [ai-agent-hub.md](ai-agent-hub.md) | Decided | `AGENTS.md` entry point + `ai/` hub + `.claude/skills/`; tool files only point back |
-| Agent boundaries | [agent-boundaries.md](agent-boundaries.md) | Decided | Agents never force-push or delete remote branches; commits, pushes, PRs, gems, CI, GitHub/Railway changes are ask-first; enforced via `.claude/settings.json` |
+| Agent boundaries | [agent-boundaries.md](agent-boundaries.md) | Decided | Agents never force-push or delete remote branches; commits, pushes, PRs, gems, CI, GitHub/Railway changes are ask-first; exception: CI Auto-fix on its own PR branch; enforced via `.claude/settings.json` |
 | Stack | [stack.md](stack.md) | Decided | Ruby on Rails (Ruby 4.0.5, Rails 8.1), GitHub Actions CI — confirm with a collaborator |
 | Deployment | [deployment.md](deployment.md) | Decided | Railway, auto-deploy from `main`; production DB still open |
 | Scope | — | Open | What lets-auction must do |
@@ -23,7 +23,8 @@ Statuses: `Open` → `Decided` → `Superseded`. Only a human collaborator moves
 - Merging to `main` deploys to production (Railway), so CI must be green first.
 - **Agent boundaries (the one rule not to miss):** AI agents never force-push or delete remote
   branches, and do commits, pushes, PRs, gem/CI changes and GitHub/Railway changes only when a
-  human explicitly asks for that exact action (2026-11-11). See `agent-boundaries.md`.
+  human explicitly asks for that exact action (2026-11-11); exception: a PR with CI Auto-fix
+  on. See `agent-boundaries.md`.
 - Branch names: `<github-handle>-<type>-[<issue>-]<detail>`, e.g. `yannawatsomon-fix-add-db-schema`
   (2026-11-11).
 - Agent-agnostic: any agent reads `AGENTS.md`; Claude Code is the confirmed primary tool.
