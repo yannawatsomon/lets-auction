@@ -1,5 +1,6 @@
 <%# locals: (filters:, categories:, url:) %>
 <%= form_with url: url, method: :get, class: "catalog-filters", data: { turbo: false }, aria: { label: "ค้นหาและกรองสินค้าประมูล" } do |form| %>
+  <div class="catalog-filters__grid">
   <div class="catalog-filters__field catalog-filters__search">
     <%= form.label :q, "ค้นหาสินค้า", for: "filter-q" %>
     <%= form.search_field :q, value: filters.q, id: "filter-q", maxlength: 100, placeholder: "ค้นหาจากชื่อสินค้า",
@@ -28,6 +29,7 @@
       <% if filters.errors[field].any? %><p class="catalog-filters__error" id="filter-<%= field %>-error"><%= filters.errors[field].join(" · ") %></p><% end %>
     </div>
   <% end %>
+  </div>
   <div class="catalog-filters__actions">
     <%= form.submit "ค้นหาและกรอง" %>
     <%= link_to "ล้างตัวกรอง", url %>

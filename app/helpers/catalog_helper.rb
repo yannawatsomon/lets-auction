@@ -16,4 +16,9 @@ module CatalogHelper
     query = attributes.merge(pages).reject { |_key, value| value.empty? }.to_query
     "#{url}?#{query}#{anchor ? "##{anchor}" : ''}"
   end
+
+  def catalog_section_url(filters, status)
+    attributes = Catalog::Filters::FIELDS.to_h { |field| [ field, filters.public_send(field) ] }
+    catalog_path(attributes.merge(status: status).reject { |_key, value| value.to_s.empty? })
+  end
 end

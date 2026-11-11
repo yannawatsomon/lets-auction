@@ -1,18 +1,30 @@
 <% content_for :title, "สินค้าประมูล | Lets Auction" %>
+<% content_for :head do %>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<% end %>
 
 <main class="catalog-preview" lang="th">
-  <header>
-    <p class="catalog-preview__eyebrow">LETS AUCTION</p>
-    <h1>สินค้าประมูล</h1>
-    <p>ค้นหาสินค้าและเลือกวิธีประมูลที่เหมาะกับคุณ</p>
-    <% if @demo_catalog %>
-    <aside>
-      ตัวอย่างชั่วคราว ไม่ใช่รายการประมูลจริง · โหลดหน้าใหม่เพื่อสร้างเวลาอ้างอิงใหม่<br>
-      เวลาอ้างอิง: <time datetime="<%= @now.iso8601 %>"><%= @now.in_time_zone("Asia/Bangkok").strftime("%d/%m/%Y %H:%M:%S") %></time> (เวลาไทย)
-    </aside>
-    <% end %>
+  <header class="catalog-hero">
+    <div>
+      <p class="catalog-eyebrow">LET’S AUCTION / MARKETPLACE</p>
+      <h1>สินค้าประมูล</h1>
+      <p>ค้นหาสินค้าและเลือกวิธีประมูลที่เหมาะกับคุณ</p>
+    </div>
+    <div class="catalog-hero__side">AUCTION MARKETPLACE<strong>ค้นพบสินทรัพย์ที่ใช่</strong></div>
   </header>
-
+  <% if @demo_catalog %>
+    <aside class="catalog-notice" role="status">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 11v6m0-10h.01"/></svg>
+      <div><strong>ตัวอย่างชั่วคราว — ไม่ใช่รายการประมูลจริง</strong>
+        <small>โหลดหน้าใหม่เพื่อสร้างเวลาอ้างอิงใหม่ · เวลาอ้างอิง:
+          <time datetime="<%= @now.iso8601 %>"><%= @now.in_time_zone("Asia/Bangkok").strftime("%d/%m/%Y %H:%M:%S") %></time> (เวลาไทย)
+        </small>
+      </div>
+    </aside>
+  <% end %>
+  <div class="catalog-filter-heading"><h2>ค้นหาและกรองสินค้า</h2><span>ปรับตัวกรองเพื่อค้นหารายการที่สนใจ</span></div>
   <%= render "catalog/filters", filters: @filters, categories: @categories, url: @catalog_url %>
   <% if @catalog_load_error %>
     <div id="catalog-load-error" class="catalog-preview__empty" role="alert">
@@ -28,7 +40,10 @@
       </div>
     <% end %>
   <% else %>
-    <p id="catalog-total" role="status">พบสินค้า <%= @sections.values.sum(&:size) %> รายการ</p>
+    <div class="catalog-results-heading">
+      <h2>รายการสินค้าประมูล <span id="catalog-total" role="status"><%= @sections.values.sum(&:size) %> รายการ</span></h2>
+      <% unless @catalog_overview %><%= link_to "← กลับหน้ารวมสินค้า", root_path, class: "catalog-back" %><% end %>
+    </div>
   <% end %>
 
   <% labels = {
@@ -37,11 +52,12 @@
     ended: ["ผ่านไปแล้ว", "เรียงเวลาปิดล่าสุดก่อน", "จบแล้ว"]
   } %>
   <% @sections.each do |status, lots| %>
-    <% visible_lots = @pagination.items(status, lots) %>
-    <section aria-labelledby="section-<%= status %>">
+    <% visible_lots = @catalog_overview ? lots.first(3) : @pagination.items(status, lots) %>
+    <section class="<%= @catalog_overview ? "catalog-overview-section" : "catalog-listing-section" %>" aria-labelledby="section-<%= status %>">
       <div class="catalog-preview__section-heading">
         <h2 id="section-<%= status %>"><%= labels.fetch(status)[0] %> <span><%= lots.size %> รายการ</span></h2>
         <p><%= labels.fetch(status)[1] %></p>
+        <% if @catalog_overview && lots.any? %><%= link_to "ดูเพิ่มเติม ↗", catalog_section_url(@filters, status), class: "catalog-see-more", aria: { label: "ดูเพิ่มเติม: #{labels.fetch(status)[0]}" } %><% end %>
       </div>
       <% if lots.empty? %>
         <p class="catalog-preview__empty"><%= @filters.errors.any? || @pagination.errors.any? ? "กรุณาแก้ไขตัวกรองหรือจำนวนหน้าเพื่อแสดงสินค้า" : "ไม่พบสินค้าที่ตรงกับตัวกรองในสถานะนี้" %></p>
@@ -49,10 +65,10 @@
       <div class="catalog-grid">
         <% visible_lots.each do |lot| %>
           <%= render "catalog/card", lot: lot, status: status, auction_type: lot.auction_type,
-            image_path: lot.id == 3 ? asset_path("catalog-preview-camera.svg") : nil %>
+            image_path: lot.id == 3 ? asset_path("catalog-preview-camera.svg") : nil, min_price_cents: lot.min_price_cents %>
         <% end %>
       </div>
-      <% if lots.any? %>
+      <% if lots.any? && !@catalog_overview %>
         <div class="catalog-section-navigation">
           <p>แสดง <%= visible_lots.size %> จาก <%= lots.size %> รายการ</p>
           <% if @pagination.more?(status, lots) %>
@@ -65,4 +81,5 @@
       <% end %>
     </section>
   <% end %>
+  <% if @demo_catalog %><p class="catalog-footnote">DEMO INTERFACE · รายการและราคาในหน้านี้เป็นข้อมูลตัวอย่างสำหรับแสดงการออกแบบ</p><% end %>
 </main>

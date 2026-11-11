@@ -4,6 +4,6 @@ class CatalogPreviewsController < ApplicationController
   def show
     return head :not_found unless Rails.env.development?
 
-    prepare_catalog(url: "/catalog-preview")
+    prepare_catalog(url: "/catalog-preview", overview: true)
   end
 end

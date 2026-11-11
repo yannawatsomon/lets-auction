@@ -3,9 +3,10 @@ module CatalogPage
 
   private
 
-  def prepare_catalog(url:)
+  def prepare_catalog(url:, overview: false)
     @now = Time.current
     @catalog_url = url
+    @catalog_overview = overview
     @demo_catalog = Catalog::DemoLots.enabled?
     page_attributes = Catalog::Pagination::FIELDS.to_h { |field| [ field, params[field] ] }
     @pagination = Catalog::Pagination.new(page_attributes)
