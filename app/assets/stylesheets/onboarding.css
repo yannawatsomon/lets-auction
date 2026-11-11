@@ -51,6 +51,8 @@
 .ob-summary dt { font-size: 13px; color: var(--muted); }
 .ob-summary dd { margin: 2px 0 0; font-size: 16px; font-weight: 600; }
 .ob-tries { margin: 0; font-size: 14px; color: var(--body); }
+.ob-done-panel .ob-done-icon { color: var(--ok-line); }
+.ob-done-panel h2 { font-size: 24px; font-weight: 700; }
 .ob-score-line .v { font-size: 40px; font-weight: 700; color: var(--ink); }
 
 @media (max-width: 640px) {

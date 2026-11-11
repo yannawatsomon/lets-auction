@@ -66,6 +66,8 @@ password (`session[:bidding_demo_unlocked]`). See `bidding-demo-on-railway.md`.
   `BuyerStanding.reset!` in `setup`.
 - `OnboardingStore` lives in process memory: a server restart resets it, and each Puma worker
   or parallel test process has its own copy. Tests call `OnboardingStore.reset!` in `setup`.
+  In development, editing any app file makes Rails reload code, which also resets the store
+  to the seed, so a buyer you walked through the steps is back to "not started".
 - The step 1 rate limit (`Onboarding::IdentitiesController::RATE_LIMIT_STORE`) is also an
   in-process `MemoryStore`, because the test env's cache is `:null_store` and would never
   limit. Integration tests clear it in `setup`. Move it to the shared cache with the database.

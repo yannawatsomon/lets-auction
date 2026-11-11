@@ -101,6 +101,14 @@ Tracked by the User Onboarding milestone (#15–#21, #66).
   wrong has 2 retries in that window, not 3. Alternative rejected: scoring automatically when
   step 2 is saved (every step 2 save would use a try). Source: eyetanamas-max in chat,
   2026-11-12 (#19).
+- **Step 4: review, declare the answers true, confirm; then a success page.** What: step 4
+  shows the score, points per part and what the grade unlocks; the buyer must tick "the
+  information I gave is true" before confirming (time kept as `confirmed_at`). Only `scored`
+  buyers can confirm; grade E can confirm too, and its success page says it can't bid yet
+  and links back to step 2 to re-score. After confirming the same URL shows a success page
+  with a link to the catalog. Why: income is self-declared, so the buyer states it is true;
+  consent to collect data was already given in step 1. Trade-off: one more click. Source:
+  eyetanamas-max in chat, 2026-11-12 (#20).
 - **Build on mock data first; no database tables yet.** What: `UserOnboarding` (ActiveModel)
   and `CreditAssessment` (immutable `Data`) live in `OnboardingStore`, an in-memory store
   seeded from `db/mock/user_onboardings.yml` with one fake buyer per grade A–E and one who

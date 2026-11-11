@@ -72,6 +72,7 @@ Rails.application.routes.draw do
     resource :identity, only: %i[edit update]
     resource :employment, only: %i[edit update]
     resource :score, only: %i[show create]
+    resource :confirmation, only: %i[show create]
   end
 
   root "home#index"
