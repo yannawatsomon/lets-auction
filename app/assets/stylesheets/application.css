@@ -113,3 +113,10 @@ table.list td { padding: 12px 8px; border-bottom: 1px solid var(--line-soft); ve
   .topbar, .page { padding-left: 16px; padding-right: 16px; }
   h1 { font-size: 24px; }
 }
+
+/* Product onboarding statuses (ProductOnboarding::Item::STATUSES) */
+.chip.pending_review { background: var(--warn-bg); color: var(--warn); }
+.chip.info_requested, .chip.withdrawn { background: var(--tile); color: var(--ink); }
+.chip.approved, .chip.sold { background: var(--ok-bg); color: var(--ok); }
+.chip.in_auction { background: var(--ink); color: var(--cream); }
+.chip.rejected { background: var(--bad-bg); color: var(--bad); }

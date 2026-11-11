@@ -16,5 +16,11 @@ Rails.application.routes.draw do
     end
   end
 
+  # Product onboarding milestone: http://127.0.0.1:3000/product-onboarding (mock data, not in production).
+  namespace :product_onboarding, path: "product-onboarding" do
+    root "items#index"
+    resources :uploads, only: %i[create update], param: :key
+  end
+
   root "home#index"
 end
