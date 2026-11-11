@@ -153,3 +153,12 @@ a.bidding-cover { text-decoration: none; color: inherit; display: flex; flex-dir
 .bidding-history__row:last-child { border-bottom: 0; }
 .bidding-history__row--mine .bidding-history__who { font-weight: 600; }
 .bidding [hidden] { display: none !important; }
+
+/* Results (#36), adapted from mockups A3 / B6. */
+.bidding-result--win { background: var(--bidding-ink); color: var(--bidding-cream); border-color: var(--bidding-ink); }
+.bidding-result--win .bidding-hint, .bidding-result--win .bidding-stat__k { color: #C9CBD1; }
+.bidding-result--win .bidding-stat { background: #22252D; border-color: #22252D; }
+.bidding-result__eyebrow { font-size: 14px; font-weight: 600; letter-spacing: .06em; color: var(--bidding-gold); }
+.bidding-result:not(.bidding-result--win) .bidding-result__eyebrow { color: var(--bidding-muted); }
+.bidding-inline-form { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.bidding-inline-form input { font: inherit; font-size: 14px; min-height: 44px; padding: 0 10px; border: 1px solid var(--bidding-field); border-radius: 8px; width: 160px; }

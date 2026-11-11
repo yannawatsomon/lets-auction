@@ -8,6 +8,7 @@ module Bidding
     def perform(now: Time.current)
       Auction.where(status: "scheduled").where(starts_at: ..now).where("ends_at > ?", now).find_each { |a| OpenAuction.call(auction: a, now:) }
       Auction.where(status: %w[scheduled live]).where(ends_at: ..now).find_each { |a| CloseAuction.call(auction: a, now:) }
+      OrderStore.all_due(now).each { |o| Results.expire!(order_id: o.id, now:) } # #36 offers past 48 h
     end
   end
 end

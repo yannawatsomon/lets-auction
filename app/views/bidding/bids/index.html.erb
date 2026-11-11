@@ -15,7 +15,7 @@
             <td><%= b.lot.auction.title %></td>
             <td><%= bidding_time(b.created_at) %></td>
             <td><%= bidding_baht(b.amount) %></td>
-            <td><%= b.lot.auction.published? ? "ประกาศผลแล้ว" : "รอประกาศผล" %></td>
+            <td><%= b.lot.auction.published? ? link_to("ดูผล", result_bidding_lot_path(b.lot)) : "รอประกาศผล" %></td>
           </tr>
         <% end %>
       </tbody>
