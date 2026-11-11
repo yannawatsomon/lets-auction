@@ -125,7 +125,9 @@ Built as pure Ruby, no storage, no Active Storage: `ProductOnboarding::UploadPol
 - [ ] **Step 4: Build `index`/`show` views** with a status filter and the latest `item_reviews.note`; mobile-first layout.
 - [ ] **Step 5: Run** `bin/rails test` **Expected:** PASS. Then `bin/rubocop`, `bin/brakeman`. Ask before committing.
 
-### Task 5: Seller product wizard (#50)
+### Task 5: Seller product wizard (#50) - done on mock data
+
+Built at `GET /product-onboarding/items/new` and `POST /product-onboarding/items` (sellers only, 404 otherwise): four steps in one form driven by `product_wizard_controller.js` (images 1-5 with cover, videos 0-2 skippable, details + minimum price in baht + up to 10 documents, summary with edit links). Files upload as picked through the Task 3 endpoints; the form submits only `upload_keys[]` in order, and the server creates the product with `Store.create!` and attaches the uploads. Also raised `Item::MEDIA_LIMITS` to include documents 0..10 (the proposed limit). Checked in a real browser (client checks, uploads, cover, summary, submit). Not covered by automated tests: the JavaScript itself. The steps and tests below describe the full version.
 
 **Files:**
 - Create: `app/controllers/seller/items_controller.rb#new,#create` (extend Task 4's file), `app/views/seller/items/new.html.erb` + step partials `_images.html.erb`, `_videos.html.erb`, `_details.html.erb`, `_review.html.erb`, `app/javascript/controllers/media_picker_controller.js`, `app/javascript/controllers/wizard_controller.js`

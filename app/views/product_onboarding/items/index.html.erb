@@ -2,6 +2,9 @@
 <div class="head">
   <h1>ลงสินค้าเพื่อประมูล</h1>
   <span class="chip type">ข้อมูลจำลอง</span>
+  <% if current_user&.seller? %>
+    <%= link_to "+ ลงสินค้าใหม่", new_product_onboarding_item_path, class: "btn primary" %>
+  <% end %>
 </div>
 <p class="hint">หน้านี้ใช้ข้อมูลจำลอง (mock) ของ Product onboarding ยังไม่เชื่อมฐานข้อมูลจริง · ข้อมูลรีเซ็ตเมื่อรีสตาร์ทเซิร์ฟเวอร์</p>
 
