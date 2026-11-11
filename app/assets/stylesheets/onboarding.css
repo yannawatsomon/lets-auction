@@ -19,6 +19,7 @@
 .ob-card { padding: 28px; gap: 18px; }
 .ob-card h2 { font-size: 22px; }
 .ob-form { display: flex; flex-direction: column; gap: 18px; }
+.ob-form .fields-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .ob-note { background: var(--cream); border-radius: 8px; padding: 14px; font-size: 14px; color: var(--body); line-height: 1.6; }
 .ob-note strong { color: var(--ink); font-size: 16px; }
 .field label.ob-check { display: flex; flex-direction: row; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.5; font-weight: 400; cursor: pointer; }
@@ -48,4 +49,5 @@
   .ob-steps .label { font-size: 12px; }
   .ob-list li { flex-wrap: wrap; }
   .ob-autosave { display: none; }
+  .ob-form .fields-2 { grid-template-columns: 1fr; }
 }
