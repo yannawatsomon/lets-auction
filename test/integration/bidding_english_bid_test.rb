@@ -2,6 +2,7 @@ require "test_helper"
 
 class BiddingEnglishBidTest < ActionDispatch::IntegrationTest
   setup do
+    Bidding::BidsController::RATE_LIMIT_STORE.clear
     OnboardingStore.reset!
     BuyerStanding.reset!
     ProductOnboarding::Store.reset!

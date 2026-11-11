@@ -1,0 +1,39 @@
+<% content_for :title, "ผลการประมูล" %>
+<%= link_to "← กลับไปห้องประมูล", bidding_lot_path(@lot), class: "bidding-btn bidding-btn--link" %>
+<p class="bidding-hint">ประกาศผลแล้ว · ล็อต <%= @lot.lot_no %> · <%= @lot.item&.title %> · มีผู้เสนอทั้งหมด <%= @results.size %> ราย</p>
+
+<% if @my_offer&.awaiting_payment? %>
+  <section class="bidding-card bidding-result bidding-result--win" aria-labelledby="res-h">
+    <div class="bidding-result__eyebrow">ยินดีด้วย คุณได้รับสิทธิ์ซื้อ<%= " (อันดับ #{@my_offer.rank} · ผู้ชนะเดิมไม่ชำระหรือสละสิทธิ์)" if @my_offer.rank > 1 %></div>
+    <h1 id="res-h"><%= @lot.item&.title %></h1>
+    <div class="bidding-stats">
+      <div class="bidding-stat"><div class="bidding-stat__k">ราคาที่คุณเสนอ (ราคาที่ต้องจ่าย)</div><div class="bidding-stat__v"><%= bidding_baht(@my_offer.amount_cents) %></div></div>
+      <div class="bidding-stat"><div class="bidding-stat__k">ชำระภายใน</div><div class="bidding-stat__v"><%= bidding_time(@my_offer.payment_due_at) %></div></div>
+    </div>
+    <p class="bidding-hint">ถ้าไม่ชำระภายในเวลา หรือสละสิทธิ์ สิทธิ์จะไปที่ผู้เสนอราคาอันดับถัดไป · ค่าธรรมเนียม ค่าส่ง และ VAT คำนวณที่หน้าชำระเงิน</p>
+    <div class="bidding-actions">
+      <%= button_to "สละสิทธิ์", decline_bidding_order_path(@my_offer.id), class: "bidding-btn bidding-btn--danger",
+            form: { data: { turbo_confirm: "สละสิทธิ์ซื้อล็อตนี้? ทำย้อนกลับไม่ได้" } } %>
+      <%= link_to "ไปชำระเงิน", "/payment", class: "bidding-btn bidding-btn--primary" %>
+    </div>
+  </section>
+<% elsif @my_offer&.paid? %>
+  <section class="bidding-card bidding-result bidding-result--win"><h1>ชำระเงินเรียบร้อย</h1><p class="bidding-hint">ผู้ขายจะเตรียมส่งมอบสินค้า</p></section>
+<% else %>
+  <section class="bidding-card bidding-result" aria-labelledby="res-h">
+    <div class="bidding-result__eyebrow">ผลการประมูล</div>
+    <h1 id="res-h"><%= @mine ? "คุณไม่ได้รับการประมูลครั้งนี้" : "คุณไม่ได้เสนอราคาในล็อตนี้" %></h1>
+    <% if @mine %>
+      <div class="bidding-stats">
+        <div class="bidding-stat"><div class="bidding-stat__k">ราคาที่คุณเสนอ</div><div class="bidding-stat__v"><%= bidding_baht(@mine.amount_cents) %></div></div>
+        <div class="bidding-stat"><div class="bidding-stat__k">อันดับของคุณ</div><div class="bidding-stat__v"><%= @mine.rank %> จาก <%= @results.size %></div></div>
+      </div>
+      <% if @my_offer %>
+        <p class="bidding-hint">ข้อเสนอของคุณ: <%= { "expired" => "หมดเวลาชำระ", "declined" => "คุณสละสิทธิ์แล้ว" }.fetch(@my_offer.status, @my_offer.status) %></p>
+      <% elsif @lot.closed? %>
+        <div class="bidding-notice bidding-notice--ok">ถ้าผู้ชนะไม่ชำระภายใน 48 ชั่วโมง คุณอาจได้รับสิทธิ์ซื้อในราคาที่คุณเสนอ (ตามลำดับอันดับ)</div>
+      <% end %>
+    <% end %>
+    <%= link_to "ดูงานประมูลอื่น", bidding_auctions_path, class: "bidding-btn" %>
+  </section>
+<% end %>

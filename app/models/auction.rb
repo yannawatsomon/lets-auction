@@ -19,6 +19,7 @@ class Auction < ApplicationRecord
   before_validation :force_english_invite_only
 
   validates :title, presence: true, length: { maximum: 200 }
+  validates :description, length: { maximum: 2000 }
   validates :starts_at, :ends_at, :created_by_id, presence: true
   validate :ends_after_starts
   validate :only_draft_is_editable, on: :update
@@ -96,6 +97,7 @@ class Auction < ApplicationRecord
 
   def cancel!(reason:, now: Time.current)
     raise Error, "ต้องระบุเหตุผลการยกเลิก" if reason.to_s.strip.empty?
+    raise Error, "เหตุผลยาวเกิน 500 ตัวอักษร" if reason.to_s.strip.length > 500
 
     with_lock do
       raise Error, "ยกเลิกได้เฉพาะงานที่ยังไม่เริ่ม" unless draft? || scheduled?

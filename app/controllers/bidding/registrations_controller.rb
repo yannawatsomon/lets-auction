@@ -1,6 +1,7 @@
 module Bidding
   # POST /bidding/auctions/:auction_id/registration — sealed only (issue #29).
   class RegistrationsController < ApplicationController
+    include BiddingAudit
     before_action :require_login
 
     def create
@@ -8,6 +9,7 @@ module Bidding
       return head(:not_found) unless auction&.visible_to?(current_user)
 
       participant = AuctionParticipant.register!(auction:, user: current_user)
+      audit!("participant.registered", participant, { auction_id: auction.id, grade: participant.grade_at_entry }) if participant.previously_new_record?
       respond_to do |f|
         f.html { redirect_to bidding_auction_path(auction), notice: "ลงทะเบียนเข้าร่วมงานแล้ว" }
         f.json { render json: { status: participant.status, auction_id: auction.id }, status: :created }

@@ -1,0 +1,62 @@
+<% content_for :title, "ประกาศผล · #{@auction.title}" %>
+<%= link_to "← กลับไปหน้างาน", admin_bidding_auction_path(@auction), class: "bidding-btn bidding-btn--link" %>
+<div class="bidding-head">
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><span class="bidding-chip bidding-chip--type"><%= bidding_type_label(@auction) %></span><%= bidding_status_chip(@auction) %></div>
+    <h1>ประกาศผล · <%= @auction.title %></h1>
+    <p class="bidding-hint">ปิดรับ <%= bidding_time(@auction.ends_at) %> · จัดอันดับ: ราคาสูง → ต่ำ, เท่ากันคนยื่นก่อนชนะ<%= " · English นับ bid สูงสุดของแต่ละคน" if @auction.english? %> · การเปิดดูหน้านี้ถูกบันทึกใน audit log</p>
+  </div>
+  <% if @auction.awaiting_approval? %>
+    <%= button_to "ยืนยัน (Approve) + ประกาศผล", approve_results_admin_bidding_auction_path(@auction), class: "bidding-btn bidding-btn--primary",
+          form: { data: { turbo_confirm: "อนุมัติผลทุกล็อตและแจ้งผู้ชนะ? ทำย้อนกลับไม่ได้" } } %>
+  <% end %>
+</div>
+
+<% @lots.each do |lot| %>
+  <% results = lot.results %>
+  <% skips = Bidding::OrderStore.disqualified(lot.id) %>
+  <% orders = Bidding::OrderStore.for_lot(lot.id) %>
+  <section class="bidding-card bidding-card--scroll" aria-labelledby="lot-<%= lot.id %>">
+    <div class="bidding-head">
+      <h2 id="lot-<%= lot.id %>">ล็อต <%= lot.lot_no %> · <%= lot.item&.title || "สินค้า ##{lot.item_id}" %></h2>
+      <span class="bidding-hint">ราคาเริ่มต้น <%= bidding_baht(lot.min_price_cents) %> · <%= results.size %> รายการ · สถานะล็อต: <%= lot.status %></span>
+    </div>
+    <% if results.empty? %>
+      <p class="bidding-hint">ไม่มีผู้เสนอราคา · ล็อตนี้ขายไม่ออก (สินค้ากลับเป็น Approve แล้ว)</p>
+    <% else %>
+      <table class="bidding-table">
+        <thead><tr><th>อันดับ</th><th>ผู้เสนอ</th><th>ราคา</th><th>เวลายื่น (server)</th><th>สถานะ</th><th><span class="bidding-sr-only">จัดการ</span></th></tr></thead>
+        <tbody>
+          <% results.each do |r| %>
+            <% order = orders.find { |o| o.buyer_id == r.user_id } %>
+            <tr>
+              <td><strong><%= r.rank %></strong></td>
+              <td><%= r.user&.display_name || "ผู้ใช้ ##{r.user_id}" %></td>
+              <td><%= bidding_baht(r.amount_cents) %></td>
+              <td class="bidding-mono"><%= r.bid.created_at.in_time_zone.strftime("%d/%m %H:%M:%S.%L") %></td>
+              <td>
+                <% if skips[r.user_id] %>ตัดสิทธิ์ · <%= skips[r.user_id] %>
+                <% elsif order %><%= { "awaiting_payment" => "รอชำระถึง #{bidding_time(order.payment_due_at)}", "paid" => "ชำระแล้ว", "expired" => "ไม่ชำระตามกำหนด", "declined" => "สละสิทธิ์" }.fetch(order.status) %>
+                <% elsif @auction.awaiting_approval? && r.rank == (results.map(&:rank) - results.select { |x| skips[x.user_id] }.map(&:rank)).min %>จะได้รับข้อเสนอเมื่ออนุมัติ
+                <% else %>สำรอง<% end %>
+              </td>
+              <td>
+                <% if @auction.awaiting_approval? && !skips[r.user_id] %>
+                  <%= form_with url: disqualify_admin_bidding_auction_lot_path(@auction, lot), method: :post, class: "bidding-inline-form" do %>
+                    <%= hidden_field_tag :user_id, r.user_id, id: nil %>
+                    <label class="bidding-sr-only" for="dq-<%= lot.id %>-<%= r.user_id %>">เหตุผลการตัดสิทธิ์</label>
+                    <input id="dq-<%= lot.id %>-<%= r.user_id %>" name="reason" required maxlength="500" placeholder="เหตุผล">
+                    <button class="bidding-btn bidding-btn--danger">ตัดสิทธิ์</button>
+                  <% end %>
+                <% elsif order&.awaiting_payment? %>
+                  <%= button_to "บันทึกว่าชำระแล้ว (mock)", mark_paid_admin_bidding_order_path(order.id), class: "bidding-btn" %>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% end %>
+  </section>
+<% end %>
+<p class="bidding-hint">ผู้ชนะต้องชำระภายใน 48 ชั่วโมง ถ้าไม่ชำระหรือสละสิทธิ์ ระบบเสนอให้อันดับถัดไปในราคาที่เขาเสนอ · ข้อเสนอและสถานะชำระเป็นข้อมูล mock (หายเมื่อ restart)</p>

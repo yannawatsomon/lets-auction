@@ -3,6 +3,7 @@ module Bidding
   # else's id is 404.
   class InvitationsController < ApplicationController
     layout "bidding"
+    include BiddingAudit
     before_action :require_login
 
     def index
@@ -14,7 +15,9 @@ module Bidding
       invitation = AuctionParticipant.via_invited.find_by(id: params[:id], user_id: current_user.id)
       return head(:not_found) unless invitation
 
+      was_accepted = invitation.accepted?
       invitation.accept!(user: current_user)
+      audit!("participant.accepted", invitation, { auction_id: invitation.auction_id }) unless was_accepted
       respond_to do |f|
         f.html { redirect_to bidding_auction_path(invitation.auction), notice: "ตอบรับคำเชิญแล้ว" }
         f.json { render json: { status: invitation.status }, status: :ok }

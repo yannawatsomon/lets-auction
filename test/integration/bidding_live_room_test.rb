@@ -4,6 +4,7 @@ class BiddingLiveRoomTest < ActionDispatch::IntegrationTest
   ADMIN = MockData.user(1)
 
   setup do
+    Bidding::BidsController::RATE_LIMIT_STORE.clear
     OnboardingStore.reset!
     BuyerStanding.reset!
     ProductOnboarding::Store.reset!

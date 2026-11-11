@@ -103,19 +103,58 @@ Active Record Encryption in one `text` column, and bids are append-only. Decisio
   `Bidding::AuctionCloseJob` at `ends_at`. A job that runs early re-enqueues itself for the right
   time; one for a cancelled/missing auction does nothing.
 - `Bidding::OpenAuction` → auction and lots `live`, broadcasts `lot.state`.
-  `Bidding::CloseAuction` → every open lot closes together (no extensions): bids ranked with
-  `Bid.ranking` (English: each bidder's best) into `lot_results` (rank 1 = would-be winner,
-  status `pending`); no bids → lot `unsold` and the product back to `approved`; auction →
+  `Bidding::CloseAuction` → every open lot closes together (no extensions): a lot with bids →
+  `closed`, no bids → `unsold` and the product back to `approved`; auction →
   `awaiting_approval`; `lot.closed` broadcast after commit. Both are idempotent and audit-logged.
+- Ranking is **not stored**: `AuctionLot#results` computes it from `bids` with `Bid.ranking`
+  (English: each bidder's best), rank 1 = would-be winner. No `lot_results` table (created by
+  #96, dropped by `20261111130000_drop_lot_results`) — the team
+  adds no new tables for now (`bidding.md`); offers/payment state for #36 go in mock data.
 - Safety net: `bidding_auction_sweep` in `config/recurring.yml` (production, every minute)
   runs `Bidding::AuctionSweepJob` for anything due.
-- `lot_results` has no amount column; the amount stays encrypted in `bids` (`result.amount_cents`
-  reads it through the bid).
+- `Result#amount_cents` reads the amount through the bid; it stays encrypted in `bids`.
 - Bids never wait for these jobs: `AuctionLot#accepting_bids?` checks server time itself, and
   a lot that the job has closed refuses bids too.
 - **Production needs a job runner:** set `SOLID_QUEUE_IN_PUMA=1` on Railway (or run a separate
   worker) or nothing opens/closes and the sweep never runs. A human sets it (agents don't touch
   Railway); see `docs/decision/realtime.md`.
+
+## Security review (#37, 2026-11-11)
+
+Checked against `.claude/skills/security-review` over all bidding code.
+
+- Fixed in #37: per-buyer rate limit on bid review/create (30/min, `429 rate_limited`);
+  admin and participation actions now audit-logged (`BiddingAudit`: auction
+  created/updated/scheduled/cancelled, lot added/removed, participant
+  invited/revoked/registered/accepted); length limits on auction description (2000) and cancel
+  reason (500).
+- Tests: `bidding_security_test.rb` (secrecy sweep over every bidding page as guest, buyer,
+  seller and admin + feed, socket state, audit log, log filter; XSS escaping; rate limit; and a
+  self-test proving the leak detector fires), `bidding_concurrency_test.rb` (real separate DB
+  connections, no shared test transaction), `bidding_audit_test.rb`.
+- Open, not bidding-only (for the team): `config.force_ssl` / `assume_ssl` are commented out in
+  `production.rb` (HTTPS-only + `Secure` cookies, checklist §6; Railway terminates TLS, so
+  `assume_ssl = true` is likely needed with it). Append-only for `bids` / `audit_logs` is
+  model-only until Postgres (`REVOKE UPDATE, DELETE`). Registration/accept aren't rate-limited
+  (low risk: one row per buyer per auction).
+- Winner doesn't pay → next rank: tested with #36 (`test/services/bidding/results_test.rb`).
+
+## Results, offers and next rank (#36)
+
+- Admin: `/admin/bidding/auctions/:id/results` (mockup A3) only once the auction is
+  `awaiting_approval` / `published`; opening it is audit-logged. Disqualify a bidder before
+  approval (reason required) → `Bidding::Results.disqualify!`. Approve → `Results.approve!`:
+  auction `published`, each closed lot offered to its best non-disqualified rank at **their own
+  bid**, due in 48 h, `OrderExpireJob` at the deadline, `auction.result_published` broadcast.
+- Buyer: `/bidding/lots/:id/result` (mockup B6): 403 `not_revealed` until published; then the
+  offer (amount, deadline, decline button, link to `/payment`) or "not won" with own rank and
+  the total number of bidders (allowed after publishing). Never another buyer's sealed amount.
+- Decline (`POST /bidding/orders/:id/decline`, own offer only) or expiry (job or the sweep) →
+  next rank is offered; nobody left → lot `unsold`, product back to `approved`. Admin "mark
+  paid" (mock until payment records real payments) → lot and product `sold`.
+- **Offers/orders are mock data:** `Bidding::OrderStore` in memory (no table, `bidding.md`),
+  reset by restarts; tests call `Bidding::OrderStore.reset!`. Fields: lot, buyer, seller,
+  `amount_cents`, rank, `payment_due_at`, status. Payment (#45) reads it to build totals.
 
 ## Audit log (shared)
 
