@@ -42,14 +42,16 @@ work doesn't collide and nothing sensitive leaks. The project moved here from `w
   once several people have branches open. Source: user, 2026-11-11.
 - **Branches are short-lived.** What: the head branch is deleted after the squash-merge, and
   before opening a PR you rebase your branch on the latest `main`. Rebase only your own branch;
-  if it is already pushed use `git push --force-with-lease`, never plain `--force`. Deleting on
+  if it is already pushed, a human pushes it with `git push --force-with-lease`, never plain
+  `--force`, and AI agents never force-push (`agent-boundaries.md`). Deleting on
   merge is done by the GitHub repo setting "Automatically delete head branches" (Settings →
   General → Pull Requests), which only the owner can turn on. Why: squash-merge leaves the
   original branch behind, so stale branches pile up (three merged ones exist already); and
   `main` deploys to production, so CI should test a branch that is current with `main`.
   Trade-off: rebasing rewrites the branch, so it needs a force-push and must not be done on a
   branch someone else has pulled. Alternative rejected: merging `main` into the branch —
-  noisier history during review. Source: user, 2026-11-11.
+  noisier history during review. Source: user, 2026-11-11 (the force-push wording was
+  tightened the same day by the agent-boundaries decision).
 - **Branch names are checked by CI.** What: `.github/workflows/branch-name.yml`, job
   `branch_name`, matches the PR's head branch against the naming rule on every pull request;
   `dependabot/*` is skipped. It is not a required status check yet — add `branch_name` to the
