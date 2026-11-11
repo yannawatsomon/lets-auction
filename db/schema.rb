@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_11_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_11_110000) do
   create_table "auction_lots", force: :cascade do |t|
     t.integer "auction_id", null: false
     t.bigint "item_id", null: false
@@ -103,27 +103,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_11_120000) do
     t.check_constraint "length(idempotency_key) BETWEEN 1 AND 200", name: "bids_idempotency_key_length"
   end
 
-  create_table "lot_results", force: :cascade do |t|
-    t.integer "lot_id", null: false
-    t.integer "bid_id", null: false
-    t.bigint "user_id", null: false
-    t.integer "rank", null: false
-    t.string "status", default: "pending", null: false
-    t.datetime "offered_at"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["bid_id"], name: "index_lot_results_on_bid_id", unique: true
-    t.index ["lot_id", "rank"], name: "index_lot_results_on_lot_id_and_rank", unique: true
-    t.index ["lot_id", "user_id"], name: "index_lot_results_on_lot_id_and_user_id", unique: true
-    t.index ["lot_id"], name: "index_lot_results_on_lot_id"
-    t.check_constraint "rank >= 1", name: "lot_results_rank_positive"
-    t.check_constraint "status IN ('pending', 'offered', 'paid', 'expired', 'declined')", name: "lot_results_status_valid"
-  end
-
   add_foreign_key "auction_lots", "auctions"
   add_foreign_key "auction_lots", "bids", column: "leader_bid_id"
   add_foreign_key "auction_participants", "auctions"
   add_foreign_key "bids", "auction_lots", column: "lot_id"
-  add_foreign_key "lot_results", "auction_lots", column: "lot_id"
-  add_foreign_key "lot_results", "bids"
 end
