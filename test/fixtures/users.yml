@@ -1,0 +1,16 @@
+# Mock accounts. Placeholder until the user-onboarding milestone (#16) adds the real User model.
+seller:
+  email: seller@example.test
+  role: seller
+
+other_seller:
+  email: other-seller@example.test
+  role: seller
+
+buyer:
+  email: buyer@example.test
+  role: buyer
+
+admin:
+  email: admin@example.test
+  role: admin

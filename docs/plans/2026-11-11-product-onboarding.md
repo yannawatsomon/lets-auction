@@ -74,7 +74,7 @@ Inputs and conditions the spec implies but does not spell out. Each has a test i
   - `Item::TRANSITIONS: Hash{String => Array<String>}` (pending_review -> approved, rejected, info_requested, withdrawn; info_requested -> pending_review, withdrawn; approved -> withdrawn, in_auction; in_auction -> sold, approved)
   - `Item#editable? -> Boolean`
   - `Item#sync_media!(entries) -> void`, `entries` = ordered array of `{ kind: "image"|"video"|"document", signed_id: String }`; replaces the item's media inside `with_lock`, raises `ActiveRecord::RecordInvalid` when a limit is broken
-  - `Item#transition!(to, by:) -> Item`, raises `Item::InvalidTransition` (subclass of `StandardError`)
+  - `Item#transition!(to) -> Item`, raises `Item::InvalidTransition` (subclass of `StandardError`); the actor is recorded by `ItemReviewer` in Task 6, not here (changed during Task 2: an unused `by:` argument)
   - `ItemReview` columns `item_id`, `admin_id`, `action` (`approve|reject|request_info`), `note`, `created_at`; read-only once persisted
   - `items.min_price_cents` (`bigint`, `> 0`), `items.status` string enum, `items.contact_channel` nullable
 
