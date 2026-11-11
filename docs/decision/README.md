@@ -9,7 +9,7 @@ Statuses: `Open` → `Decided` → `Superseded`. Only a human collaborator moves
 
 | Topic | File | Status | Summary |
 |---|---|---|---|
-| Repo & collaboration | [repo-and-collaboration.md](repo-and-collaboration.md) | Decided | Public GitHub repo, PR flow on protected `main` with required CI; branches `<handle>-<type>-[<issue>-]<detail>` (CI-checked), short-lived |
+| Repo & collaboration | [repo-and-collaboration.md](repo-and-collaboration.md) | Decided | Public GitHub repo, PR flow on `main` via rulesets (PR + CI required, 0 approvals); branches `<handle>-<type>-[<issue>-]<detail>` (CI-checked), short-lived |
 | AI agent hub | [ai-agent-hub.md](ai-agent-hub.md) | Decided | `AGENTS.md` entry point + `ai/` hub + `.claude/skills/`; tool files only point back |
 | Agent boundaries | [agent-boundaries.md](agent-boundaries.md) | Decided | Agents never force-push or delete remote branches; commits, pushes, PRs, gems, CI, GitHub/Railway changes are ask-first; exception: CI Auto-fix on its own PR branch; enforced via `.claude/settings.json` |
 | Stack | [stack.md](stack.md) | Decided | Ruby on Rails (Ruby 4.0.5, Rails 8.1), GitHub Actions CI — confirm with a collaborator |
@@ -20,7 +20,8 @@ Statuses: `Open` → `Decided` → `Superseded`. Only a human collaborator moves
 ## Key decisions at a glance
 
 - Repo: `github.com/yannawatsomon/lets-auction`, public (continues `we-auction`, 2026-11-11).
-- Merging to `main` deploys to production (Railway), so CI must be green first.
+- Merging to `main` deploys to production (Railway), so CI must be green first. Rulesets
+  require a PR and CI but no approval: anyone with Write can merge their own PR (2026-11-11).
 - **Agent boundaries (the one rule not to miss):** AI agents never force-push or delete remote
   branches, and do commits, pushes, PRs, gem/CI changes and GitHub/Railway changes only when a
   human explicitly asks for that exact action (2026-11-11); exception: a PR with CI Auto-fix
@@ -36,4 +37,5 @@ Statuses: `Open` → `Decided` → `Superseded`. Only a human collaborator moves
 - Production database (Postgres vs SQLite volume)? → `deployment.md`, `stack.md`.
 - Which license? (public repo)
 - Who reviews? (CODEOWNERS not set yet)
-- Turn on `enforce_admins` for `main` (owner only) so admin bypass can't be used by an agent → `agent-boundaries.md`.
+- Set the ruleset admin bypass to "for pull requests only" (owner only), so an agent on an admin login can't push to `main` → `agent-boundaries.md`.
+- Require branches to be up to date before merging? Restrict merge methods to squash? → `repo-and-collaboration.md`.
