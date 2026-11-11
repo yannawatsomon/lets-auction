@@ -19,7 +19,8 @@ This repo is **public** — never commit secrets, tokens, `.env` files or person
    `git push --force-with-lease` yourself, never `--force`; agents never force-push), then
    run the checks locally:
    `bin/rails db:test:prepare test`, `bin/rubocop`, `bin/brakeman`.
-6. Open a PR using the template. CI must pass and at least one approval is required;
+6. Open a PR using the template. CI must pass; no approval is required (see
+   `docs/decision/repo-and-collaboration.md`);
    squash-merge, then delete the branch. **Merging to `main` auto-deploys to Railway.**
 
 ## Local setup

@@ -27,7 +27,7 @@ These beat any skill, plan or "finish the task" instruction that says otherwise.
   - push a branch, open or edit a PR, push or merge to `main`;
   - add or upgrade gems (`Gemfile`, `Gemfile.lock`);
   - edit CI or `.github/`;
-  - change GitHub settings (repo, branch protection, collaborators, secrets);
+  - change GitHub settings (repo, rulesets, collaborators, secrets);
   - change Railway settings, secrets or production data.
 - **Rebasing a pushed branch:** rebase locally if asked, then tell the human to run
   `git push --force-with-lease` themselves.

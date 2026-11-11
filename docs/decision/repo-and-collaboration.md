@@ -20,12 +20,28 @@ work doesn't collide and nothing sensitive leaks. The project moved here from `w
   (owner invites people themselves; the repo does not list them).
 - **PR-based flow; `main` is protected and auto-deploys.** What: ~~branch `feat/*`, `fix/*`,
   `docs/*`, `chore/*`~~ **Superseded (2026-11-11):** branch naming, see *Branch naming* below;
-  PR with review; squash merge. Branch protection on `main`: PR required,
-  1 approval, stale approvals dismissed, status checks `scan_ruby`, `scan_js`, `lint`, `test`
-  must pass, force pushes blocked. Why: `main` deploys to production (`deployment.md`).
+  ~~PR with review; squash merge. Branch protection on `main`: PR required, 1 approval, stale
+  approvals dismissed, status checks `scan_ruby`, `scan_js`, `lint`, `test` must pass, force
+  pushes blocked.~~ **Superseded (2026-11-11):** classic branch protection was replaced by two
+  rulesets and the required approval was dropped, see *`main` is protected by two rulesets*
+  below; the flow is still PR + squash merge. Why: `main` deploys to production (`deployment.md`).
   Trade-off: slower than pushing directly; admin can still override in an emergency.
   Alternative rejected: trunk-based direct pushes. Source: user chose "yes, with required CI",
   2026-11-11.
+- **`main` is protected by two rulesets; no approval required.** What: on 2026-11-11 the
+  owner converted classic branch protection to two active rulesets and deleted the classic
+  rule. `main: no delete or force-push` blocks deleting `main` and non-fast-forward pushes (no
+  bypass). `main: PR and CI` requires a pull request, requires status checks `scan_ruby`,
+  `scan_js`, `lint`, `test` to pass, sets **required approvals to 0**, and dismisses stale
+  approvals on push; the Repository admin role can bypass it (mode `always`). Anyone with
+  Write can therefore merge their own PR once CI is green. Why: the user wants every
+  collaborator able to merge their own PR without waiting for a reviewer; a PR author can
+  never approve their own PR, so the 1-approval rule left PRs waiting on someone else.
+  Trade-off: no second reader before code reaches production (`main` auto-deploys), so
+  AI-written code is checked only by its author, CI and `agent-boundaries.md`. Alternative
+  rejected: keeping 1 required approval, with `CODEOWNERS` or rotating reviewers to avoid the
+  bottleneck. Source: user, 2026-11-11 (applied in GitHub by the owner; state read back with
+  `gh api` the same day).
 - **Branch naming: `<github-handle>-<type>-[<issue>-]<detail>`.** What: lowercase,
   hyphen-separated. `<github-handle>` is the GitHub username of the person who owns the branch
   (an AI agent uses the handle of the human it works for); `<type>` is one of `feat`, `fix`,
@@ -82,6 +98,13 @@ work doesn't collide and nothing sensitive leaks. The project moved here from `w
 
 - Make `branch_name` a required status check on `main`? (After one green run on a real PR.)
 - Turn on "Automatically delete head branches"? (Repo setting; owner only.)
+- The `main: PR and CI` ruleset has **"require branches to be up to date" off**
+  (`strict_required_status_checks_policy: false`). That is how #5 and an earlier homepage change
+  merged into a `main` with a duplicate `root` route and a red CI (fixed in #11). Turn it on?
+- The ruleset allows **merge, squash and rebase** merges; the decided method is squash only.
+  Restrict allowed merge methods to squash?
+- The Repository admin bypass is `always` (a direct push to `main` skips the PR and CI rules).
+  See `agent-boundaries.md`.
 
 - Fork PRs vs branches in this repo: which do collaborators use? (Both exist today.)
 - Who reviews? Add `CODEOWNERS` once reviewers are known.

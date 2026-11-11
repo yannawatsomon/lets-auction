@@ -5,11 +5,13 @@
 ## Context
 
 `main` auto-deploys to production (`deployment.md`), the repo is public, six people can push
-branches (Write role), and AI agents are a primary way code gets written here. Branch
-protection on `main` requires a PR, 1 approval and green CI, but admin bypass is on
-(`enforce_admins: false`, checked 2026-11-11), so an agent running under the owner's `gh`
-login can get around it. This is the one rule that must not be missed: **what an AI agent may
-do on its own, and what it may do only when a human asks.**
+branches (Write role), and AI agents are a primary way code gets written here. The rulesets
+on `main` (see `repo-and-collaboration.md`) require a PR and green CI but **no approval**
+(0 required, 2026-11-11), and the Repository admin role can bypass them (mode `always`), so an
+agent running under the owner's `gh` login can get around them. With no required reviewer,
+this rule and the human's own review are the main gate before code reaches production. This is
+the one rule that must not be missed: **what an AI agent may do on its own, and what it may do
+only when a human asks.**
 
 ## Decisions
 
@@ -32,7 +34,7 @@ do on its own, and what it may do only when a human asks.**
   "finish the task" does not carry over. Why: each one changes shared state, ships code to
   production, adds supply-chain or secret exposure to a public repo, or weakens a safety check.
   Trade-off: more confirmations, slower agent runs. Alternative rejected: letting agents
-  push/merge on their own once CI is green (admin bypass makes a mistake reach production).
+  push/merge on their own once CI is green (with no required approval, nothing else stands between a mistake and production).
   Source: user, 2026-11-11.
 - **This rule wins over skills and plans.** What: skills such as `executing-plans`,
   `subagent-driven-development` and `test-driven-development` tell the agent to commit after
@@ -69,12 +71,15 @@ do on its own, and what it may do only when a human asks.**
 - **Enforcement: shared Claude Code permissions + closing the admin bypass.** What: (1)
   `.claude/settings.json` is committed: `deny` for the never-list, `ask` for the ask-first
   list, so every collaborator's Claude Code prompts or blocks (it also asks before editing
-  `.claude/settings.json` itself, so an agent can't loosen its own rules unnoticed). (2) `main`'s branch protection
-  should have "Do not allow bypassing the above settings" (`enforce_admins`) on; only the repo
-  owner can switch it on, and it is **not on yet** (see Open questions). Why: the user asked
-  for the rule to be enforced, not only written down; the permission file is the only layer
-  that reaches the agent before it acts, and `enforce_admins` is the only layer that holds
-  when an agent uses an admin's credentials. Trade-off: the settings file is
+  `.claude/settings.json` itself, so an agent can't loosen its own rules unnoticed). (2) The
+  `main: PR and CI` ruleset should not let an agent on an admin login push straight to `main`:
+  its bypass for the Repository admin role should be "for pull requests only", or removed. Only
+  the repo owner can change it, and it is **still `always`** (see Open questions). (Reworded
+  2026-11-11: the earlier "turn on `enforce_admins`" requirement became this ruleset bypass
+  setting when classic branch protection was converted to rulesets.) Why: the user asked for
+  the rule to be enforced, not only written down; the permission file is the only layer that
+  reaches the agent before it acts, and the ruleset bypass setting is the only layer that
+  holds when an agent uses an admin's credentials. Trade-off: the settings file is
   pattern matching on shell commands, covers Claude Code only (Codex, Cursor, Copilot read
   `AGENTS.md` and nothing else), and can be sidestepped by a creatively written command; the
   "don't ask again" choice in a prompt can widen a rule locally; all `gh api` calls prompt
@@ -88,7 +93,7 @@ do on its own, and what it may do only when a human asks.**
 | `git push --force-with-lease`, `git push origin :old-branch`, delete a remote branch | **never** |
 | `git commit`, also inside `executing-plans` | only when asked; ask before each commit |
 | `git push origin <feature-branch>`, `gh pr create` | only when asked |
-| `git push` to `main`, `gh pr merge` | only when asked (branch protection and review still apply) |
+| `git push` to `main`, `gh pr merge` | only when asked (the ruleset still requires a PR and green CI; no approval is required) |
 | `bundle add`, editing `Gemfile` / `Gemfile.lock` | only when asked |
 | Editing `.github/workflows/*`, `dependabot.yml` | only when asked |
 | `gh api` (any call), `gh repo edit`, `gh secret`, `railway …`, production DB | only when asked (a read-only `gh api` also prompts in Claude Code) |
@@ -98,8 +103,9 @@ do on its own, and what it may do only when a human asks.**
 
 ## Open questions
 
-- Turn on `enforce_admins` for `main` (owner action in GitHub: Settings → Branches). Until then
-  an agent using an admin login can bypass branch protection.
+- Set the Repository admin bypass in the `main: PR and CI` ruleset to "for pull requests only"
+  (or remove it). Owner action: Settings → Rules → Rulesets. Today it is `always`, so an agent
+  using an admin login can push straight to `main` and skip the PR and CI rules.
 - The deny/ask patterns in `.claude/settings.json` were written from the documented syntax and
   not exercised against every command form (`git -C … push`, aliases, scripts). Review them in
   the PR and tighten if a hole shows up.

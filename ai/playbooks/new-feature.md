@@ -8,4 +8,4 @@
 4. **Build** — small commits. Add tests once a stack and test approach are Decided.
 5. **Update the hub** — new domain terms → glossary; new gotchas → `ai/knowledge/`.
 6. **PR** — fill in the PR template; link the issue and any decision docs; request review.
-7. **Merge** — squash-merge after approval; delete the branch.
+7. **Merge** — squash-merge once CI is green; delete the branch.

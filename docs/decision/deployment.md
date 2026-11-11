@@ -25,8 +25,9 @@ The app needs a public URL. The owner already connected the repo to Railway.
 
 ## Open questions
 
-- Railway "Wait for CI" for the GitHub trigger: enabled? (Branch protection already blocks
-  merging red PRs, but direct pushes by admins would still deploy.)
+- Railway "Wait for CI" for the GitHub trigger: enabled? (The `main` rulesets already block
+  merging red PRs, but the admin bypass, currently `always`, would still allow a direct push
+  that deploys.)
 - Production database (see `stack.md`): Postgres service vs SQLite volume.
 - Port mapping: the Rails 8 Dockerfile listens on 80 via Thruster; confirm Railway's `PORT`.
 - Custom domain, staging environment, rollback procedure.
