@@ -77,8 +77,9 @@ jobs:
     steps:
       - name: Install packages
         run: |
-          sudo sed -i 's|http://azure.archive.ubuntu.com/ubuntu|https://archive.ubuntu.com/ubuntu|g' /etc/apt/apt-mirrors.txt
-          sudo apt-get update && sudo apt-get install --no-install-recommends -y libvips
+          printf '%s\n' 'https://mirrors.edge.kernel.org/ubuntu/' | sudo tee /etc/apt/apt-mirrors.txt
+          sudo apt-get -o Acquire::Retries=1 -o Acquire::https::Timeout=15 update
+          sudo apt-get -o Acquire::Retries=1 -o Acquire::https::Timeout=15 install --no-install-recommends -y libvips
 
       - name: Checkout code
         uses: actions/checkout@v7
