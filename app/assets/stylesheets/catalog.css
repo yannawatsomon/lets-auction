@@ -1,0 +1,23 @@
+.catalog-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.catalog-card { min-width: 0; border: 1px solid #dbe2e8; border-radius: 12px; overflow: hidden; background: #fff; color: #182b3b; font-family: system-ui, sans-serif; line-height: 1.6; }
+.catalog-card__media { aspect-ratio: 8 / 5; background: #edf2f5; }
+.catalog-card__media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.catalog-card__fallback { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: #526879; font-size: 13px; }
+.catalog-card [hidden] { display: none; }
+.catalog-card__labels { display: flex; flex-wrap: wrap; gap: 6px; }
+.catalog-card__details { padding: 20px; }
+.catalog-card__details h3 { margin: 12px 0 4px; font-size: 19px; overflow-wrap: anywhere; }
+.catalog-card__details h3 a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+.catalog-card__details h3 a:focus-visible { outline: 3px solid #275cc5; outline-offset: 3px; }
+.catalog-card__category { color: #526879; font-size: 13px; margin-top: 0; overflow-wrap: anywhere; }
+.catalog-card__badge { display: inline-block; max-width: 100%; box-sizing: border-box; padding: 3px 10px; border-radius: 20px; font-size: 12px; overflow-wrap: anywhere; }
+.catalog-card__badge--ongoing { background: #d8f3e6; color: #185936; }
+.catalog-card__badge--upcoming { background: #e0edff; color: #244f82; }
+.catalog-card__badge--ended { background: #edf0f3; color: #4b5563; }
+.catalog-card__badge--english { background: #e9f1ff; color: #173e87; }
+.catalog-card__badge--sealed_first_price { background: #f2ebff; color: #53258a; }
+.catalog-card dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 12px; font-size: 13px; }
+.catalog-card dt { color: #526879; }
+.catalog-card dd { margin: 0; text-align: right; overflow-wrap: anywhere; }
+@media (max-width: 800px) { .catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 540px) { .catalog-grid { grid-template-columns: minmax(0, 1fr); } }

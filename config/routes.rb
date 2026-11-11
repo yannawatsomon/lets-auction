@@ -17,4 +17,8 @@ Rails.application.routes.draw do
   end
 
   root "home#index"
+
+  if Rails.env.development?
+    get "catalog-preview", to: "catalog_previews#show"
+  end
 end
