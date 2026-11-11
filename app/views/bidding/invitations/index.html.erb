@@ -1,0 +1,18 @@
+<% content_for :title, "คำเชิญของฉัน" %>
+<h1>คำเชิญของฉัน</h1>
+<p class="bidding-hint">งาน English (ขึ้นราคา) เปิดเฉพาะผู้ที่แอดมินเชิญ ต้องตอบรับก่อนจึงจะเสนอราคาได้</p>
+
+<div class="bidding-card">
+  <% if @invitations.empty? %>
+    <p class="bidding-hint">ยังไม่มีคำเชิญ</p>
+  <% end %>
+  <% @invitations.each do |inv| %>
+    <div class="bidding-pick">
+      <span class="bidding-pick__body">
+        <span class="bidding-pick__title"><%= link_to inv.auction.title, bidding_auction_path(inv.auction) %></span>
+        <span class="bidding-pick__sub"><%= bidding_time(inv.auction.starts_at) %> – <%= bidding_time(inv.auction.ends_at) %> · <%= inv.accepted? ? "ตอบรับแล้ว" : "รอตอบรับ" %></span>
+      </span>
+      <% if inv.invited? %><%= button_to "ตอบรับ", accept_bidding_invitation_path(inv), class: "bidding-btn bidding-btn--primary" %><% end %>
+    </div>
+  <% end %>
+</div>

@@ -31,7 +31,7 @@ class AuctionTest < ActiveSupport::TestCase
     lot = a.add_item!(@sealed_items.first)
     assert_equal 1, lot.lot_no
     assert_equal @sealed_items.first.min_price_cents, lot.min_price_cents
-    assert_equal a.ends_at, lot.original_ends_at
+    assert_equal a.ends_at, lot.ends_at
     assert_nil lot.bid_increment_cents
   end
 
@@ -56,10 +56,10 @@ class AuctionTest < ActiveSupport::TestCase
 
   test "at most 10 lots, enforced by the database too" do
     a = build
-    10.times { |n| a.lots.create!(item_id: 1000 + n, lot_no: n + 1, min_price_cents: 100, ends_at: a.ends_at, original_ends_at: a.ends_at) }
+    10.times { |n| a.lots.create!(item_id: 1000 + n, lot_no: n + 1, min_price_cents: 100) }
     assert a.reload.lots_full?
     assert_raises(Auction::Error) { a.add_item!(@sealed_items.first) }
-    eleventh = AuctionLot.new(auction: a, item_id: 2000, lot_no: 11, min_price_cents: 100, ends_at: a.ends_at, original_ends_at: a.ends_at)
+    eleventh = AuctionLot.new(auction: a, item_id: 2000, lot_no: 11, min_price_cents: 100)
     assert_raises(ActiveRecord::StatementInvalid) { eleventh.save!(validate: false) }
   end
 
@@ -84,7 +84,7 @@ class AuctionTest < ActiveSupport::TestCase
 
     e = build(auction_type: "english")
     big = MockData.approved_items.max_by(&:min_price_cents)
-    e.lots.create!(item_id: big.id, lot_no: 1, min_price_cents: big.min_price_cents, ends_at: e.ends_at, original_ends_at: e.ends_at)
+    e.lots.create!(item_id: big.id, lot_no: 1, min_price_cents: big.min_price_cents)
     assert_raises(Auction::Error) { e.schedule! }
   end
 
@@ -97,13 +97,12 @@ class AuctionTest < ActiveSupport::TestCase
     assert_raises(Auction::Error) { a.remove_lot!(a.lots.first) }
   end
 
-  test "changing the end time of a draft moves its lots" do
+  test "lots always end with their auction" do
     a = build
     lot = a.add_item!(@sealed_items.first)
     new_end = a.ends_at + 1.day
     a.update!(ends_at: new_end)
     assert_in_delta new_end, lot.reload.ends_at, 1
-    assert_in_delta new_end, lot.original_ends_at, 1
   end
 
   test "auction type is fixed once lots exist" do

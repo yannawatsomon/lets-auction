@@ -10,6 +10,23 @@ class ApplicationController < ActionController::Base
 
   private
 
+  def require_login
+    return if current_user
+
+    respond_to do |f|
+      f.html { redirect_to(mock_login_enabled? ? new_mock_session_path : root_path, alert: "กรุณาเข้าสู่ระบบก่อน") }
+      f.json { render json: { error: "login_required", message: "กรุณาเข้าสู่ระบบก่อน" }, status: :unauthorized }
+    end
+  end
+
+  # One error shape for the whole app: { "error": "snake_code", "message": "<Thai>" }.
+  def render_participation_error(e, fallback_path)
+    respond_to do |f|
+      f.html { redirect_to fallback_path, alert: e.message }
+      f.json { render json: { error: e.code, message: e.message }, status: e.http_status }
+    end
+  end
+
   def current_user = Current.user
 
   # MOCK login: only outside production, until real auth lands (ai/knowledge/mock-data.md).

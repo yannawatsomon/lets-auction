@@ -1,0 +1,4 @@
+# MOCK DATA (bidding) — buyer ids whose proof of income an admin has approved, until #66
+# (proof of income upload + admin review) lands. Read by BuyerStanding. Grades themselves come
+# from db/mock/user_onboardings.yml (OnboardingStore): 21 → A, 22 → B, 23 → C, 24 → D, 25 → E.
+- 21

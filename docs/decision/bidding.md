@@ -50,7 +50,27 @@ collaborator confirms it in a PR (see `README.md`).
   admin queries; separate encrypted column for sealed only — two amount columns and a
   NULL-one-or-the-other rule. Source: SPEC invariant 6; confirmed by @guy127, 2026-11-11
   (encryption, then `text` type over a separate column).
-- **English extensions stop 30 minutes after the original end.** What: the anti-sniping rule
+- **English lots end exactly at the scheduled time; no extensions.** What: every lot in an
+  auction ends at the auction's `ends_at`, for both types. A bid accepted in the last second
+  still counts; nothing moves the end. `auctions` and `auction_lots` have no extension columns
+  and lots have no `ends_at` of their own. Why: one fixed end time keeps the catalog
+  (#39/#43), the countdown and the close job simple and predictable for bidders. Trade-off:
+  last-second bids ("sniping") are possible; bidders must bid before the deadline.
+  Alternative rejected: 2-minute anti-sniping extension capped at +30 min (below). Source:
+  @guy127 in chat, 2026-11-11.
+- **A winner who doesn't pay loses the lot to the next rank, who pays their own bid.** What:
+  if the winner doesn't pay within 48 hours or declines, the next rank (at or above the minimum
+  price) is offered the lot and pays the amount they bid; repeat until someone pays or nobody
+  is left (lot `unsold`). Why: the seller still sells without a new auction. Source: @guy127 in
+  chat, 2026-11-11 (answers the open question in `scope.md`).
+- **Orders are mock data for now.** What: bidding creates orders through an in-memory mock
+  (like `ProductOnboarding::Store`), not an `orders` table, until the payment milestone agrees
+  the table. An order carries `lot_id`, `buyer_id`, `seller_id`, `amount_cents` (the bid),
+  `rank`, `payment_due_at` and `status`; totals (premium, shipping, VAT) are the payment
+  milestone's job (#45). Source: @guy127 in chat, 2026-11-11.
+- ~~**English extensions stop 30 minutes after the original end.**~~ **Superseded
+  (2026-11-11):** no extensions at all, see "English lots end exactly at the scheduled time".
+  Original: What: the anti-sniping rule
   (a bid with ≤ 120 s left moves `ends_at` to `now() + 120 s`) applies only while the new
   `ends_at` would be ≤ `original_ends_at + 30 min`; the lot keeps `original_ends_at` for this.
   The last extension is clamped to that limit. Why: a lot must not run forever in a bidding
@@ -117,9 +137,7 @@ collaborator confirms it in a PR (see `README.md`).
   ≥ `current_price + increment` (first bid ≥ minimum price). Alternative rejected: tiered
   increments by price band (more rules, not needed for 3 lots). Source: draft.
 - **The current leader cannot bid again.** Source: draft.
-- **Anti-sniping extension.** What: a bid with ≤ 120 s left moves that lot's `ends_at` to
-  `now() + 120 s`, capped at 30 minutes after the original end (see **Decisions**). Source:
-  draft, `scope.md`.
+- ~~**Anti-sniping extension.**~~ **Superseded (2026-11-11):** no extensions, see Decisions.
 - **No proxy/auto-bid.** Why: keeps the bid path simple and auditable. Source: proposed here.
 - **Concurrency via row lock.** What: `SELECT … FOR UPDATE` on the lot row, then validate,
   insert the bid, update `current_price` / `leader_bid_id` / `bid_count`, write the audit log,
@@ -135,11 +153,10 @@ Bid validation order (one transaction):
 | Step | Sealed | English |
 |---|---|---|
 | 1 | buyer, active, `registered` participant | buyer, active, `accepted` participant |
-| 2 | lot `live` and `now() < ends_at` | same, after `FOR UPDATE` on the lot |
+| 2 | lot `live` and `now() < auction.ends_at` | same, after `FOR UPDATE` on the lot |
 | 3 | not the item's seller | not the item's seller |
 | 4 | `amount >= min_price`; no previous bid (DB index backs this) | `amount >= current_price + increment` (or `>= min_price` for the first bid); not the current leader |
-| 5 | — | extend `ends_at` if ≤ 120 s left, to `min(now() + 120 s, original_ends_at + 30 min)` |
-| 6 | insert bid + audit log, commit | insert bid, update lot + audit log, commit, broadcast |
+| 5 | insert bid + audit log, commit | insert bid, update lot + audit log, commit, broadcast |
 
 Error codes (`{ "error": "...", "message": "<Thai>" }`): `not_registered`, `not_invited`,
 `bidding_closed`, `own_item`, `amount_below_start`, `already_bid`, `bid_too_low`,
