@@ -19,7 +19,8 @@ draft gives them, and each bullet becomes Decided only when a collaborator confi
 - **Seller sets the minimum price; admin cannot change it.** What: admin can only approve,
   reject or request more evidence. Source: design draft, 2026-11-11.
 - **An event holds up to 10 lots that start and end together; each lot has its own winner.**
-  English lots can be extended individually (see bidding rules). Why: an unsold item can be
+  ~~English lots can be extended individually~~ (superseded 2026-11-11: no extensions, every
+  lot ends at the auction's end time, see `bidding.md`). Why: an unsold item can be
   listed again in a new event, so items and lots are separate records. Source: design draft,
   2026-11-11.
 - **Participation.** What: sealed — buyer registers for the event before bidding; English —
@@ -30,9 +31,10 @@ draft gives them, and each bullet becomes Decided only when a collaborator confi
   costs the seller time. Source: design draft, 2026-11-11.
 - **Sealed bidding.** What: one bid per lot, nobody's amount or the bid count is visible until
   results are published; a tie goes to the earliest bid. Source: design draft, 2026-11-11.
-- **English bidding.** What: live price updates; a bid in the last 2 minutes extends that lot by
-  2 minutes, up to 30 minutes past the original end (`bidding.md`). Why: stops last-second
-  sniping. Source: design draft, 2026-11-11; cap confirmed by @guy127, 2026-11-11.
+- **English bidding.** What: live price updates; the lot ends exactly at the scheduled time.
+  ~~A bid in the last 2 minutes extends that lot by 2 minutes, up to 30 minutes past the
+  original end.~~ **Superseded (2026-11-11):** no extensions, see `bidding.md`. Source: design
+  draft, 2026-11-11; no-extension rule by @guy127, 2026-11-11.
 - **Results need admin approval; winner pays within 48 hours.** What: if the winner doesn't pay
   or declines, the next rank is offered the lot at their own bid, as long as it is at or above
   the minimum price; if nobody is left the lot is unsold. Source: design draft, 2026-11-11.
@@ -59,7 +61,7 @@ draft gives them, and each bullet becomes Decided only when a collaborator confi
 - Page 6 shows a credit card option, but Milestone 1 uses slips. Hide it until a gateway exists?
 - Is there a platform fee (deducted from the seller or added for the buyer)? If yes, `orders`
   and `payouts` need a `fee` column.
-- Is "next rank pays their own bid" correct?
+- ~~Is "next rank pays their own bid" correct?~~ Yes, confirmed by @guy127, 2026-11-11 (`bidding.md`).
 - ~~Deposit or KYC for the 20M THB English lots — needed before launch?~~ Deposit: not for now,
   see `bidding.md` Decisions (2026-11-11). KYC: replaced by buyer onboarding, see
   [`user-onboarding.md`](user-onboarding.md).
