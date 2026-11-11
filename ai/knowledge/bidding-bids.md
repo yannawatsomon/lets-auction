@@ -48,6 +48,23 @@ Active Record Encryption in one `text` column, and bids are append-only. Decisio
   `POST …/bids`. Countdown (`bidding-countdown` Stimulus controller) uses the server time
   sent with the page, never the browser clock as truth.
 
+## Placing an English bid (#32)
+
+- Same endpoint (`POST /bidding/lots/:id/bids`); `Bidding::PlaceEnglishBid` when the auction is
+  English. Shared bits (key, baht → satang, replay, not-the-seller) live in
+  `Bidding::BidRequest`.
+- Order in one transaction: `lock!` the lot → invited **and accepted** → open by server time
+  (no extensions) → not the seller → not the current leader → amount ≥
+  `AuctionLot#next_minimum_cents` (first bid = minimum price, then current price + increment)
+  → insert → update `current_price_cents`, `leader_bid_id`, `bid_count` → audit log.
+- The lot update is a compare-and-set on `bid_count`; if another bid moved the lot first, the
+  bid is rolled back with `price_moved` (409). This keeps it correct even where row locks are
+  ignored (SQLite) — Rails 8 also runs SQLite write transactions as IMMEDIATE.
+- Error codes: `not_invited`, `bidding_closed`, `own_item`, `already_leading`, `bid_too_low`,
+  `price_moved`, `idempotency_conflict`.
+- Gotcha for tests: `travel_to` drops sub-seconds, so `travel_to(auction.ends_at)` can land
+  just *before* the end. Use `ends_at + 1.second` to test "closed".
+
 ## Audit log (shared)
 
 `audit_logs` / `AuditLog.record!(action:, entity:, actor:, data:)` is append-only and meant for
