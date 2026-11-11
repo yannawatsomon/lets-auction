@@ -7,3 +7,6 @@
 - { id: 21, role: buyer,  display_name: "ผู้ซื้อ B-04" }
 - { id: 22, role: buyer,  display_name: "ผู้ซื้อ B-09" }
 - { id: 23, role: buyer,  display_name: "ผู้ซื้อ B-17" }
+- { id: 24, role: buyer,  display_name: "ผู้ซื้อ B-22" }
+- { id: 25, role: buyer,  display_name: "ผู้ซื้อ B-30" }
+- { id: 26, role: buyer,  display_name: "ผู้ซื้อ B-35" }

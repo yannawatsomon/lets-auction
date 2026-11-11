@@ -67,6 +67,15 @@ Tracked by the User Onboarding milestone (#15–#21, #66).
 - **Money in satang.** What: store monthly income as satang `bigint`, like bid amounts in
   [`bidding.md`](bidding.md). Why: no rounding errors and one money rule across the app.
   Source: eyetanamas-max in chat, 2026-11-11.
+- **Build on mock data first; no database tables yet.** What: `UserOnboarding` (ActiveModel)
+  and `CreditAssessment` (immutable `Data`) live in `OnboardingStore`, an in-memory store
+  seeded from `db/mock/user_onboardings.yml` with one fake buyer per grade A–E and one who
+  hasn't started. A restart resets it. Encryption and the national ID digest apply when the
+  tables land; until then only fake IDs exist. Why: the user wants the flow working before
+  touching the database, like bidding's mock users and items. Trade-off: data is lost on
+  restart and each process has its own copy. Alternative rejected: storing answers in the
+  browser session (the national ID would sit in a cookie). Source: eyetanamas-max in chat,
+  2026-11-11 (#16).
 
 ## Rules / examples
 
