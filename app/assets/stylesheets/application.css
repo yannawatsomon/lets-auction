@@ -1,10 +1,115 @@
 /*
- * This is a manifest file that'll be compiled into application.css.
- *
- * With Propshaft, assets are served efficiently without preprocessing steps. You can still include
- * application-wide styles in this file, but keep in mind that CSS precedence will follow the standard
- * cascading order, meaning styles declared later in the document or manifest will override earlier ones,
- * depending on specificity.
- *
- * Consider organizing styles into separate files for maintainability.
+ * Look adapted from the team's UI mockup (Claude Design canvas linked in the SPEC):
+ * cream ground, ink text, gold accent, IBM Plex Sans Thai, 44px+ touch targets.
  */
+:root {
+  --cream: #F5F3EE;
+  --ink: #15171C;
+  --ink-2: #2A2D35;
+  --muted: #5C5F68;
+  --body: #4A4D55;
+  --line: #E2DED4;
+  --line-soft: #EEEAE1;
+  --field: #BDB7A8;
+  --tile: #E7E3D9;
+  --white: #FFFFFF;
+  --gold: #D9C08A;
+  --gold-ink: #7A5C22;
+  --ok-bg: #E3F1E8; --ok: #1F4D33; --ok-line: #1F6B45;
+  --warn-bg: #FDF3E1; --warn: #6B4500;
+  --bad-bg: #FBE9E7; --bad: #8F1D14;
+  --radius: 12px;
+  font-family: "IBM Plex Sans Thai", system-ui, sans-serif;
+  color: var(--ink);
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--cream); line-height: 1.5; }
+a { color: var(--gold-ink); }
+a:hover { color: #5A4317; }
+h1 { margin: 0; font-size: 30px; font-weight: 700; line-height: 1.25; }
+h2 { margin: 0; font-size: 19px; font-weight: 600; }
+
+.topbar {
+  background: var(--ink); color: var(--cream);
+  padding: 12px 32px; display: flex; flex-wrap: wrap; align-items: center;
+  justify-content: space-between; gap: 12px;
+}
+.topbar a { color: #C9CBD1; text-decoration: none; }
+.topbar a.brand { color: var(--cream); display: flex; align-items: center; gap: 12px; font-size: 20px; font-weight: 700; }
+.topbar nav { display: flex; flex-wrap: wrap; gap: 4px; font-size: 15px; }
+.topbar nav a { min-height: 44px; display: flex; align-items: center; padding: 0 12px; }
+.topbar nav a[aria-current="page"] { color: var(--cream); font-weight: 600; }
+.pill-admin { font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: var(--ink-2); color: var(--gold); }
+.who { font-size: 14px; color: #C9CBD1; display: flex; gap: 12px; align-items: center; }
+
+.page { max-width: 1360px; margin: 0 auto; padding: 28px 32px; display: flex; flex-direction: column; gap: 20px; }
+.row { display: flex; flex-wrap: wrap; gap: 20px; }
+.row > * { flex: 1 1 460px; min-width: 0; }
+.head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; }
+
+.card { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+.card.scroll { overflow-x: auto; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.stat { background: var(--white); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.stat .k { font-size: 13px; color: var(--muted); }
+.stat .v { font-size: 18px; font-weight: 700; }
+.hint { font-size: 14px; color: var(--body); }
+
+.btn {
+  font: inherit; font-size: 15px; min-height: 48px; padding: 0 20px; border-radius: 8px;
+  border: 1px solid var(--field); background: var(--white); color: var(--ink);
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  text-decoration: none; cursor: pointer;
+}
+.btn.primary { background: var(--ink); color: var(--cream); border-color: var(--ink); font-weight: 600; }
+.btn.danger { color: var(--bad); border-color: var(--bad); }
+.btn.link { border: 0; background: transparent; color: var(--gold-ink); padding: 0; min-height: 44px; }
+.btn[disabled] { opacity: .5; cursor: not-allowed; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
+form.inline { display: inline; }
+
+.field { display: flex; flex-direction: column; gap: 8px; }
+.field label { font-size: 14px; font-weight: 500; }
+.field input, .field select, .field textarea {
+  font: inherit; font-size: 16px; min-height: 48px; padding: 8px 12px;
+  border: 1px solid var(--field); border-radius: 8px; background: var(--white); color: var(--ink);
+}
+.fields-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.field-error { font-size: 13px; color: var(--bad); }
+
+table.list { width: 100%; border-collapse: collapse; font-size: 15px; min-width: 760px; }
+table.list th { text-align: left; color: var(--muted); font-size: 13px; font-weight: 500; padding: 10px 8px; border-bottom: 1px solid var(--line); }
+table.list td { padding: 12px 8px; border-bottom: 1px solid var(--line-soft); vertical-align: middle; }
+
+.chip { font-size: 13px; font-weight: 600; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+.chip.draft { background: var(--warn-bg); color: var(--warn); }
+.chip.scheduled { background: var(--tile); color: var(--ink); }
+.chip.live { background: var(--ok-bg); color: var(--ok); }
+.chip.awaiting_approval { background: var(--ink); color: var(--cream); }
+.chip.published { background: var(--ok-bg); color: var(--ok); }
+.chip.cancelled { background: var(--bad-bg); color: var(--bad); }
+.chip.type { background: var(--ink); color: var(--gold); }
+
+.flash { border-radius: 10px; padding: 14px 16px; font-size: 15px; }
+.flash.notice { background: var(--ok-bg); color: var(--ok); }
+.flash.alert { background: var(--bad-bg); color: var(--bad); }
+
+.pick { display: flex; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 10px; min-height: 64px; border: 1px solid var(--field); background: var(--white); }
+.pick.in { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+.pick .thumb { width: 48px; height: 48px; background: var(--tile); border-radius: 6px; flex: 0 0 auto; }
+.pick .body { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.pick .title { font-size: 15px; font-weight: 600; }
+.pick .sub { font-size: 13px; color: var(--body); }
+.pick.in .sub { color: #C9CBD1; }
+.pick form { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.pick input { font: inherit; font-size: 15px; min-height: 44px; width: 140px; padding: 0 10px; border: 1px solid var(--field); border-radius: 8px; }
+.count { font-size: 15px; font-weight: 600; }
+.count.full { color: var(--bad); }
+
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (max-width: 640px) {
+  .topbar, .page { padding-left: 16px; padding-right: 16px; }
+  h1 { font-size: 24px; }
+}

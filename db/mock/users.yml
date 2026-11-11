@@ -1,0 +1,9 @@
+# MOCK DATA — stands in for the real `users` table until auth / user onboarding lands.
+# See ai/knowledge/mock-data.md. Fake people only (public repo).
+- { id: 1, role: admin,  display_name: "แอดมิน A" }
+- { id: 2, role: admin,  display_name: "แอดมิน B" }
+- { id: 11, role: seller, display_name: "ผู้ขาย S-08" }
+- { id: 12, role: seller, display_name: "ผู้ขาย S-11" }
+- { id: 21, role: buyer,  display_name: "ผู้ซื้อ B-04" }
+- { id: 22, role: buyer,  display_name: "ผู้ซื้อ B-09" }
+- { id: 23, role: buyer,  display_name: "ผู้ซื้อ B-17" }

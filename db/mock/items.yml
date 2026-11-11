@@ -1,0 +1,10 @@
+# MOCK DATA — stands in for the real `items` table until product onboarding lands.
+# See ai/knowledge/mock-data.md. min_price_cents is satang (bidding.md).
+- { id: 101, seller_id: 11, category: "อัญมณี",  title: "แหวนเงินฝังพลอย (ตัวอย่าง)",      min_price_cents: 1500000,    status: approved }
+- { id: 102, seller_id: 11, category: "นาฬิกา",   title: "นาฬิกาพกวินเทจ (ตัวอย่าง)",       min_price_cents: 1200000,    status: approved }
+- { id: 103, seller_id: 12, category: "ของสะสม", title: "เหรียญที่ระลึกชุดพิเศษ (ตัวอย่าง)", min_price_cents: 800000,     status: approved }
+- { id: 104, seller_id: 12, category: "ศิลปะ",    title: "ภาพพิมพ์ลายเซ็นศิลปิน (ตัวอย่าง)", min_price_cents: 1950000,    status: approved }
+- { id: 105, seller_id: 11, category: "อัญมณี",  title: "แหวนเพชรเม็ดใหญ่ (ตัวอย่าง)",     min_price_cents: 2000000000, status: approved }
+- { id: 106, seller_id: 12, category: "นาฬิกา",   title: "นาฬิการุ่นหายาก (ตัวอย่าง)",      min_price_cents: 2500000000, status: approved }
+- { id: 107, seller_id: 12, category: "รถ",       title: "รถคลาสสิกสะสม (ตัวอย่าง)",        min_price_cents: 3000000000, status: approved }
+- { id: 108, seller_id: 11, category: "อัญมณี",  title: "สร้อยไข่มุก (รอตรวจ, ตัวอย่าง)",   min_price_cents: 900000,     status: pending_review }

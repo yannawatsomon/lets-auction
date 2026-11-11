@@ -1,0 +1,94 @@
+<% content_for :title, @auction.title %>
+<%= link_to "← กลับไปรายการ Auction", admin_auctions_path, class: "btn link" %>
+
+<div class="head">
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <span class="chip type"><%= auction_type_label(@auction) %></span>
+      <%= auction_status_chip(@auction) %>
+    </div>
+    <h1><%= @auction.title %></h1>
+  </div>
+  <% if @auction.draft? %>
+    <div class="actions">
+      <%= link_to "แก้ไขข้อมูลงาน", edit_admin_auction_path(@auction), class: "btn" %>
+      <%= button_to "เผยแพร่ Auction", schedule_admin_auction_path(@auction), class: "btn primary",
+            disabled: @auction.lots.empty?,
+            form: { data: { turbo_confirm: "เผยแพร่แล้วจะแก้ไขงานและสินค้าไม่ได้ ยืนยันไหม?" } } %>
+    </div>
+  <% end %>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="k">เริ่มประมูล</div><div class="v"><%= thai_time(@auction.starts_at) %></div></div>
+  <div class="stat"><div class="k">ปิดประมูล</div><div class="v"><%= thai_time(@auction.ends_at) %></div></div>
+  <div class="stat"><div class="k">การเข้าร่วม</div><div class="v"><%= @auction.english? ? "เชิญเท่านั้น" : "ลงทะเบียนเอง" %></div></div>
+  <% if @auction.english? %>
+    <div class="stat"><div class="k">ต่อเวลา (กันบิดวินาทีสุดท้าย)</div><div class="v">+<%= @auction.extension_sec / 60 %> นาที · สูงสุด <%= @auction.extension_cap_sec / 60 %> นาที</div></div>
+  <% end %>
+</div>
+<% if @auction.description.present? %><p class="hint"><%= @auction.description %></p><% end %>
+<% if @auction.cancelled? %>
+  <div class="flash alert">ยกเลิกเมื่อ <%= thai_time(@auction.cancelled_at) %> · เหตุผล: <%= @auction.cancel_reason %></div>
+<% end %>
+
+<div class="row">
+  <section class="card" aria-labelledby="lots-h">
+    <div class="head">
+      <h2 id="lots-h">สินค้าในงาน</h2>
+      <span class="count <%= 'full' if @auction.lots_full? %>"><%= @auction.lots.size %>/<%= Auction::MAX_LOTS %></span>
+    </div>
+    <% if @auction.lots.empty? %>
+      <p class="hint">ยังไม่มีสินค้า เลือกจากรายการสินค้าที่ Approve แล้ว</p>
+    <% end %>
+    <% @auction.lots.each do |lot| %>
+      <div class="pick in">
+        <span class="thumb" aria-hidden="true"></span>
+        <span class="body">
+          <span class="title">ล็อต <%= lot.lot_no %> · <%= lot.item&.title || "สินค้า ##{lot.item_id}" %></span>
+          <span class="sub">ราคาขั้นต่ำ <%= baht(lot.min_price_cents) %><%= " · ขั้นบิด #{baht(lot.bid_increment_cents)}" if lot.bid_increment_cents %></span>
+        </span>
+        <% if @auction.draft? %>
+          <%= button_to "เอาออก", admin_auction_lot_path(@auction, lot), method: :delete, class: "btn", "aria-label": "เอาล็อต #{lot.lot_no} ออก" %>
+        <% end %>
+      </div>
+    <% end %>
+  </section>
+
+  <% if @auction.draft? %>
+    <section class="card" aria-labelledby="pool-h">
+      <h2 id="pool-h">Add สินค้าเข้างาน</h2>
+      <p class="hint">เลือกจากสินค้าที่ Approve แล้ว (สูงสุด <%= Auction::MAX_LOTS %> ชิ้น)<%= " · English ต้องกำหนดขั้นบิดขั้นต่ำต่อล็อต" if @auction.english? %></p>
+      <% if @available_items.empty? %><p class="hint">ไม่มีสินค้าที่ Approve แล้วให้เลือก</p><% end %>
+      <% @available_items.each do |item| %>
+        <% busy = @busy_item_ids.include?(item.id) %>
+        <div class="pick">
+          <span class="thumb" aria-hidden="true"></span>
+          <span class="body">
+            <span class="title"><%= item.title %></span>
+            <span class="sub"><%= item.seller&.display_name %> · <%= item.category %> · ขั้นต่ำ <%= baht(item.min_price_cents) %><%= " · อยู่ในงานอื่นที่ยังไม่จบ" if busy %></span>
+          </span>
+          <%= form_with url: admin_auction_lots_path(@auction), method: :post do %>
+            <%= hidden_field_tag :item_id, item.id, id: nil %>
+            <% if @auction.english? %>
+              <label class="sr-only" for="inc-<%= item.id %>">ขั้นบิดขั้นต่ำ (บาท) สำหรับ <%= item.title %></label>
+              <input id="inc-<%= item.id %>" name="bid_increment" inputmode="decimal" placeholder="ขั้นบิด (บาท)" required>
+            <% end %>
+            <button class="btn" <%= "disabled" if busy || @auction.lots_full? %>>+ เพิ่ม</button>
+          <% end %>
+        </div>
+      <% end %>
+    </section>
+  <% end %>
+</div>
+
+<% if @auction.draft? || @auction.scheduled? %>
+  <section class="card" aria-labelledby="cancel-h">
+    <h2 id="cancel-h">ยกเลิกงาน</h2>
+    <%= form_with url: cancel_admin_auction_path(@auction), method: :post, class: "field" do %>
+      <label for="cancel_reason">เหตุผล (จำเป็น)</label>
+      <textarea id="cancel_reason" name="cancel_reason" rows="2" required></textarea>
+      <div class="actions"><button class="btn danger" data-turbo-confirm="ยกเลิกงานนี้? ทำย้อนกลับไม่ได้">ยกเลิกงาน</button></div>
+    <% end %>
+  </section>
+<% end %>

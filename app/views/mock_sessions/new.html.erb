@@ -1,0 +1,10 @@
+<main class="page" style="max-width:640px">
+  <%= render "shared/flash" %>
+  <h1>เข้าสู่ระบบจำลอง (เฉพาะ dev/test)</h1>
+  <p class="hint">หน้านี้ใช้แทนระบบ login จริงชั่วคราว และไม่มีใน production · ผู้ใช้ทั้งหมดเป็นข้อมูลจำลอง</p>
+  <div class="card">
+    <% @users.each do |u| %>
+      <%= button_to "#{u.display_name} (#{u.role})", mock_session_path(user_id: u.id), class: "btn" %>
+    <% end %>
+  </div>
+</main>
