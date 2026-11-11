@@ -15,8 +15,9 @@ This repo is **public** — never commit secrets, tokens, `.env` files or person
 3. Make small, focused commits (imperative subject, e.g. `Add bid validation`).
 4. Check `docs/decision/README.md`. If your change touches a Decided topic, update or
    supersede the decision doc in the same PR.
-5. Rebase your branch on the latest `main` (your own branch only; if already pushed use
-   `git push --force-with-lease`, never `--force`), then run the checks locally:
+5. Rebase your branch on the latest `main` (your own branch only; if already pushed, you run
+   `git push --force-with-lease` yourself, never `--force`; agents never force-push), then
+   run the checks locally:
    `bin/rails db:test:prepare test`, `bin/rubocop`, `bin/brakeman`.
 6. Open a PR using the template. CI must pass and at least one approval is required;
    squash-merge, then delete the branch. **Merging to `main` auto-deploys to Railway.**
@@ -37,7 +38,13 @@ bin/dev
   content — add rules to `AGENTS.md`.
 - Shared skills are already in the repo (`.claude/skills/`, index in `AGENTS.md`); nothing to
   install. Changes to a copied third-party skill need a PR that follows `THIRD_PARTY.md`.
-- Review agent-written changes as carefully as human ones. You are the author of record.
+- Agents follow the **Hard rules** in `AGENTS.md`: they never force-push or delete remote
+  branches, and commit, push, open PRs, change gems/CI/GitHub/Railway only when you explicitly
+  ask for that exact action (`docs/decision/agent-boundaries.md`). A shared
+  `.claude/settings.json` makes Claude Code prompt for these.
+- Review agent-written changes as carefully as human ones. You are the author of record:
+  read the diff before you ask an agent to commit or push, and never paste tokens, keys or
+  `.env` contents into a prompt.
 - Put new shared knowledge in `ai/` (see `ai/README.md`), not only in chat or a PR comment.
 
 ## Commit email
