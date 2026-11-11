@@ -1,0 +1,32 @@
+<% content_for :title, "คำนวณคะแนน" %>
+<%= render "onboarding/intro" %>
+<%= render "onboarding/steps", onboarding: @onboarding, current: 3 %>
+
+<section class="card ob-card">
+  <h2>คำนวณคะแนน</h2>
+
+  <% if @assessment %>
+    <%= render "onboarding/score_result", assessment: @assessment %>
+  <% else %>
+    <p class="hint">ระบบคิดคะแนนจากข้อมูลด้านล่าง ตามเกณฑ์ของ Lets Auction (ไม่ใช่คะแนนเครดิตบูโร)</p>
+    <dl class="ob-summary">
+      <div><dt>อาชีพ</dt><dd><%= UserOnboarding::OCCUPATION_LABELS[@onboarding.occupation] %></dd></div>
+      <div><dt>รายได้ต่อเดือน</dt><dd><%= number_with_delimiter(@onboarding.monthly_income) %> บาท</dd></div>
+      <div><dt>ประสบการณ์ทำงานรวม</dt><dd><%= @onboarding.years_experience_total %> ปี</dd></div>
+      <div><dt>เบอร์ยืนยันด้วย OTP</dt><dd><%= @onboarding.phone_verified_at ? "ยืนยันแล้ว" : "ยังไม่มีในตอนนี้" %></dd></div>
+    </dl>
+  <% end %>
+
+  <p class="ob-tries">คำนวณได้อีก <strong><%= @tries_left %> จาก <%= OnboardingScoring::MAX_TRIES %></strong> ครั้งใน 30 วัน</p>
+
+  <div class="ob-nav">
+    <%= link_to "ย้อนกลับ", edit_onboarding_employment_path, class: "btn" %>
+    <% if @assessment %>
+      <%= link_to "ไปขั้นถัดไป", onboarding_path, class: "btn primary" %>
+    <% elsif @tries_left.positive? %>
+      <%= button_to "คำนวณคะแนน", onboarding_score_path, class: "btn primary", form_class: "inline" %>
+    <% else %>
+      <span class="hint">ครบจำนวนครั้งแล้ว ลองใหม่ได้เมื่อครั้งแรกเกิน 30 วัน</span>
+    <% end %>
+  </div>
+</section>
