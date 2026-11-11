@@ -46,7 +46,7 @@
     <% elsif current_user.nil? %>
       <div class="bidding-card">
         <div class="bidding-notice bidding-notice--warn">เข้าสู่ระบบก่อนเพื่อยื่นซอง</div>
-        <% if mock_login_enabled? %><%= link_to "เข้าสู่ระบบ", new_mock_session_path, class: "bidding-btn bidding-btn--primary" %><% end %>
+        <% if mock_session_enabled? %><%= link_to "เข้าสู่ระบบ", new_mock_session_path, class: "bidding-btn bidding-btn--primary" %><% end %>
       </div>
     <% elsif !@participant&.registered? %>
       <div class="bidding-card">

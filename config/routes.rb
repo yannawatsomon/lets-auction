@@ -1,10 +1,12 @@
 Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
 
-  # MOCK login: development/test, or production with MOCK_PRODUCT_ONBOARDING=true, where only
-  # sellers can sign in (ai/knowledge/mock-data.md).
-  if Rails.env.local? || Rails.configuration.x.mock_product_onboarding
-    resource :mock_session, only: %i[new create destroy], path: "mock-login"
+  # MOCK login: development/test; production with MOCK_PRODUCT_ONBOARDING=true (sellers only) or
+  # MOCK_BIDDING=true + demo password (every role) (ai/knowledge/mock-data.md).
+  if Rails.env.local? || Rails.configuration.x.mock_product_onboarding || Rails.configuration.x.mock_bidding
+    resource :mock_session, only: %i[new create destroy], path: "mock-login" do
+      post :unlock
+    end
   end
 
   # Bidding milestone (#27–#37): every bidding page lives under /bidding or /admin/bidding.

@@ -162,3 +162,6 @@ a.bidding-cover { text-decoration: none; color: inherit; display: flex; flex-dir
 .bidding-result:not(.bidding-result--win) .bidding-result__eyebrow { color: var(--bidding-muted); }
 .bidding-inline-form { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
 .bidding-inline-form input { font: inherit; font-size: 14px; min-height: 44px; padding: 0 10px; border: 1px solid var(--bidding-field); border-radius: 8px; width: 160px; }
+
+/* Railway demo (MOCK_BIDDING): make it obvious nothing here is real. */
+.bidding-demo-banner { background: var(--bidding-warn-bg); color: var(--bidding-warn); text-align: center; padding: 8px 16px; font-size: 14px; font-weight: 600; }

@@ -26,6 +26,13 @@ The app needs a public URL. The owner already connected the repo to Railway.
 - Catalog demo listings are temporarily enabled by default at the user's request
   (2026-11-11). Set `CATALOG_DEMO=false` to hide them. This controls read-only synthetic
   catalog inventory only, not mock login, admin access, or bidding. See `product-catalog.md`.
+- Optional bidding demo (2026-11-11, `bidding.md`): `MOCK_BIDDING=true` **and**
+  `MOCK_BIDDING_PASSWORD` (12+ characters) let the team try the bidding pages on the Railway URL:
+  visitors type the demo password, then pick any mock user (admin, buyer, seller). Off if
+  either is missing. Bidding also needs `ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY`,
+  `ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY`, `ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT`
+  (bids) and `SOLID_QUEUE_IN_PUMA=1` (auctions open/close on time). Demo data:
+  `bin/rails bidding:demo_seed`. Steps: `ai/knowledge/bidding-demo-on-railway.md`.
 - The app's health endpoint is `/up` (whether Railway uses it as a health check is open).
 
 ## Open questions

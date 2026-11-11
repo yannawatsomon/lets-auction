@@ -43,6 +43,10 @@ serves `/product-onboarding` and the mock login in production, but only **seller
 there (`ApplicationController#set_current_user` drops any other mock user outside
 development/test). Admin pages therefore stay 404. Remove the variable when real auth lands.
 
+**Bidding demo (2026-11-11):** `MOCK_BIDDING=true` + `MOCK_BIDDING_PASSWORD` (12+ chars)
+opens the mock login in production to every role, but only after the visitor types the demo
+password (`session[:bidding_demo_unlocked]`). See `bidding-demo-on-railway.md`.
+
 **Gotchas:**
 
 - The public Catalog has a separate read-only demo requested by the user (2026-11-11):

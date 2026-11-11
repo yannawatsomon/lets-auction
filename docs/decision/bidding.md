@@ -75,6 +75,16 @@ collaborator confirms it in a PR (see `README.md`).
   Trade-off: mock state is lost on restart; ranking is recomputed (fine for a few hundred bids a
   lot). Alternative rejected: converting the existing tables back to mock (large rework of
   #28–#35 for no user-visible gain). Source: @guy127 in chat, 2026-11-11.
+- **Bidding demo on Railway behind a flag and a password.** What: `MOCK_BIDDING=true` plus
+  `MOCK_BIDDING_PASSWORD` (≥ 12 characters) opens the mock login in production to every role
+  after the visitor types the password (`POST /mock-login/unlock`, 10 tries / 15 min per IP);
+  bidding pages show a "เดโม" banner; `bin/rails bidding:demo_seed` creates demo auctions. Fails
+  closed (either variable missing → off). Why: the team wants to see the bidding pages on the
+  real URL before real auth exists, and the product-onboarding flag only lets sellers in.
+  Trade-off: anyone with the password can act as admin on production, so production holds demo
+  data only while it's on; turn it off when real auth lands. Alternative rejected: a tunnel to a
+  developer machine (only while that machine runs); opening admin without a password. Source:
+  @guy127 in chat, 2026-11-11 (option B).
 - **Orders are mock data for now.** What: bidding creates orders through an in-memory mock
   (like `ProductOnboarding::Store`), not an `orders` table, until the payment milestone agrees
   the table. An order carries `lot_id`, `buyer_id`, `seller_id`, `amount_cents` (the bid),

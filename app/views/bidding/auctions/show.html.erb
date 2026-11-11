@@ -16,7 +16,7 @@
     <h2 id="join-h">การเข้าร่วม</h2>
     <% if current_user.nil? %>
       <div class="bidding-notice bidding-notice--warn">เข้าสู่ระบบก่อนเพื่อดูว่าคุณเข้าร่วมงานนี้ได้ไหม</div>
-      <% if mock_login_enabled? %><%= link_to "เข้าสู่ระบบ", new_mock_session_path, class: "bidding-btn bidding-btn--primary" %><% end %>
+      <% if mock_session_enabled? %><%= link_to "เข้าสู่ระบบ", new_mock_session_path, class: "bidding-btn bidding-btn--primary" %><% end %>
     <% elsif @participant&.registered? || @participant&.accepted? %>
       <div class="bidding-notice bidding-notice--ok"><strong>คุณเข้าร่วมงานนี้แล้ว</strong> · ยื่นราคาได้เมื่องานเริ่ม</div>
     <% elsif @participant&.invited? %>
