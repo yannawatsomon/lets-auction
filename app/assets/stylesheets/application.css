@@ -120,3 +120,24 @@ table.list td { padding: 12px 8px; border-bottom: 1px solid var(--line-soft); ve
 .chip.approved, .chip.sold { background: var(--ok-bg); color: var(--ok); }
 .chip.in_auction { background: var(--ink); color: var(--cream); }
 .chip.rejected { background: var(--bad-bg); color: var(--bad); }
+
+/* Product onboarding wizard */
+.wizard fieldset { border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 16px; }
+.wizard legend { font-size: 19px; font-weight: 600; padding: 0; margin-bottom: 12px; }
+.wizard .field textarea { min-height: 120px; }
+.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; font-size: 14px; }
+.steps li { padding: 6px 12px; border-radius: 999px; background: var(--tile); color: var(--body); }
+.steps li[aria-current="step"] { background: var(--ink); color: var(--cream); font-weight: 600; }
+.files { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.file-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--white); }
+.file-row .name { flex: 1 1 200px; font-weight: 500; word-break: break-all; }
+.file-row.cover { border-color: var(--gold-ink); box-shadow: inset 4px 0 0 var(--gold); }
+.file-row .state { font-size: 13px; color: var(--body); }
+.file-row .state.ok { color: var(--ok); }
+.file-row .state.bad { color: var(--bad); }
+.summary-row { display: grid; grid-template-columns: 160px 1fr auto; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line-soft); align-items: start; }
+.summary-row span { word-break: break-word; }
+@media (max-width: 640px) { .summary-row { grid-template-columns: 1fr; gap: 4px; } }
+
+/* Author `display` rules (.btn, .wizard fieldset) must not override the `hidden` attribute. */
+[hidden] { display: none !important; }

@@ -34,13 +34,21 @@ module ProductOnboarding
         end
       end
 
-      # All or nothing: used when a product is submitted with these files.
-      def attach!(keys, seller_id:)
+      # The seller's uploads for these keys, in order. Raises NotFound for someone else's or an
+      # unknown key, Rejected when a file has not finished uploading.
+      def ready!(keys, seller_id:)
         synchronize do
           found = keys.map { |key| find_owned!(key, seller_id) }
           raise UploadPolicy::Rejected, "Some files have not finished uploading" unless found.all?(&:uploaded)
 
-          found.each { |upload| uploads[upload.key] = upload.with(attached: true) }
+          found
+        end
+      end
+
+      # All or nothing: used when a product is submitted with these files.
+      def attach!(keys, seller_id:)
+        synchronize do
+          ready!(keys, seller_id: seller_id).each { |upload| uploads[upload.key] = upload.with(attached: true) }
         end
       end
 

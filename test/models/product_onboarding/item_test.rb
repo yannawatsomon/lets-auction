@@ -37,9 +37,10 @@ class ProductOnboardingItemTest < ActiveSupport::TestCase
     assert_raises(ActiveModel::ValidationError) { @item.sync_media!(media_entries(images: 1, videos: 3)) }
   end
 
-  test "does not limit documents yet" do
-    @item.sync_media!(media_entries(images: 1, documents: 12))
-    assert_equal 12, @item.media_count("document")
+  test "allows up to ten documents and rejects an eleventh" do
+    @item.sync_media!(media_entries(images: 1, documents: 10))
+    assert_equal 10, @item.media_count("document")
+    assert_raises(ActiveModel::ValidationError) { @item.sync_media!(media_entries(images: 1, documents: 11)) }
   end
 
   test "rejects an unknown media kind" do

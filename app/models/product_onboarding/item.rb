@@ -14,8 +14,8 @@ module ProductOnboarding
     class InvalidTransition < StandardError; end
 
     KINDS = %w[image video document].freeze
-    # Allowed number of files per kind. Documents have no limit yet (decision still Open).
-    MEDIA_LIMITS = { "image" => 1..5, "video" => 0..2 }.freeze
+    # Allowed number of files per kind. Documents: at most 10 (proposed in docs/decision/product-onboarding.md).
+    MEDIA_LIMITS = { "image" => 1..5, "video" => 0..2, "document" => 0..10 }.freeze
 
     TRANSITIONS = {
       "pending_review" => %w[approved rejected info_requested withdrawn],
