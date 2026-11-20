@@ -30,18 +30,20 @@ class BiddingSecurityTest < ActionDispatch::IntegrationTest
     [ SECRET_A, SECRET_B, Baht.parse(SECRET_A).to_s, Baht.parse(SECRET_B).to_s ].each do |secret|
       assert_not_includes body, secret, "#{where} leaked a sealed amount"
     end
-    # Two sealed bids exist on this lot: "2 ซอง", "2 ราย", "ผู้ยื่นซองแล้ว 2" would leak the count.
+    # Two sealed bids exist on this lot: "2 bids", "2 bidders", "Bids so far" would leak the count.
+    # The Thai patterns stay in case Thai copy comes back (docs/decision/ui-design.md).
     text = body.gsub(/<[^>]+>/, " ").squish
+    assert_no_match(/(?<![\d,.])2\s*(bids?|bidders?|envelopes?)\b|bids so far|bid count\s*:?\s*\d/i, text, "#{where} leaked a bid count")
     assert_no_match(/(?<![\d,.])2\s*(ซอง|ราย)|ผู้ยื่นซองแล้ว|จำนวนซอง\s*\d/, text, "#{where} leaked a bid count")
   end
 
   # --- Sealed secrecy: every page, feed, socket message and log ---------------------------
 
   test "the leak detector itself catches amounts and counts" do
-    [ "<p>฿ #{SECRET_A}</p>", "<td>#{Baht.parse(SECRET_B)}</td>", "<span>มีผู้ยื่น 2 ราย</span>", "<b>2</b> ซอง", "ผู้ยื่นซองแล้ว" ].each do |leak|
+    [ "<p>฿ #{SECRET_A}</p>", "<td>#{Baht.parse(SECRET_B)}</td>", "<span>2 bidders so far</span>", "<b>2</b> bids", "Bids so far: 2", "<span>มีผู้ยื่น 2 ราย</span>", "<b>2</b> ซอง" ].each do |leak|
       assert_raises(Minitest::Assertion, leak) { assert_no_secret(leak, "sample") }
     end
-    assert_no_secret("<p>ยื่นซองได้ 1 ครั้ง · ล็อต 2 · 12 ล็อต</p>", "harmless")
+    assert_no_secret("<p>One bid only · Lot 2 · 12 lots · My bids</p>", "harmless")
   end
 
   test "no page shows another buyer's sealed amount or the bid count, for buyers, guests, sellers and admins" do

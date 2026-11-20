@@ -1,7 +1,7 @@
 # Demo auctions for trying the bidding pages (#36 follow-up, MOCK_BIDDING demo).
 #   bin/rails bidding:demo_seed
 # Runs only in development, or in production while the bidding demo is on (MOCK_BIDDING=true with
-# a demo password). Replaces earlier demo auctions (titles starting "ตัวอย่าง:"); touches nothing
+# a demo password). Replaces earlier demo auctions (titles starting "Demo:", or "ตัวอย่าง:" from before the English UI); touches nothing
 # else. Uses bidding's YAML demo products and mock users only.
 namespace :bidding do
   desc "Create demo auctions (sealed open, English live, closed awaiting results, draft)"
@@ -18,7 +18,7 @@ module BiddingDemoSeed
 
   def make(title, type, lots, inc: nil)
     a = Auction.create!(title:, auction_type: type, starts_at: 1.hour.from_now, ends_at: 2.hours.from_now,
-      created_by_id: 1, description: "ข้อมูลตัวอย่างสำหรับดูหน้าเว็บ (เดโม)")
+      created_by_id: 1, description: "Sample data for trying the pages (demo).")
     lots.each { |i| a.add_item!(i, bid_increment_cents: inc) }
     a.schedule!
     a
@@ -36,7 +36,7 @@ module BiddingDemoSeed
     items = MockData.approved_items.sort_by(&:min_price_cents)
     small = items.select { |i| i.min_price_cents < 100_000_000 }
     big = items.select { |i| i.min_price_cents >= 100_000_000 }
-    Auction.where("title LIKE ?", "ตัวอย่าง:%").find_each do |a|
+    Auction.where("title LIKE ? OR title LIKE ?", "Demo:%", "ตัวอย่าง:%").find_each do |a|
       a.lots.each { |l| l.update_columns(leader_bid_id: nil) }
       Bid.where(lot_id: a.lots.select(:id)).delete_all
       AuctionParticipant.where(auction_id: a.id).delete_all
@@ -45,7 +45,7 @@ module BiddingDemoSeed
     end
 
     # 1. Sealed, open now: buyers 22 and 23 have bid; 21 (grade A) registered but hasn't bid.
-    s = make("ตัวอย่าง: งานยื่นซอง (เปิดรับอยู่)", "sealed_first_price", small.first(2))
+    s = make("Demo: sealed bid (open now)", "sealed_first_price", small.first(2))
     [ 21, 22, 23 ].each { |id| AuctionParticipant.register!(auction: s, user: MockData.user(id)) }
     go_live(s, now, 2.days)
     lot = s.lots.first
@@ -55,7 +55,7 @@ module BiddingDemoSeed
 
     # 2. English, live now: 21 invited+accepted (grade A). 26 is added straight as accepted so two
     #    people can outbid each other in the demo (in production only approved grade A can be invited).
-    e = make("ตัวอย่าง: English ประมูลสด", "english", big.first(1), inc: 50_000_000)
+    e = make("Demo: English live auction", "english", big.first(1), inc: 50_000_000)
     AuctionParticipant.invite!(auction: e, user: MockData.user(21), admin:).accept!(user: MockData.user(21))
     AuctionParticipant.create!(auction: e, user_id: 26, source: "invited", status: "accepted", invited_by_id: 1, grade_at_entry: "A", accepted_at: now)
     go_live(e, now, 3.hours)
@@ -63,7 +63,7 @@ module BiddingDemoSeed
     Bidding::PlaceEnglishBid.call(lot: el, user: MockData.user(26), amount_text: Baht.format(el.min_price_cents), idempotency_key: "demo-e-1", now:)
 
     # 3. Sealed, already closed and waiting for the admin to approve results (A3 page).
-    c = make("ตัวอย่าง: งานที่ปิดแล้ว รอประกาศผล", "sealed_first_price", small.last(1))
+    c = make("Demo: closed, awaiting results", "sealed_first_price", small.last(1))
     [ 21, 22, 23 ].each { |id| AuctionParticipant.register!(auction: c, user: MockData.user(id)) }
     c.update_columns(starts_at: now - 2.days, ends_at: now - 1.hour, status: "live")
     c.lots.update_all(status: "live")
@@ -74,7 +74,7 @@ module BiddingDemoSeed
     Bidding::CloseAuction.call(auction: c, now:)
 
     # 4. A draft to show the admin build screen.
-    d = Auction.create!(title: "ตัวอย่าง: งานร่าง (ยังไม่เผยแพร่)", auction_type: "sealed_first_price",
+    d = Auction.create!(title: "Demo: draft (not published)", auction_type: "sealed_first_price",
       starts_at: 3.days.from_now, ends_at: 5.days.from_now, created_by_id: 1)
 
     puts({ sealed_open: s.id, sealed_lot: lot.id, english: e.id, english_lot: el.id, closed: c.id, closed_lot: cl.id, draft: d.id }.to_json)

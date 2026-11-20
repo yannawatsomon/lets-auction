@@ -19,7 +19,7 @@ module Bidding
       invitation.accept!(user: current_user)
       audit!("participant.accepted", invitation, { auction_id: invitation.auction_id }) unless was_accepted
       respond_to do |f|
-        f.html { redirect_to bidding_auction_path(invitation.auction), notice: "ตอบรับคำเชิญแล้ว" }
+        f.html { redirect_to bidding_auction_path(invitation.auction), notice: "Invitation accepted." }
         f.json { render json: { status: invitation.status }, status: :ok }
       end
     rescue AuctionParticipant::Error => e

@@ -65,7 +65,7 @@ class Admin::Bidding::AuctionsTest < ActionDispatch::IntegrationTest
 
     post admin_bidding_auction_lots_path(a), params: { item_id: item.id, bid_increment: "200,000.123" }
     assert_empty a.reload.lots
-    assert_match "ขั้นบิด", flash[:alert]
+    assert_match "bid increment", flash[:alert]
 
     post admin_bidding_auction_lots_path(a), params: { item_id: item.id, bid_increment: "200,000" }
     assert_equal 20_000_000, a.reload.lots.first.bid_increment_cents

@@ -10,7 +10,7 @@ module Admin
       def show
         @auction = Auction.find(params[:id])
         unless @auction.awaiting_approval? || @auction.published?
-          return redirect_to(admin_bidding_auction_path(@auction), alert: "ดูอันดับได้หลังปิดรับเท่านั้น", status: :see_other)
+          return redirect_to(admin_bidding_auction_path(@auction), alert: "The ranking is available only after bidding closes.", status: :see_other)
         end
 
         @lots = @auction.lots.to_a
@@ -20,21 +20,21 @@ module Admin
       def approve
         auction = Auction.find(params[:id])
         ::Bidding::Results.approve!(auction:, admin: current_user)
-        redirect_to results_admin_bidding_auction_path(auction), notice: "อนุมัติผลแล้ว แจ้งผู้ชนะแล้ว (ชำระภายใน 48 ชั่วโมง)", status: :see_other
+        redirect_to results_admin_bidding_auction_path(auction), notice: "Results approved and winners notified (pay within 48 hours).", status: :see_other
       end
 
       def disqualify
         lot = AuctionLot.find_by!(id: params[:id], auction_id: params[:auction_id])
         ::Bidding::Results.disqualify!(lot:, user_id: params[:user_id], reason: params[:reason], admin: current_user)
-        redirect_to results_admin_bidding_auction_path(lot.auction_id), notice: "ตัดสิทธิ์แล้ว อันดับถัดไปจะได้รับข้อเสนอเมื่ออนุมัติผล", status: :see_other
+        redirect_to results_admin_bidding_auction_path(lot.auction_id), notice: "Bidder disqualified. The next rank gets the offer when results are approved.", status: :see_other
       end
 
       def mark_paid
         order = ::Bidding::OrderStore.find(params[:id])
-        return redirect_to(admin_bidding_auctions_path, alert: "ไม่พบรายการนี้ (ข้อมูล mock หายเมื่อ restart)", status: :see_other) unless order
+        return redirect_to(admin_bidding_auctions_path, alert: "Order not found (mock data is lost on restart).", status: :see_other) unless order
 
         ::Bidding::Results.mark_paid!(order_id: params[:id], admin: current_user)
-        redirect_to results_admin_bidding_auction_path(order.auction_id), notice: "บันทึกว่าชำระแล้ว (mock)", status: :see_other
+        redirect_to results_admin_bidding_auction_path(order.auction_id), notice: "Marked as paid (mock).", status: :see_other
       end
     end
   end

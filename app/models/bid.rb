@@ -58,8 +58,8 @@ class Bid < ApplicationRecord
 
   def amount_is_positive_whole_satang
     value = Integer(amount_cents.to_s, 10)
-    errors.add(:amount_cents, "ต้องมากกว่า 0") unless value.positive?
+    errors.add(:amount_cents, "must be greater than 0") unless value.positive?
   rescue ArgumentError, TypeError
-    errors.add(:amount_cents, "ต้องเป็นจำนวนเต็มหน่วยสตางค์")
+    errors.add(:amount_cents, "must be a whole number of satang")
   end
 end

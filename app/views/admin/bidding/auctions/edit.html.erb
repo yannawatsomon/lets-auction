@@ -1,4 +1,4 @@
-<% content_for :title, "แก้ไข #{@auction.title}" %>
-<%= link_to "← กลับไปหน้างาน", admin_bidding_auction_path(@auction), class: "bidding-btn bidding-btn--link" %>
-<h1>แก้ไขงาน</h1>
+<% content_for :title, "Edit #{@auction.title}" %>
+<%= link_to admin_bidding_auction_path(@auction), class: "bidding-btn bidding-btn--link" do %><%= bidding_icon(:arrow_left) %>Back to the auction<% end %>
+<h1>Edit auction</h1>
 <%= render "form", auction: @auction %>

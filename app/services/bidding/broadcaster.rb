@@ -2,7 +2,7 @@ module Bidding
   # Builds and sends AuctionChannel messages (issue #33). Call only after the database
   # transaction has committed, so nobody hears about a bid that was rolled back.
   # Messages carry public facts only: never sealed amounts or sealed bid counts, never who a
-  # bidder is (English leaders are masked as "ผู้ประมูล N").
+  # bidder is (English leaders are masked as "Bidder N").
   module Broadcaster
     module_function
 
@@ -60,7 +60,7 @@ module Bidding
         leader: masked_leader(lot))
     end
 
-    # "ผู้ประมูล 2": the leader's position in the auction's participant list, so bidders can tell
+    # "Bidder 2": the leader's position in the auction's participant list, so bidders can tell
     # leaders apart without learning who they are.
     def masked_leader(lot)
       leader_id = lot.leader_bid&.user_id
@@ -68,7 +68,7 @@ module Bidding
 
       ids = lot.auction.participants.order(:id).pluck(:user_id)
       position = ids.index(leader_id)
-      position ? "ผู้ประมูล #{position + 1}" : "ผู้ประมูล"
+      position ? "Bidder #{position + 1}" : "Bidder"
     end
   end
 end

@@ -1,48 +1,48 @@
 <% content_for :title, @auction.title %>
-<%= link_to "← กลับไปงานประมูล", bidding_auctions_path, class: "bidding-btn bidding-btn--link" %>
+<%= link_to bidding_auctions_path, class: "bidding-btn bidding-btn--link" do %><%= bidding_icon(:arrow_left) %>Back to auctions<% end %>
 
 <div class="bidding-row">
-  <div style="display:flex;flex-direction:column;gap:16px">
-    <div style="display:flex;gap:8px;flex-wrap:wrap"><span class="bidding-chip bidding-chip--type"><%= bidding_type_label(@auction) %></span><%= bidding_status_chip(@auction) %></div>
+  <div class="bidding-stack">
+    <div class="bidding-badges"><span class="bidding-chip bidding-chip--type"><%= bidding_type_label(@auction) %></span><%= bidding_status_chip(@auction) %></div>
     <h1><%= @auction.title %></h1>
     <% if @auction.description.present? %><p class="bidding-hint"><%= @auction.description %></p><% end %>
     <div class="bidding-stats">
-      <div class="bidding-stat"><div class="bidding-stat__k">เริ่มประมูล</div><div class="bidding-stat__v"><%= bidding_time(@auction.starts_at) %></div></div>
-      <div class="bidding-stat"><div class="bidding-stat__k">ปิดประมูล</div><div class="bidding-stat__v"><%= bidding_time(@auction.ends_at) %></div></div>
+      <div class="bidding-stat"><div class="bidding-stat__k">Opens</div><div class="bidding-stat__v"><%= bidding_time(@auction.starts_at) %></div></div>
+      <div class="bidding-stat"><div class="bidding-stat__k">Closes</div><div class="bidding-stat__v"><%= bidding_time(@auction.ends_at) %></div></div>
     </div>
   </div>
 
   <aside class="bidding-card" aria-labelledby="join-h">
-    <h2 id="join-h">การเข้าร่วม</h2>
+    <h2 id="join-h">Taking part</h2>
     <% if current_user.nil? %>
-      <div class="bidding-notice bidding-notice--warn">เข้าสู่ระบบก่อนเพื่อดูว่าคุณเข้าร่วมงานนี้ได้ไหม</div>
-      <% if mock_session_enabled? %><%= link_to "เข้าสู่ระบบ", new_mock_session_path, class: "bidding-btn bidding-btn--primary" %><% end %>
+      <div class="bidding-notice bidding-notice--warn"><%= bidding_icon(:alert) %><span>Sign in to see whether you can join this auction.</span></div>
+      <% if mock_session_enabled? %><%= link_to "Sign in", new_mock_session_path, class: "bidding-btn bidding-btn--primary" %><% end %>
     <% elsif @participant&.registered? || @participant&.accepted? %>
-      <div class="bidding-notice bidding-notice--ok"><strong>คุณเข้าร่วมงานนี้แล้ว</strong> · ยื่นราคาได้เมื่องานเริ่ม</div>
+      <div class="bidding-notice bidding-notice--ok"><%= bidding_icon(:circle_check) %><span><strong>You're in this auction.</strong> You can bid once it opens.</span></div>
     <% elsif @participant&.invited? %>
-      <div class="bidding-notice bidding-notice--ok"><strong>คุณได้รับเชิญ</strong> · ตอบรับก่อนจึงจะเสนอราคาได้</div>
-      <%= button_to "ตอบรับคำเชิญ", accept_bidding_invitation_path(@participant), class: "bidding-btn bidding-btn--primary" %>
+      <div class="bidding-notice bidding-notice--ok"><%= bidding_icon(:circle_check) %><span><strong>You're invited.</strong> Accept the invitation before you bid.</span></div>
+      <%= button_to "Accept invitation", accept_bidding_invitation_path(@participant), class: "bidding-btn bidding-btn--primary" %>
     <% elsif @participant&.revoked? %>
-      <div class="bidding-notice bidding-notice--warn">สิทธิ์เข้าร่วมงานนี้ถูกยกเลิกแล้ว ติดต่อแอดมินถ้าคิดว่าผิดพลาด</div>
+      <div class="bidding-notice bidding-notice--warn"><%= bidding_icon(:alert) %><span>Your access to this auction was revoked. Contact an admin if you think this is a mistake.</span></div>
     <% elsif @ineligible %>
-      <div class="bidding-notice bidding-notice--warn"><strong>ยังเข้าร่วมไม่ได้</strong> · <%= @ineligible.message %></div>
+      <div class="bidding-notice bidding-notice--warn"><%= bidding_icon(:alert) %><span><strong>You can't join yet.</strong> <%= @ineligible.message %></span></div>
     <% elsif @auction.sealed_first_price? && (@auction.scheduled? || @auction.live?) %>
-      <div class="bidding-notice bidding-notice--ok"><strong>คุณมีสิทธิ์เข้าร่วม</strong> · เกรด <%= BuyerStanding.grade(current_user) %> · ยื่นซองได้ 1 ครั้งต่อสินค้า แก้ไขไม่ได้</div>
-      <%= button_to "ลงทะเบียนเข้าร่วมงาน", bidding_auction_registration_path(@auction), class: "bidding-btn bidding-btn--primary" %>
+      <div class="bidding-notice bidding-notice--ok"><%= bidding_icon(:circle_check) %><span><strong>You can join.</strong> Grade <%= BuyerStanding.grade(current_user) %>. One sealed bid per lot; you can't change it later.</span></div>
+      <%= button_to "Register for this auction", bidding_auction_registration_path(@auction), class: "bidding-btn bidding-btn--primary" %>
     <% else %>
-      <div class="bidding-notice bidding-notice--warn">งานนี้ไม่เปิดรับลงทะเบียนแล้ว</div>
+      <div class="bidding-notice bidding-notice--warn"><%= bidding_icon(:alert) %><span>Registration for this auction is closed.</span></div>
     <% end %>
   </aside>
 </div>
 
 <section class="bidding-card" aria-labelledby="lots-h">
-  <h2 id="lots-h">สินค้าในงาน</h2>
+  <h2 id="lots-h">Lots</h2>
   <% @auction.lots.each do |lot| %>
     <div class="bidding-pick">
       <span class="bidding-pick__thumb" aria-hidden="true"></span>
       <span class="bidding-pick__body">
-        <span class="bidding-pick__title"><%= link_to "ล็อต #{lot.lot_no} · #{lot.item&.title || "สินค้า ##{lot.item_id}"}", bidding_lot_path(lot) %></span>
-        <span class="bidding-pick__sub"><%= lot.item&.category %> · ราคาเริ่มต้นขั้นต่ำ <%= bidding_baht(lot.min_price_cents) %></span>
+        <span class="bidding-pick__title"><%= link_to "Lot #{lot.lot_no} · #{lot.item&.title || "Item ##{lot.item_id}"}", bidding_lot_path(lot) %></span>
+        <span class="bidding-pick__sub"><%= lot.item&.category %> · Starting price <%= bidding_baht(lot.min_price_cents) %></span>
       </span>
     </div>
   <% end %>

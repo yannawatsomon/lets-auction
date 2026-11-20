@@ -26,7 +26,7 @@ class BiddingEnglishBidTest < ActionDispatch::IntegrationTest
     post bidding_lot_bids_path(@lot), params: { amount: Baht.format(@lot.min_price_cents), idempotency_key: key }
     assert_response :see_other
     follow_redirect!
-    assert_select ".bidding-ok-title", /ผู้นำ/
+    assert_select ".bidding-ok-title", /highest bidder/
     assert_select "form[data-bidding-live-lot-target=form][hidden] input[name=amount]" # hidden while leading; shown again live when outbid (#34)
     assert_equal 1, @lot.reload.bid_count
   end

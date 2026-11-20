@@ -19,7 +19,7 @@ export default class extends Controller {
     const s = Math.floor(left / 1000)
     const d = Math.floor(s / 86400)
     const hms = [Math.floor(s % 86400 / 3600), Math.floor(s % 3600 / 60), s % 60].map(n => String(n).padStart(2, "0")).join(":")
-    this.element.textContent = d > 0 ? `${d} วัน ${hms}` : hms
+    this.element.textContent = d > 0 ? `${d}d ${hms}` : hms
     if (left === 0) {
       clearInterval(this.timer)
       setTimeout(() => window.location.reload(), 1500)
