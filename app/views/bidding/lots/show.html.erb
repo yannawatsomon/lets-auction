@@ -1,81 +1,81 @@
-<% content_for :title, @lot.item&.title || "ล็อต #{@lot.lot_no}" %>
-<%= link_to "← กลับไปหน้างาน", bidding_auction_path(@auction), class: "bidding-btn bidding-btn--link" %>
+<% content_for :title, @lot.item&.title || "Lot #{@lot.lot_no}" %>
+<%= link_to bidding_auction_path(@auction), class: "bidding-btn bidding-btn--link" do %><%= bidding_icon(:arrow_left) %>Back to the auction<% end %>
 
 <% if @auction.published? && current_user %>
-  <div class="bidding-notice bidding-notice--ok">ประกาศผลแล้ว · <%= link_to "ดูผลของคุณ", result_bidding_lot_path(@lot) %></div>
+  <div class="bidding-notice bidding-notice--ok"><%= bidding_icon(:circle_check) %><span>Results published · <%= link_to "See your result", result_bidding_lot_path(@lot) %></span></div>
 <% end %>
 <div class="bidding-row">
-  <div style="display:flex;flex-direction:column;gap:16px">
-    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+  <div class="bidding-stack">
+    <div class="bidding-badges">
       <span class="bidding-chip bidding-chip--type"><%= bidding_type_label(@auction) %></span>
-      <span class="bidding-hint">ล็อต <%= @lot.lot_no %> · <%= @lot.item&.category %> · <%= @auction.title %></span>
+      <span class="bidding-hint">Lot <%= @lot.lot_no %> · <%= @lot.item&.category %> · <%= @auction.title %></span>
     </div>
-    <h1><%= @lot.item&.title || "สินค้า ##{@lot.item_id}" %></h1>
-    <div class="bidding-cover__img bidding-lot__media" aria-hidden="true"></div>
+    <h1><%= @lot.item&.title || "Item ##{@lot.item_id}" %></h1>
+    <div class="bidding-cover__img bidding-lot__media" aria-hidden="true"><%= bidding_icon(:image, size: 32) %></div>
     <div class="bidding-stats">
-      <div class="bidding-stat"><div class="bidding-stat__k">ราคาเริ่มต้นขั้นต่ำ</div><div class="bidding-stat__v"><%= bidding_baht(@lot.min_price_cents) %></div></div>
-      <div class="bidding-stat"><div class="bidding-stat__k">เปิดรับซอง</div><div class="bidding-stat__v"><%= bidding_time(@auction.starts_at) %></div></div>
-      <div class="bidding-stat"><div class="bidding-stat__k">ปิดรับซอง</div><div class="bidding-stat__v"><%= bidding_time(@auction.ends_at) %></div></div>
+      <div class="bidding-stat"><div class="bidding-stat__k">Starting price</div><div class="bidding-stat__v"><%= bidding_baht(@lot.min_price_cents) %></div></div>
+      <div class="bidding-stat"><div class="bidding-stat__k">Opens</div><div class="bidding-stat__v"><%= bidding_time(@auction.starts_at) %></div></div>
+      <div class="bidding-stat"><div class="bidding-stat__k">Closes</div><div class="bidding-stat__v"><%= bidding_time(@auction.ends_at) %></div></div>
     </div>
     <section class="bidding-card" aria-labelledby="rules-h">
-      <h2 id="rules-h">กติกาการยื่นซอง</h2>
+      <h2 id="rules-h">Sealed-bid rules</h2>
       <ul class="bidding-rules">
-        <li><strong>ยื่นได้ครั้งเดียว</strong> แก้ไขหรือถอนซองไม่ได้หลังยืนยัน</li>
-        <li><strong>ไม่มีใครเห็นราคาหรือจำนวนซอง</strong> จนกว่าแอดมินจะประกาศผล ราคาถูกเข้ารหัสไว้</li>
-        <li><strong>ราคาสูงสุดชนะ และจ่ายตามราคาที่ตัวเองยื่น</strong> ต้องไม่ต่ำกว่าราคาเริ่มต้นขั้นต่ำ</li>
-        <li><strong>ราคาเท่ากัน</strong> ผู้ยื่นก่อนชนะ (ตามเวลาของ server)</li>
-        <li><strong>ปิดตรงเวลา ไม่ต่อเวลา</strong> · ผู้ชนะต้องชำระภายใน 48 ชั่วโมง ถ้าไม่ชำระ สิทธิ์จะไปที่อันดับถัดไป</li>
+        <li><%= bidding_icon(:check, size: 14) %><span><strong>One bid only.</strong> You can't change or withdraw it after you confirm.</span></li>
+        <li><%= bidding_icon(:check, size: 14) %><span><strong>Nobody sees amounts or how many bids there are</strong> until an admin publishes the results. Amounts are encrypted.</span></li>
+        <li><%= bidding_icon(:check, size: 14) %><span><strong>The highest bid wins and pays its own amount.</strong> It must be at least the starting price.</span></li>
+        <li><%= bidding_icon(:check, size: 14) %><span><strong>Ties</strong> go to the earlier bid (server time).</span></li>
+        <li><%= bidding_icon(:check, size: 14) %><span><strong>Closes on time, no extensions.</strong> The winner pays within 48 hours, or the lot goes to the next rank.</span></li>
       </ul>
     </section>
   </div>
 
-  <aside style="display:flex;flex-direction:column;gap:16px">
+  <aside class="bidding-stack">
     <% if @auction.english? %>
       <%= render "english_panel" %>
     <% elsif @my_bid %>
       <section class="bidding-card bidding-card--sealed" aria-labelledby="receipt-h">
-        <h2 id="receipt-h" class="bidding-ok-title">ยื่นซองเรียบร้อย</h2>
-        <p class="bidding-hint">ราคาถูกเข้ารหัสและปิดผนึกแล้ว · คุณจะเห็นผลเมื่อแอดมินประกาศ</p>
+        <h2 id="receipt-h" class="bidding-ok-title"><%= bidding_icon(:lock) %>Your bid is sealed</h2>
+        <p class="bidding-hint">Your amount is encrypted and sealed. You'll see the result once an admin publishes it.</p>
         <dl class="bidding-receipt">
-          <dt>เลขที่ซอง</dt><dd class="bidding-mono"><%= @lot.receipt_no_for(@my_bid) %></dd>
-          <dt>เวลายื่น (server)</dt><dd class="bidding-mono"><%= bidding_time(@my_bid.created_at) %>:<%= @my_bid.created_at.in_time_zone.strftime("%S.%L") %></dd>
-          <dt>ราคาของคุณ</dt><dd><%= bidding_baht(@my_bid.amount) %></dd>
+          <dt>Receipt</dt><dd class="bidding-mono"><%= @lot.receipt_no_for(@my_bid) %></dd>
+          <dt>Placed (server time)</dt><dd class="bidding-mono"><%= bidding_time(@my_bid.created_at) %>:<%= @my_bid.created_at.in_time_zone.strftime("%S.%L") %></dd>
+          <dt>Your bid</dt><dd class="bidding-mono"><%= bidding_baht(@my_bid.amount) %></dd>
         </dl>
-        <%= link_to "ดูซองทั้งหมดของฉัน", bidding_bids_path, class: "bidding-btn" %>
+        <%= link_to "View all my bids", bidding_bids_path, class: "bidding-btn" %>
       </section>
     <% elsif current_user.nil? %>
       <div class="bidding-card">
-        <div class="bidding-notice bidding-notice--warn">เข้าสู่ระบบก่อนเพื่อยื่นซอง</div>
-        <% if mock_session_enabled? %><%= link_to "เข้าสู่ระบบ", new_mock_session_path, class: "bidding-btn bidding-btn--primary" %><% end %>
+        <div class="bidding-notice bidding-notice--warn"><%= bidding_icon(:alert) %><span>Sign in to place a sealed bid.</span></div>
+        <% if mock_session_enabled? %><%= link_to "Sign in", new_mock_session_path, class: "bidding-btn bidding-btn--primary" %><% end %>
       </div>
     <% elsif !@participant&.registered? %>
       <div class="bidding-card">
-        <div class="bidding-notice bidding-notice--warn">ต้องลงทะเบียนเข้างานนี้ก่อนจึงจะยื่นซองได้</div>
-        <%= link_to "ไปหน้างานเพื่อลงทะเบียน", bidding_auction_path(@auction), class: "bidding-btn bidding-btn--primary" %>
+        <div class="bidding-notice bidding-notice--warn"><%= bidding_icon(:alert) %><span>Register for this auction before you place a sealed bid.</span></div>
+        <%= link_to "Go to the auction to register", bidding_auction_path(@auction), class: "bidding-btn bidding-btn--primary" %>
       </div>
     <% elsif @now < @auction.starts_at %>
       <div class="bidding-card">
-        <div class="bidding-notice bidding-notice--warn">ยังไม่เปิดรับซอง · เปิดใน
-          <strong data-controller="bidding-countdown" data-bidding-countdown-deadline-value="<%= @auction.starts_at.iso8601 %>" data-bidding-countdown-server-time-value="<%= @now.iso8601(3) %>"><%= bidding_time(@auction.starts_at) %></strong>
+        <div class="bidding-notice bidding-notice--warn"><%= bidding_icon(:clock) %><span>Bidding hasn't opened yet. Opens in
+          <strong class="bidding-mono" data-controller="bidding-countdown" data-bidding-countdown-deadline-value="<%= @auction.starts_at.iso8601 %>" data-bidding-countdown-server-time-value="<%= @now.iso8601(3) %>"><%= bidding_time(@auction.starts_at) %></strong></span>
         </div>
       </div>
     <% elsif !@lot.accepting_bids?(@now) %>
-      <div class="bidding-card"><div class="bidding-notice bidding-notice--warn">ปิดรับซองแล้ว · รอแอดมินประกาศผล</div></div>
+      <div class="bidding-card"><div class="bidding-notice bidding-notice--warn"><%= bidding_icon(:clock) %><span>Bidding is closed. Waiting for an admin to publish results.</span></div></div>
     <% else %>
       <%= form_with url: review_bidding_lot_bids_path(@lot), method: :post, class: "bidding-card", data: { turbo: false } do %>
         <div class="bidding-head">
-          <h2>ยื่นซองราคา</h2>
-          <span class="bidding-hint">ปิดรับใน
-            <strong data-controller="bidding-countdown" data-bidding-countdown-deadline-value="<%= @auction.ends_at.iso8601 %>" data-bidding-countdown-server-time-value="<%= @now.iso8601(3) %>"><%= bidding_time(@auction.ends_at) %></strong>
+          <h2>Place a sealed bid</h2>
+          <span class="bidding-hint">Closes in
+            <strong class="bidding-mono" data-controller="bidding-countdown" data-bidding-countdown-deadline-value="<%= @auction.ends_at.iso8601 %>" data-bidding-countdown-server-time-value="<%= @now.iso8601(3) %>"><%= bidding_time(@auction.ends_at) %></strong>
           </span>
         </div>
         <%= hidden_field_tag :idempotency_key, @idempotency_key %>
         <div class="bidding-field">
-          <label for="bid-amount">ราคาที่ยื่น (บาท)</label>
+          <label for="bid-amount">Your bid (THB)</label>
           <input id="bid-amount" name="amount" inputmode="decimal" autocomplete="off" required class="bidding-amount-input" aria-describedby="bid-amount-hint">
-          <span id="bid-amount-hint" class="bidding-hint">ไม่ต่ำกว่า <%= bidding_baht(@lot.min_price_cents) %> · พิมพ์ 500 = ฿ 500.00 · ทศนิยมไม่เกิน 2 ตำแหน่ง</span>
+          <span id="bid-amount-hint" class="bidding-hint">At least <%= bidding_baht(@lot.min_price_cents) %> · typing 500 means ฿ 500.00 · up to 2 decimal places</span>
         </div>
-        <button class="bidding-btn bidding-btn--primary bidding-btn--big">ตรวจสอบก่อนยื่น</button>
+        <button class="bidding-btn bidding-btn--primary bidding-btn--big">Review bid<%= bidding_icon(:arrow_right) %></button>
       <% end %>
     <% end %>
   </aside>

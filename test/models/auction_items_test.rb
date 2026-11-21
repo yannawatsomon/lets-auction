@@ -37,7 +37,7 @@ class AuctionItemsTest < ActiveSupport::TestCase
     a.add_item!(item)
     item.transition!("withdrawn")
     e = assert_raises(Auction::Error) { a.schedule! }
-    assert_match "ล็อต 1", e.message
+    assert_match "Lot 1", e.message
     assert a.reload.draft?
   end
 

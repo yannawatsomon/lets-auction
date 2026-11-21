@@ -31,9 +31,9 @@ module Bidding
       @amount_text = params[:amount].to_s
       @idempotency_key = params[:idempotency_key].presence || SecureRandom.uuid
       if @amount.nil? || !@amount.positive?
-        redirect_to bidding_lot_path(@lot), alert: "ราคาต้องเป็นจำนวนเงินบาท ทศนิยมไม่เกิน 2 ตำแหน่ง ยังไม่ได้ยื่นซอง"
+        redirect_to bidding_lot_path(@lot), alert: "Enter an amount in baht with up to 2 decimal places. Your bid was not placed."
       elsif @amount < @lot.min_price_cents
-        redirect_to bidding_lot_path(@lot), alert: "ราคาต้องไม่ต่ำกว่าราคาเริ่มต้นขั้นต่ำ ฿ #{Baht.format(@lot.min_price_cents)} ยังไม่ได้ยื่นซอง"
+        redirect_to bidding_lot_path(@lot), alert: "Your bid must be at least the starting price of ฿ #{Baht.format(@lot.min_price_cents)}. Your bid was not placed."
       end
     end
 
@@ -60,7 +60,7 @@ module Bidding
     private
 
     def too_many_requests
-      message = "เสนอราคาถี่เกินไป ยังไม่ได้บันทึกคำขอนี้ รอ 1 นาทีแล้วลองใหม่"
+      message = "Too many bids too quickly. This request was not saved; wait a minute and try again."
       respond_to do |f|
         f.html { redirect_to(@lot ? bidding_lot_path(@lot) : bidding_auctions_path, alert: message, status: :see_other) }
         f.json { render json: { error: "rate_limited", message: }, status: :too_many_requests }
@@ -73,9 +73,9 @@ module Bidding
     end
 
     def placed_notice(result)
-      return "คำขอนี้บันทึกไว้แล้ว" if result.replayed
+      return "This request was already saved." if result.replayed
 
-      @lot.auction.english? ? "เสนอราคาแล้ว คุณเป็นผู้นำอยู่" : "ยื่นซองเรียบร้อย ราคาถูกเข้ารหัสและปิดผนึกแล้ว"
+      @lot.auction.english? ? "Bid placed. You're the highest bidder." : "Your bid is sealed. The amount is encrypted."
     end
 
     def receipt_json(bid)

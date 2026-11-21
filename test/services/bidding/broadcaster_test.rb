@@ -40,7 +40,7 @@ class Bidding::BroadcasterTest < ActiveSupport::TestCase
     assert_broadcasts(stream, 1) { bid(lot, @a, lot.min_price_cents, now) }
     msg = broadcasts(stream).last
     assert_equal "bid.accepted", JSON.parse(msg)["type"]
-    assert_equal "ผู้ประมูล 1", JSON.parse(msg)["lot"]["leader"]
+    assert_equal "Bidder 1", JSON.parse(msg)["lot"]["leader"]
     assert_not_includes msg, @a.display_name
 
     a_stream = Bidding::Broadcaster.user_stream(auction, @a)

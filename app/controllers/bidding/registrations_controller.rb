@@ -11,7 +11,7 @@ module Bidding
       participant = AuctionParticipant.register!(auction:, user: current_user)
       audit!("participant.registered", participant, { auction_id: auction.id, grade: participant.grade_at_entry }) if participant.previously_new_record?
       respond_to do |f|
-        f.html { redirect_to bidding_auction_path(auction), notice: "ลงทะเบียนเข้าร่วมงานแล้ว" }
+        f.html { redirect_to bidding_auction_path(auction), notice: "You're registered for this auction." }
         f.json { render json: { status: participant.status, auction_id: auction.id }, status: :created }
       end
     rescue AuctionParticipant::Error => e

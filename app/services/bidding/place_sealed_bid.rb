@@ -28,7 +28,7 @@ module Bidding
       if (earlier = replay(user: @user, key: @key, lot: @lot, amount:))
         return Result.new(bid: earlier, replayed: true)
       end
-      raise Error.new("terms_not_accepted", "กรุณายืนยันว่าเข้าใจกติกาก่อนยื่นซอง ยังไม่ได้ยื่นซอง", :unprocessable_content) unless @accept_terms
+      raise Error.new("terms_not_accepted", "Confirm that you understand the rules before you seal your bid. Your bid was not placed.", :unprocessable_content) unless @accept_terms
 
       bid = ActiveRecord::Base.transaction do
         check_participant!
@@ -53,24 +53,24 @@ module Bidding
     private
 
     def check_participant!
-      raise Error.new("wrong_auction_type", "ล็อตนี้ไม่ใช่การประมูลแบบยื่นซอง", :unprocessable_content) unless @lot.auction.sealed_first_price?
+      raise Error.new("wrong_auction_type", "This lot is not a sealed-bid auction.", :unprocessable_content) unless @lot.auction.sealed_first_price?
       participant = @lot.auction.participants.find_by(user_id: @user.id)
       return if participant&.registered? && @user.buyer?
 
-      raise Error.new("not_registered", "คุณยังไม่ได้ลงทะเบียนเข้างานนี้ ยังไม่ได้ยื่นซอง ลงทะเบียนที่หน้างานก่อน", :forbidden)
+      raise Error.new("not_registered", "You aren't registered for this auction, so your bid was not placed. Register on the auction page first.", :forbidden)
     end
 
     def check_open!
       return if @lot.accepting_bids?(@now)
 
-      message = @now < @lot.auction.starts_at ? "ยังไม่ถึงเวลาเปิดรับซอง ยังไม่ได้ยื่นซอง" : "ปิดรับซองแล้ว ยังไม่ได้ยื่นซอง"
+      message = @now < @lot.auction.starts_at ? "Bidding hasn't opened yet. Your bid was not placed." : "Bidding is closed. Your bid was not placed."
       raise Error.new("bidding_closed", message, :conflict)
     end
 
     def check_amount!(amount)
       return if amount >= @lot.min_price_cents
 
-      raise Error.new("amount_below_start", "ราคาต้องไม่ต่ำกว่าราคาเริ่มต้นขั้นต่ำ ฿ #{Baht.format(@lot.min_price_cents)} ยังไม่ได้ยื่นซอง", :unprocessable_content)
+      raise Error.new("amount_below_start", "Your bid must be at least the starting price of ฿ #{Baht.format(@lot.min_price_cents)}. Your bid was not placed.", :unprocessable_content)
     end
 
     def check_no_earlier_bid!
@@ -78,7 +78,7 @@ module Bidding
     end
 
     def already_bid
-      Error.new("already_bid", "คุณยื่นซองล็อตนี้ไปแล้ว ซองเดิมของคุณยังอยู่ครบ ยื่นได้ครั้งเดียวและแก้ไขไม่ได้", :conflict)
+      Error.new("already_bid", "You already placed a sealed bid on this lot, and it is still kept. You can bid only once and can't change it.", :conflict)
     end
   end
 end

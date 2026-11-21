@@ -13,7 +13,7 @@ module Bidding
       unless @auction.published?
         return respond_to do |f|
           f.html { render :not_revealed, status: :forbidden }
-          f.json { render json: { error: "not_revealed", message: "ยังไม่ประกาศผล" }, status: :forbidden }
+          f.json { render json: { error: "not_revealed", message: "Results not published yet" }, status: :forbidden }
         end
       end
 
@@ -31,7 +31,7 @@ module Bidding
     def decline
       order = OrderStore.find(params[:id])
       Results.decline!(order_id: params[:id], buyer: current_user)
-      redirect_to result_bidding_lot_path(order.lot_id), notice: "สละสิทธิ์แล้ว สิทธิ์จะไปที่อันดับถัดไป", status: :see_other
+      redirect_to result_bidding_lot_path(order.lot_id), notice: "You declined. The lot goes to the next rank.", status: :see_other
     rescue Bidding::Error => e
       respond_to do |f|
         f.html { redirect_to bidding_bids_path, alert: e.message, status: :see_other }

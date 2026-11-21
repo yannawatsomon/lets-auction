@@ -1,18 +1,19 @@
-<% content_for :title, "ยืนยันการยื่นซอง" %>
-<%= link_to "← กลับไปแก้ราคา", bidding_lot_path(@lot), class: "bidding-btn bidding-btn--link" %>
+<% content_for :title, "Confirm your sealed bid" %>
+<%= link_to bidding_lot_path(@lot), class: "bidding-btn bidding-btn--link" do %><%= bidding_icon(:arrow_left) %>Back to change the amount<% end %>
 <%= form_with url: bidding_lot_bids_path(@lot), method: :post, class: "bidding-card bidding-card--confirm", data: { turbo: false } do %>
-  <h1>ยืนยันการยื่นซอง</h1>
-  <p class="bidding-hint">ล็อต <%= @lot.lot_no %> · <%= @lot.item&.title %></p>
+  <span class="bidding-result__eyebrow"><%= bidding_icon(:shield_check) %>Confirm before sealing</span>
+  <h1>Confirm your sealed bid</h1>
+  <p class="bidding-hint">Lot <%= @lot.lot_no %> · <%= @lot.item&.title %></p>
   <div>
-    <div class="bidding-hint">ราคาที่จะยื่น</div>
+    <div class="bidding-hint">Your bid</div>
     <div class="bidding-amount-big"><%= bidding_baht(@amount) %></div>
   </div>
-  <div class="bidding-notice bidding-notice--warn">ยื่นแล้ว<strong>แก้ไขหรือถอนไม่ได้</strong> ถ้าชนะต้องชำระภายใน 48 ชั่วโมง ถ้าไม่ชำระ สิทธิ์จะไปที่ผู้เสนอราคาอันดับถัดไป</div>
+  <div class="bidding-notice bidding-notice--warn"><%= bidding_icon(:alert) %><span>Once sealed, you <strong>can't change or withdraw it</strong>. If you win, pay within 48 hours, or the lot goes to the next-highest bidder.</span></div>
   <%= hidden_field_tag :amount, @amount_text %>
   <%= hidden_field_tag :idempotency_key, @idempotency_key %>
-  <label class="bidding-check"><input type="checkbox" name="accept_terms" value="1" required> <span>ฉันเข้าใจกติกาการประมูลแบบยื่นซองและยอมรับเงื่อนไข</span></label>
+  <label class="bidding-check"><input type="checkbox" name="accept_terms" value="1" required> <span>I understand the sealed-bid rules and accept the terms.</span></label>
   <div class="bidding-actions">
-    <%= link_to "แก้ราคา", bidding_lot_path(@lot), class: "bidding-btn" %>
-    <button class="bidding-btn bidding-btn--primary">ยืนยันและปิดซอง</button>
+    <%= link_to "Change amount", bidding_lot_path(@lot), class: "bidding-btn" %>
+    <button class="bidding-btn bidding-btn--primary"><%= bidding_icon(:lock) %>Confirm and seal bid</button>
   </div>
 <% end %>

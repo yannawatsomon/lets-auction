@@ -31,20 +31,20 @@ module Admin
         @auction = Auction.new(auction_params.merge(created_by_id: current_user.id))
         if @auction.save
           audit!("auction.created", @auction, { auction_type: @auction.auction_type })
-          redirect_to admin_bidding_auction_path(@auction), notice: "สร้างงานแล้ว เลือกสินค้าเข้างานได้เลย"
+          redirect_to admin_bidding_auction_path(@auction), notice: "Auction created. Add items to it now."
         else
           render :new, status: :unprocessable_content
         end
       end
 
       def edit
-        redirect_to admin_bidding_auction_path(@auction), alert: "แก้ไขได้เฉพาะงานที่ยังเป็นร่าง" unless @auction.draft?
+        redirect_to admin_bidding_auction_path(@auction), alert: "Only draft auctions can be edited." unless @auction.draft?
       end
 
       def update
         if @auction.update(auction_params)
           audit!("auction.updated", @auction, { changed: @auction.saved_changes.keys - %w[updated_at] })
-          redirect_to admin_bidding_auction_path(@auction), notice: "บันทึกแล้ว"
+          redirect_to admin_bidding_auction_path(@auction), notice: "Saved."
         else
           render :edit, status: :unprocessable_content
         end
@@ -53,13 +53,13 @@ module Admin
       def schedule
         @auction.schedule!
         audit!("auction.scheduled", @auction, { lots: @auction.lots.map(&:id) })
-        redirect_to admin_bidding_auction_path(@auction), notice: "เผยแพร่งานแล้ว จะเริ่มตามเวลาที่ตั้งไว้"
+        redirect_to admin_bidding_auction_path(@auction), notice: "Auction published. It opens at the scheduled time."
       end
 
       def cancel
         @auction.cancel!(reason: params[:cancel_reason])
         audit!("auction.cancelled", @auction, { reason: @auction.cancel_reason })
-        redirect_to admin_bidding_auction_path(@auction), notice: "ยกเลิกงานแล้ว"
+        redirect_to admin_bidding_auction_path(@auction), notice: "Auction cancelled."
       end
 
       private
