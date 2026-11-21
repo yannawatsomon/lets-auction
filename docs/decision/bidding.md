@@ -1,6 +1,6 @@
 # Bidding (sealed + English)
 
-**Status:** Open (partly Decided, see below) · **Effort:** L · **Deadline risk:** High — every bidding model, endpoint, job
+**Status:** Decided (2026-11-21) · **Effort:** L · **Deadline risk:** High — every bidding model, endpoint, job
 and test in the `bidding` milestone (#28–#37) depends on these answers
 
 ## Context
@@ -14,9 +14,12 @@ invite-only English. Two sources describe bidding and disagree on several points
   (Nov 2026), shared by @guy127. It is not in the repo. It was written for a Go backend, so its
   stack choice is ignored here (`stack.md` is Decided: Rails); only its bidding rules are used.
 
-The **Decisions** section was confirmed by @guy127 in chat on 2026-11-11 (issue #27).
-Everything under **Proposals** is still a proposal; each bullet becomes Decided only when a
-collaborator confirms it in a PR (see `README.md`).
+All decisions below, including the former "Proposals" sections, were confirmed by @guy127 on
+2026-11-11 and 2026-11-21 (issue #27). The 2026-11-21 pass checked each proposal against the
+code already on `main` (`app/models/bid.rb`, `app/models/auction_lot.rb`,
+`app/services/bidding/`, `app/jobs/bidding/`, `test/integration/bidding_*`) and found every one
+of them implemented and covered by tests — so the pass confirmed them as written rather than
+building anything new.
 
 ## Decisions
 
@@ -124,55 +127,94 @@ collaborator confirms it in a PR (see `README.md`).
   are published; no user-verifiable proof a bid wasn't changed. Alternative rejected: SPEC
   phase 2 two-admin reveal and `sha256(...)` receipt. Source: confirmed by @guy127, 2026-11-11.
 
-## Proposals — both auction types
-- **Server time only.** What: open/close checks use the database `now()`; bid ordering uses
-  `clock_timestamp()` at insert. Clients get `server_time` for countdowns and never send a
-  time. Source: draft and SPEC agree.
-- **Ties go to the earliest bid.** What: rank by `amount DESC, created_at ASC`. Source: draft
-  and SPEC agree.
-- **Bids are append-only and cannot be withdrawn.** What: no update/delete in the model; in
-  production the app's DB role has no `UPDATE`/`DELETE` on `bids`. Why: bids are the evidence
-  for every result. Source: draft (append-only); SPEC (no withdrawal).
-- **Every bid needs an `Idempotency-Key` header.** What: `UNIQUE(user_id, idempotency_key)`;
-  a repeat key returns the first response. Source: draft and SPEC agree.
-- **Sellers cannot bid on their own items.** What: checked inside the bid transaction, and
-  sellers cannot register for or accept an invitation to an event that contains their item.
-  Detecting linked accounts (same IP/device) is out of scope for this milestone. Source: draft
-  and SPEC; linked-account detection is SPEC phase 3.
+## Decisions — both auction types (confirmed 2026-11-21)
+
+- **Server time only.** What: open/close checks use `Time.current`/the database clock, never a
+  client-supplied time (`AuctionLot#accepting_bids?`). Why: a client clock can't be trusted to
+  gate money. Trade-off: none found. Source: draft and SPEC agree; confirmed by @guy127,
+  2026-11-21 — implemented (`app/models/auction_lot.rb`) and tested
+  (`test/integration/bidding_*_test.rb`).
+- **Ties go to the earliest bid.** What: rank by `amount DESC, created_at ASC, id ASC`
+  (`Bid.ranking`). Why: a deterministic tiebreak with no extra column. Trade-off: none found.
+  Source: draft and SPEC agree; confirmed by @guy127, 2026-11-21 — implemented
+  (`app/models/bid.rb`).
+- **Bids are append-only and cannot be withdrawn.** What: `before_update`/`before_destroy`
+  raise `Bid::AppendOnly`; no controller action updates or deletes a bid. Why: bids are the
+  evidence for every result. Trade-off: a mistaken bid can't be corrected, only outbid.
+  Source: draft (append-only); SPEC (no withdrawal); confirmed by @guy127, 2026-11-21 —
+  implemented (`app/models/bid.rb`).
+- **Every bid needs an `Idempotency-Key` header.** What: `UNIQUE(user_id, idempotency_key)`
+  (`index_bids_on_user_id_and_idempotency_key`); a repeat key returns the first response
+  (`Bidding::BidRequest#replay`). Why: a retried request (flaky network, double-click) must
+  never create a second bid. Trade-off: the client must generate and keep a key per attempt.
+  Source: draft and SPEC agree; confirmed by @guy127, 2026-11-21 — implemented and tested
+  (`app/services/bidding/bid_request.rb`, `test/integration/bidding_security_test.rb`).
+- **Sellers cannot bid on their own items.** What: checked inside the bid transaction
+  (`check_not_seller!`). Detecting linked accounts (same IP/device) is out of scope for this
+  milestone. Why: the obvious conflict of interest; linked-account detection needs tooling the
+  team doesn't have yet. Trade-off: a seller can still use a second real account undetected.
+  Source: draft and SPEC; linked-account detection is SPEC phase 3; confirmed by @guy127,
+  2026-11-21 — implemented (`app/services/bidding/bid_request.rb`).
 - **No OTP, deposit, credit limit or per-bid tier check in this milestone.** What: the
-  onboarding grade is checked once, at registration or invite (see Decisions), so the bid
-  endpoint only checks the participant status. Why: no SMS provider or collateral system
-  exists yet; `scope.md` proposes no deposit for Milestone 1. Trade-off: no protection against a winner who doesn't pay (see Open questions).
-  Alternative rejected: SPEC's OTP + credit-lock flow (blocked on providers and on the
-  collateral decision). Source: draft; SPEC lists collateral as undecided.
-- **One endpoint for both types.** What: `POST /lots/:id/bids`; the logic branches on the
-  auction type. WebSocket only pushes state. Why: validation and idempotency live in one place.
-  Source: draft, `realtime.md`.
+  onboarding grade is checked once, at registration or invite (see above), so the bid endpoint
+  only checks the participant status. Why: no SMS provider or collateral system exists yet;
+  `scope.md` proposes no deposit for Milestone 1. Trade-off: no protection against a winner who
+  doesn't pay (mitigated by "next rank pays" above). Alternative rejected: SPEC's OTP +
+  credit-lock flow (blocked on providers and on the collateral decision). Source: draft; SPEC
+  lists collateral as undecided; confirmed by @guy127, 2026-11-21 — matches what's built (no
+  such checks exist in `app/services/bidding/`).
+- **One endpoint for both types.** What: `POST /lots/:id/bids`
+  (`app/controllers/bidding/bids_controller.rb`); the logic branches on the auction type.
+  WebSocket only pushes state. Why: validation and idempotency live in one place. Trade-off:
+  the controller/service needs an auction-type branch instead of two routes. Source: draft,
+  `realtime.md`; confirmed by @guy127, 2026-11-21 — implemented.
 
-## Proposals — sealed (first-price)
+## Decisions — sealed, first-price (confirmed 2026-11-21)
 
-- **One bid per user per lot, enforced by the database.** What: partial unique index on
-  `bids (lot_id, user_id)` for sealed lots, not only a check in Ruby. Source: draft and SPEC
-  agree.
+- **One bid per user per lot, enforced by the database.** What: partial unique index
+  `one_sealed_bid_per_user` on `bids (lot_id, user_id)` where `auction_type =
+  'sealed_first_price'`, not only a check in Ruby. Why: a Ruby-only check races under
+  concurrent requests; the database is the backstop. Trade-off: none found. Source: draft and
+  SPEC agree; confirmed by @guy127, 2026-11-21 — implemented (`db/schema.rb`) and tested
+  (`test/integration/bidding_sealed_bid_test.rb`).
 - **Bid amount must be ≥ the lot's minimum price.** No upper limit in this milestone (the
-  SPEC's "≤ remaining credit" depends on the credit system above).
-- Visibility, encryption, commitment hash and admin reveal: see **Decisions** above.
+  SPEC's "≤ remaining credit" depends on the credit system above, which this milestone doesn't
+  build). Source: draft; confirmed by @guy127, 2026-11-21 — implemented
+  (`Bidding::PlaceSealedBid#check_amount!`).
+- Visibility, encryption, commitment hash and admin reveal: see **Decisions — both auction
+  types** and the money/encryption decisions above.
 
-## Proposals — English (invite-only)
+## Decisions — English, invite-only (confirmed 2026-11-21)
 
-- **Admin invites each buyer; the buyer must accept before bidding.** Source: draft, `scope.md`.
-- **Fixed increment per lot.** What: the admin sets `bid_increment_cents` per lot; a bid must be
-  ≥ `current_price + increment` (first bid ≥ minimum price). Alternative rejected: tiered
-  increments by price band (more rules, not needed for 3 lots). Source: draft.
-- **The current leader cannot bid again.** Source: draft.
-- ~~**Anti-sniping extension.**~~ **Superseded (2026-11-11):** no extensions, see Decisions.
-- **No proxy/auto-bid.** Why: keeps the bid path simple and auditable. Source: proposed here.
-- **Concurrency via row lock.** What: `SELECT … FOR UPDATE` on the lot row, then validate,
-  insert the bid, update `current_price` / `leader_bid_id` / `bid_count`, write the audit log,
-  commit, and only then broadcast. Source: draft.
+- **Admin invites each buyer; the buyer must accept before bidding.** Source: draft,
+  `scope.md`; confirmed by @guy127, 2026-11-21 — implemented
+  (`Bidding::PlaceEnglishBid#check_participant!`).
+- **Fixed increment per lot.** What: the admin sets `bid_increment_cents` per lot; a bid must
+  be ≥ `current_price + increment` (first bid ≥ minimum price) (`AuctionLot#next_minimum_cents`).
+  Alternative rejected: tiered increments by price band (more rules, not needed for 3 lots).
+  Source: draft; confirmed by @guy127, 2026-11-21 — implemented.
+- **The current leader cannot bid again.** Source: draft; confirmed by @guy127, 2026-11-21 —
+  implemented (`check_not_leading!`).
+- ~~**Anti-sniping extension.**~~ **Superseded (2026-11-11):** no extensions, see Decisions —
+  both auction types.
+- **No proxy/auto-bid.** Why: keeps the bid path simple and auditable. Trade-off: a bidder must
+  watch the lot themselves to stay ahead. Source: proposed here; confirmed by @guy127,
+  2026-11-21 — matches what's built (no auto-bid path exists).
+- **Concurrency via row lock.** What: `@lot.lock!` (`SELECT … FOR UPDATE` on Postgres; SQLite
+  queues under `IMMEDIATE` transactions) inside the bid transaction, then validate, insert the
+  bid, move `current_price`/`leader_bid_id`/`bid_count` with a compare-and-set
+  (`AuctionLot.where(id:, bid_count:).update_all(...)`, so two bids can never both win the same
+  price), write the audit log, commit, and only then broadcast. Why: the lock plus the CAS is
+  the one place a race could double-accept a bid. Trade-off: a losing concurrent bidder gets a
+  `price_moved` conflict and must retry. Source: draft; confirmed by @guy127, 2026-11-21 —
+  implemented and tested (`app/services/bidding/place_english_bid.rb`,
+  `test/integration/bidding_security_test.rb`).
 - **Visible during bidding:** current price, next minimum bid, bid count, masked leader name,
-  masked bid history. Source: draft.
-- **Ranking uses each bidder's highest bid only.** Source: draft.
+  masked bid history. Source: draft; confirmed by @guy127, 2026-11-21 — implemented
+  (`app/views/bidding/lots/_english_panel.html.erb`, `Bidding::Broadcaster.masked_leader`,
+  `Bidding::BidHistory`).
+- **Ranking uses each bidder's highest bid only.** Source: draft; confirmed by @guy127,
+  2026-11-21 — implemented (`Bid.ranking(one_per_user: true)` for English).
 
 ## Rules / examples
 
@@ -201,7 +243,6 @@ Amount input → satang:
 
 ## Open questions
 
-- **Remaining proposals** (everything under Proposals) still need a collaborator to confirm.
 - **Deposit** — revisit before real ฿20M+ use (decided "not yet"). KYC is answered by
   [`user-onboarding.md`](user-onboarding.md).
 - Real-time and job runtime: see `realtime.md` (proposal: Solid Queue inside Puma at first).
