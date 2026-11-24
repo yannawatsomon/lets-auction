@@ -55,6 +55,14 @@ Rails.application.routes.draw do
   get "payment", to: "payments#show"
   get "payment/quote", to: "payments#quote"
   post "payment/preview", to: "payments#preview"
+  # MOCK QR payment (#55): in memory, no gateway; "simulate" stands in for the webhook.
+  scope "payment/qr/:reference", controller: :payment_qrs, constraints: { reference: /QR[A-Z0-9]{10}/ } do
+    get "", action: :show, as: :payment_qr
+    get "status", action: :status, as: :payment_qr_status, defaults: { format: :json }
+    post "simulate", action: :simulate, as: :payment_qr_simulate, defaults: { format: :json }
+    post "renew", action: :renew, as: :payment_qr_renew
+    get "receipt", action: :receipt, as: :payment_qr_receipt
+  end
 
   # Product onboarding milestone: http://127.0.0.1:3000/product-onboarding (mock data; in production only with MOCK_PRODUCT_ONBOARDING=true).
   namespace :product_onboarding, path: "product-onboarding" do
