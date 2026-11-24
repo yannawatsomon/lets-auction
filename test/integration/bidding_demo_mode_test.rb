@@ -60,7 +60,7 @@ class BiddingDemoModeTest < ActionDispatch::IntegrationTest
     assert_redirected_to admin_bidding_auctions_path
     get admin_bidding_auctions_path
     assert_response :success
-    assert_select ".bidding-demo-banner", /Demo/
+    assert_select ".bidding-demo-banner", /เดโม/
 
     post mock_session_path(user_id: 21)
     assert_redirected_to bidding_auctions_path

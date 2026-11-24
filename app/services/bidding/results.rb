@@ -9,12 +9,12 @@ module Bidding
 
     def disqualify!(lot:, user_id:, reason:, admin:, now: Time.current)
       auction = lot.auction
-      raise Error.new("not_awaiting_approval", "You can disqualify a bidder only before results are approved.", :conflict) unless auction.awaiting_approval?
+      raise Error.new("not_awaiting_approval", "ตัดสิทธิ์ได้เฉพาะก่อนอนุมัติผล", :conflict) unless auction.awaiting_approval?
       reason = reason.to_s.strip
-      raise Error.new("reason_required", "Enter a reason for disqualifying.", :unprocessable_content) if reason.empty?
-      raise Error.new("reason_too_long", "The reason is longer than 500 characters.", :unprocessable_content) if reason.length > 500
+      raise Error.new("reason_required", "ต้องระบุเหตุผลการตัดสิทธิ์", :unprocessable_content) if reason.empty?
+      raise Error.new("reason_too_long", "เหตุผลยาวเกิน 500 ตัวอักษร", :unprocessable_content) if reason.length > 500
       unless lot.results.any? { |r| r.user_id == user_id.to_i }
-        raise Error.new("not_a_bidder", "This user didn't bid on this lot.", :unprocessable_content)
+        raise Error.new("not_a_bidder", "ผู้ใช้นี้ไม่ได้เสนอราคาในล็อตนี้", :unprocessable_content)
       end
 
       OrderStore.disqualify!(lot.id, user_id.to_i, reason)
@@ -25,7 +25,7 @@ module Bidding
     def approve!(auction:, admin:, now: Time.current)
       offers = []
       auction.with_lock do
-        raise Error.new("not_awaiting_approval", "Only closed auctions awaiting results can be approved.", :conflict) unless auction.awaiting_approval?
+        raise Error.new("not_awaiting_approval", "อนุมัติผลได้เฉพาะงานที่ปิดแล้วและรอประกาศผล", :conflict) unless auction.awaiting_approval?
 
         auction.lots.where(status: "closed").find_each do |lot|
           order = OrderStore.offer_next!(lot, now:)
@@ -43,8 +43,8 @@ module Bidding
     # Buyer gives up the lot.
     def decline!(order_id:, buyer:, now: Time.current)
       order = OrderStore.find(order_id)
-      raise Error.new("not_found", "Order not found.", :not_found) unless order && order.buyer_id == buyer&.id
-      raise Error.new("not_awaiting_payment", "This order is no longer awaiting payment.", :conflict) unless OrderStore.close!(order.id, "declined", now:)
+      raise Error.new("not_found", "ไม่พบรายการนี้", :not_found) unless order && order.buyer_id == buyer&.id
+      raise Error.new("not_awaiting_payment", "รายการนี้ไม่ได้รอชำระแล้ว", :conflict) unless OrderStore.close!(order.id, "declined", now:)
 
       AuditLog.record!(action: "order.declined", entity: order.lot, actor: buyer, data: { order_id: order.id, rank: order.rank })
       offer_next(order.lot, now)
@@ -63,8 +63,8 @@ module Bidding
     # MOCK until the payment milestone records real payments: an admin marks the order paid.
     def mark_paid!(order_id:, admin:, now: Time.current)
       order = OrderStore.find(order_id)
-      raise Error.new("not_found", "Order not found.", :not_found) unless order
-      raise Error.new("not_awaiting_payment", "This order is no longer awaiting payment.", :conflict) unless OrderStore.close!(order.id, "paid", now:)
+      raise Error.new("not_found", "ไม่พบรายการนี้", :not_found) unless order
+      raise Error.new("not_awaiting_payment", "รายการนี้ไม่ได้รอชำระแล้ว", :conflict) unless OrderStore.close!(order.id, "paid", now:)
 
       lot = order.lot
       lot.update_columns(status: "sold", updated_at: now)

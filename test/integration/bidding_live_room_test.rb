@@ -35,19 +35,19 @@ class BiddingLiveRoomTest < ActionDispatch::IntegrationTest
     login(21)
     get bidding_lot_path(@lot)
     assert_select "[data-controller='bidding-live-lot'][data-bidding-live-lot-auction-id-value='#{@auction.id}']"
-    assert_select "[data-bidding-live-lot-my-label-value='Bidder 1']"
+    assert_select "[data-bidding-live-lot-my-label-value='ผู้ประมูล 1']"
     assert_select "[data-bidding-live-lot-history-url-value=?]", bids_bidding_lot_path(@lot)
     assert_select "[data-bidding-live-lot-target=price]"
-    assert_select "[data-bidding-live-lot-target=history] .bidding-hint", /No bids yet/
+    assert_select "[data-bidding-live-lot-target=history] .bidding-hint", /ยังไม่มีการเสนอราคา/
   end
 
-  test "history is newest first, masked, and says You for your own bids" do
+  test "history is newest first, masked, and says คุณ for your own bids" do
     bid(@a, @lot.min_price_cents, @now)
     bid(@b, @lot.reload.next_minimum_cents, @now + 1)
     login(21)
     get bids_bidding_lot_path(@lot, format: :json)
     rows = response.parsed_body["bids"]
-    assert_equal [ "Bidder 2", "You" ], rows.map { |r| r["bidder"] }
+    assert_equal [ "ผู้ประมูล 2", "คุณ" ], rows.map { |r| r["bidder"] }
     assert_equal [ false, true ], rows.map { |r| r["mine"] }
     assert_not_includes response.body, @b.display_name
 
@@ -91,6 +91,6 @@ class BiddingLiveRoomTest < ActionDispatch::IntegrationTest
     get bidding_lot_path(@lot)
     assert_select "[data-bidding-live-lot-target=leading][hidden]"
     assert_select "input[name=amount][value=?]", Baht.format(@lot.reload.next_minimum_cents)
-    assert_select "[data-bidding-live-lot-target=leader]", /Bidder 1/
+    assert_select "[data-bidding-live-lot-target=leader]", /ผู้ประมูล 1/
   end
 end

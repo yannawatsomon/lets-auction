@@ -20,7 +20,7 @@ does every Railway step (agents don't change Railway). Decision: `docs/decision/
    - `SOLID_QUEUE_IN_PUMA` = `1` — runs the open/close/expiry jobs inside the web process.
 2. Redeploy (Railway does it when variables change).
 3. Optional demo data: Railway → service → run `bin/rails bidding:demo_seed` (Railway shell /
-   one-off command). It replaces auctions titled "Demo:" (or the older "ตัวอย่าง:") and touches nothing else. Without
+   one-off command). It replaces auctions titled "ตัวอย่าง:" and touches nothing else. Without
    it, log in as an admin and build an auction through the UI.
 4. Open `https://<your-app>.up.railway.app/mock-login/new`, type the demo password, pick a user:
    - "แอดมิน A" → `/admin/bidding/auctions`

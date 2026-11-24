@@ -34,7 +34,7 @@ class BiddingParticipationTest < ActionDispatch::IntegrationTest
     a = auction
     login(23)
     get bidding_auction_path(a)
-    assert_select ".bidding-notice--ok", /You can join/
+    assert_select ".bidding-notice--ok", /คุณมีสิทธิ์เข้าร่วม/
     post bidding_auction_registration_path(a)
     assert_redirected_to bidding_auction_path(a)
     assert a.participants.find_by(user_id: 23).registered?
@@ -44,11 +44,11 @@ class BiddingParticipationTest < ActionDispatch::IntegrationTest
     a = auction
     login(25)
     get bidding_auction_path(a)
-    assert_select ".bidding-notice--warn", /credit grade/
+    assert_select ".bidding-notice--warn", /เกรดเครดิต/
     assert_select "form[action=?]", bidding_auction_registration_path(a), count: 0
     post bidding_auction_registration_path(a, format: :json)
     assert_response :forbidden
-    assert_equal({ "error" => "grade_not_allowed", "message" => "Your credit grade can't join auctions yet." }, response.parsed_body)
+    assert_equal({ "error" => "grade_not_allowed", "message" => "เกรดเครดิตของคุณยังเข้าร่วมการประมูลไม่ได้" }, response.parsed_body)
   end
 
   test "english: page is 404 until invited; admin invites; buyer accepts" do
@@ -78,7 +78,7 @@ class BiddingParticipationTest < ActionDispatch::IntegrationTest
     BuyerStanding.revoke_income_proof!(21)
     login(1)
     post admin_bidding_auction_invitations_path(a, user_id: 21)
-    assert_match "proof of income", flash[:alert]
+    assert_match "หลักฐานรายได้", flash[:alert]
     assert_equal 0, a.participants.count
   end
 
