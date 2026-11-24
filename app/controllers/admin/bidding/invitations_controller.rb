@@ -8,7 +8,7 @@ module Admin
         user = MockData.user(params[:user_id])
         participant = AuctionParticipant.invite!(auction: @auction, user:, admin: current_user)
         audit!("participant.invited", participant, { auction_id: @auction.id, user_id: participant.user_id, grade: participant.grade_at_entry })
-        redirect_to admin_bidding_auction_path(@auction), notice: "Invitation sent."
+        redirect_to admin_bidding_auction_path(@auction), notice: "ส่งคำเชิญแล้ว"
       rescue AuctionParticipant::Error => e
         redirect_to admin_bidding_auction_path(@auction), alert: e.message
       end
@@ -17,7 +17,7 @@ module Admin
         participant = @auction.participants.find(params[:id])
         participant.revoke!(admin: current_user)
         audit!("participant.revoked", participant, { auction_id: @auction.id, user_id: participant.user_id })
-        redirect_to admin_bidding_auction_path(@auction), notice: "Access revoked."
+        redirect_to admin_bidding_auction_path(@auction), notice: "ยกเลิกสิทธิ์แล้ว"
       rescue AuctionParticipant::Error => e
         redirect_to admin_bidding_auction_path(@auction), alert: e.message
       end

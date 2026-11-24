@@ -36,7 +36,7 @@ class BiddingResultsTest < ActionDispatch::IntegrationTest
     post approve_results_admin_bidding_auction_path(@a)
     assert @a.reload.published?
     get results_admin_bidding_auction_path(@a)
-    assert_select "td", /Awaiting payment until/
+    assert_select "td", /รอชำระถึง/
   end
 
   test "non-admins can't open the results admin pages" do
@@ -60,8 +60,8 @@ class BiddingResultsTest < ActionDispatch::IntegrationTest
 
     Bidding::Results.approve!(auction: @a, admin: MockData.user(1))
     get result_bidding_lot_path(@lot)
-    assert_select "h1", /You didn't win this lot/
-    assert_select ".bidding-stat__v", /2 of 2/
+    assert_select "h1", /ไม่ได้รับการประมูล/
+    assert_select ".bidding-stat__v", /2 จาก 2/
     assert_not_includes response.body, "70,000.00", "the loser doesn't see the winner's sealed amount"
 
     login(21)
@@ -73,7 +73,7 @@ class BiddingResultsTest < ActionDispatch::IntegrationTest
 
     login(22)
     get result_bidding_lot_path(@lot)
-    assert_select ".bidding-result--win", /rank 2/
+    assert_select ".bidding-result--win", /อันดับ 2/
   end
 
   test "a buyer can't decline someone else's offer" do

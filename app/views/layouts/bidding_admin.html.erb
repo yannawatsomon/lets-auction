@@ -1,33 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
   <head>
-    <title><%= [content_for(:title), "Bidding admin · Lets Auction"].compact.join(" · ") %></title>
+    <title><%= [content_for(:title), "Bidding แอดมิน · Lets Auction"].compact.join(" · ") %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
     <link rel="icon" href="/icon.png" type="image/png">
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
   <body class="bidding">
     <header class="bidding-topbar">
-      <div class="bidding-topbar__inner">
-        <%= link_to admin_bidding_auctions_path, class: "bidding-brand" do %><%= bidding_icon(:gavel, size: 20) %><span>Lets Auction</span><span class="bidding-pill">Admin</span><% end %>
-        <nav aria-label="Admin">
-          <%= link_to "Auctions", admin_bidding_auctions_path, "aria-current": (controller_name == "auctions" ? "page" : nil) %>
-        </nav>
-        <div class="bidding-who">
-          <span class="bidding-who__name"><%= current_user&.display_name %></span>
-          <% if mock_session_enabled? %>
-            <%= button_to mock_session_path, method: :delete, class: "bidding-btn", form_class: "bidding-inline" do %><%= bidding_icon(:log_out) %>Sign out (mock)<% end %>
-          <% end %>
-        </div>
+      <%= link_to admin_bidding_auctions_path, class: "bidding-brand" do %>
+        <span>Lets Auction · Bidding</span><span class="bidding-pill">ADMIN</span>
+      <% end %>
+      <nav aria-label="เมนูแอดมิน">
+        <%= link_to "จัดการ Auction", admin_bidding_auctions_path, "aria-current": (controller_name == "auctions" ? "page" : nil) %>
+      </nav>
+      <div class="bidding-who">
+        <span><%= current_user&.display_name %></span>
+        <% if mock_session_enabled? %>
+          <%= button_to "ออกจากระบบ (mock)", mock_session_path, method: :delete, class: "bidding-btn bidding-btn--link", form_class: "bidding-inline" %>
+        <% end %>
       </div>
     </header>
     <% if mock_bidding_demo? %>
-      <div class="bidding-demo-banner" role="note"><%= bidding_icon(:info, size: 14) %>Demo: every user and auction here is mock data, not a real auction</div>
+      <div class="bidding-demo-banner" role="note">เดโม · ผู้ใช้และข้อมูลทั้งหมดเป็นข้อมูลจำลอง ไม่ใช่การประมูลจริง</div>
     <% end %>
     <main class="bidding-page">
       <%= render "bidding/flash" %>

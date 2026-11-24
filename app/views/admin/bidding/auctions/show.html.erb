@@ -1,56 +1,56 @@
 <% content_for :title, @auction.title %>
-<%= link_to admin_bidding_auctions_path, class: "bidding-btn bidding-btn--link" do %><%= bidding_icon(:arrow_left) %>Back to auctions<% end %>
+<%= link_to "← กลับไปรายการ Auction", admin_bidding_auctions_path, class: "bidding-btn bidding-btn--link" %>
 
 <div class="bidding-head">
-  <div class="bidding-stack">
-    <div class="bidding-badges">
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
       <span class="bidding-chip bidding-chip--type"><%= bidding_type_label(@auction) %></span>
       <%= bidding_status_chip(@auction) %>
     </div>
     <h1><%= @auction.title %></h1>
   </div>
   <% if @auction.awaiting_approval? || @auction.published? %>
-    <div class="bidding-actions"><%= link_to(@auction.awaiting_approval? ? "Review ranking and publish" : "Results and payments", results_admin_bidding_auction_path(@auction), class: "bidding-btn bidding-btn--primary") %></div>
+    <div class="bidding-actions"><%= link_to(@auction.awaiting_approval? ? "ดูอันดับ + ประกาศผล" : "ดูผลและการชำระ", results_admin_bidding_auction_path(@auction), class: "bidding-btn bidding-btn--primary") %></div>
   <% end %>
   <% if @auction.draft? %>
     <div class="bidding-actions">
-      <%= link_to "Edit details", edit_admin_bidding_auction_path(@auction), class: "bidding-btn" %>
-      <%= button_to "Publish auction", schedule_admin_bidding_auction_path(@auction), class: "bidding-btn bidding-btn--primary",
+      <%= link_to "แก้ไขข้อมูลงาน", edit_admin_bidding_auction_path(@auction), class: "bidding-btn" %>
+      <%= button_to "เผยแพร่ Auction", schedule_admin_bidding_auction_path(@auction), class: "bidding-btn bidding-btn--primary",
             disabled: @auction.lots.empty?,
-            form: { data: { turbo_confirm: "After publishing you can't edit the auction or its lots. Publish?" } } %>
+            form: { data: { turbo_confirm: "เผยแพร่แล้วจะแก้ไขงานและสินค้าไม่ได้ ยืนยันไหม?" } } %>
     </div>
   <% end %>
 </div>
 
 <div class="bidding-stats">
-  <div class="bidding-stat"><div class="bidding-stat__k">Opens</div><div class="bidding-stat__v"><%= bidding_time(@auction.starts_at) %></div></div>
-  <div class="bidding-stat"><div class="bidding-stat__k">Closes</div><div class="bidding-stat__v"><%= bidding_time(@auction.ends_at) %></div></div>
-  <div class="bidding-stat"><div class="bidding-stat__k">Who can join</div><div class="bidding-stat__v"><%= @auction.english? ? "Invite only" : "Buyers register" %></div></div>
-  <div class="bidding-stat"><div class="bidding-stat__k">Closing</div><div class="bidding-stat__v">All lots close together, no extensions</div></div>
+  <div class="bidding-stat"><div class="bidding-stat__k">เริ่มประมูล</div><div class="bidding-stat__v"><%= bidding_time(@auction.starts_at) %></div></div>
+  <div class="bidding-stat"><div class="bidding-stat__k">ปิดประมูล</div><div class="bidding-stat__v"><%= bidding_time(@auction.ends_at) %></div></div>
+  <div class="bidding-stat"><div class="bidding-stat__k">การเข้าร่วม</div><div class="bidding-stat__v"><%= @auction.english? ? "เชิญเท่านั้น" : "ลงทะเบียนเอง" %></div></div>
+  <div class="bidding-stat"><div class="bidding-stat__k">เวลาปิด</div><div class="bidding-stat__v">ทุกล็อตปิดพร้อมกัน ไม่ต่อเวลา</div></div>
 </div>
 <% if @auction.description.present? %><p class="bidding-hint"><%= @auction.description %></p><% end %>
 <% if @auction.cancelled? %>
-  <div class="bidding-flash bidding-flash--alert"><%= bidding_icon(:alert) %><span>Cancelled <%= bidding_time(@auction.cancelled_at) %> · Reason: <%= @auction.cancel_reason %></span></div>
+  <div class="bidding-flash bidding-flash--alert">ยกเลิกเมื่อ <%= bidding_time(@auction.cancelled_at) %> · เหตุผล: <%= @auction.cancel_reason %></div>
 <% end %>
 
 <div class="bidding-row">
   <section class="bidding-card" aria-labelledby="lots-h">
     <div class="bidding-head">
-      <h2 id="lots-h">Lots</h2>
+      <h2 id="lots-h">สินค้าในงาน</h2>
       <span class="bidding-count <%= 'bidding-count--full' if @auction.lots_full? %>"><%= @auction.lots.size %>/<%= Auction::MAX_LOTS %></span>
     </div>
     <% if @auction.lots.empty? %>
-      <p class="bidding-hint">No lots yet. Pick from approved items.</p>
+      <p class="bidding-hint">ยังไม่มีสินค้า เลือกจากรายการสินค้าที่ Approve แล้ว</p>
     <% end %>
     <% @auction.lots.each do |lot| %>
-      <div class="bidding-pick bidding-pick--in">
+      <div class="bidding-pick in">
         <span class="bidding-pick__thumb" aria-hidden="true"></span>
         <span class="bidding-pick__body">
-          <span class="bidding-pick__title">Lot <%= lot.lot_no %> · <%= lot.item&.title || "Item ##{lot.item_id}" %></span>
-          <span class="bidding-pick__sub">Starting price <%= bidding_baht(lot.min_price_cents) %><%= " · increment #{bidding_baht(lot.bid_increment_cents)}" if lot.bid_increment_cents %></span>
+          <span class="bidding-pick__title">ล็อต <%= lot.lot_no %> · <%= lot.item&.title || "สินค้า ##{lot.item_id}" %></span>
+          <span class="bidding-pick__sub">ราคาขั้นต่ำ <%= bidding_baht(lot.min_price_cents) %><%= " · ขั้นบิด #{bidding_baht(lot.bid_increment_cents)}" if lot.bid_increment_cents %></span>
         </span>
         <% if @auction.draft? %>
-          <%= button_to admin_bidding_auction_lot_path(@auction, lot), method: :delete, class: "bidding-btn", "aria-label": "Remove lot #{lot.lot_no}" do %><%= bidding_icon(:x) %>Remove<% end %>
+          <%= button_to "เอาออก", admin_bidding_auction_lot_path(@auction, lot), method: :delete, class: "bidding-btn", "aria-label": "เอาล็อต #{lot.lot_no} ออก" %>
         <% end %>
       </div>
     <% end %>
@@ -58,24 +58,24 @@
 
   <% if @auction.draft? %>
     <section class="bidding-card" aria-labelledby="pool-h">
-      <h2 id="pool-h">Add items</h2>
-      <p class="bidding-hint">Pick from approved items (up to <%= Auction::MAX_LOTS %>)<%= ". English lots need a bid increment" if @auction.english? %></p>
-      <% if @available_items.empty? %><p class="bidding-hint">No approved items to pick.</p><% end %>
+      <h2 id="pool-h">Add สินค้าเข้างาน</h2>
+      <p class="bidding-hint">เลือกจากสินค้าที่ Approve แล้ว (สูงสุด <%= Auction::MAX_LOTS %> ชิ้น)<%= " · English ต้องกำหนดขั้นบิดขั้นต่ำต่อล็อต" if @auction.english? %></p>
+      <% if @available_items.empty? %><p class="bidding-hint">ไม่มีสินค้าที่ Approve แล้วให้เลือก</p><% end %>
       <% @available_items.each do |item| %>
         <% busy = @busy_item_ids.include?(item.id) %>
         <div class="bidding-pick">
           <span class="bidding-pick__thumb" aria-hidden="true"></span>
           <span class="bidding-pick__body">
             <span class="bidding-pick__title"><%= item.title %></span>
-            <span class="bidding-pick__sub"><%= AuctionItems.seller(item)&.display_name %> · <%= item.category %> · starting <%= bidding_baht(item.min_price_cents) %><%= " · in another auction that hasn't ended" if busy %></span>
+            <span class="bidding-pick__sub"><%= AuctionItems.seller(item)&.display_name %> · <%= item.category %> · ขั้นต่ำ <%= bidding_baht(item.min_price_cents) %><%= " · อยู่ในงานอื่นที่ยังไม่จบ" if busy %></span>
           </span>
           <%= form_with url: admin_bidding_auction_lots_path(@auction), method: :post do %>
             <%= hidden_field_tag :item_id, item.id, id: nil %>
             <% if @auction.english? %>
-              <label class="bidding-sr-only" for="inc-<%= item.id %>">Bid increment (THB) for <%= item.title %></label>
-              <input id="inc-<%= item.id %>" name="bid_increment" inputmode="decimal" placeholder="Increment (THB)" required>
+              <label class="bidding-sr-only" for="inc-<%= item.id %>">ขั้นบิดขั้นต่ำ (บาท) สำหรับ <%= item.title %></label>
+              <input id="inc-<%= item.id %>" name="bid_increment" inputmode="decimal" placeholder="ขั้นบิด (บาท)" required>
             <% end %>
-            <button class="bidding-btn" <%= "disabled" if busy || @auction.lots_full? %>><%= bidding_icon(:plus) %>Add</button>
+            <button class="bidding-btn" <%= "disabled" if busy || @auction.lots_full? %>>+ เพิ่ม</button>
           <% end %>
         </div>
       <% end %>
@@ -85,37 +85,37 @@
 
 <section class="bidding-card" aria-labelledby="people-h">
   <div class="bidding-head">
-    <h2 id="people-h"><%= @auction.english? ? "Invited buyers" : "Registered buyers" %></h2>
-    <span class="bidding-count"><%= pluralize(@participants.count { |p| !p.revoked? }, "buyer") %></span>
+    <h2 id="people-h"><%= @auction.english? ? "ผู้ได้รับเชิญ" : "ผู้ลงทะเบียน" %></h2>
+    <span class="bidding-count"><%= @participants.count { |p| !p.revoked? } %> คน</span>
   </div>
   <p class="bidding-hint">
     <% if @auction.english? %>
-      Only grade A buyers with approved proof of income can be invited. Buyers accept before they can bid. Invite or revoke before the auction opens.
+      เชิญได้เฉพาะผู้ซื้อเกรด A ที่หลักฐานรายได้ได้รับอนุมัติแล้ว · ผู้ซื้อต้องตอบรับก่อนจึงจะเสนอราคาได้ · เชิญหรือยกเลิกได้ก่อนงานเริ่ม
     <% else %>
-      Buyers register themselves once the auction is published (onboarding done, grade A–D).
+      ผู้ซื้อลงทะเบียนเองได้เมื่อเผยแพร่งานแล้ว (ต้องทำ onboarding เสร็จ เกรด A–D)
     <% end %>
   </p>
-  <% if @participants.empty? %><p class="bidding-hint">None yet.</p><% end %>
+  <% if @participants.empty? %><p class="bidding-hint">ยังไม่มี</p><% end %>
   <% @participants.each do |p| %>
     <div class="bidding-pick <%= 'bidding-pick--in' unless p.revoked? %>">
       <span class="bidding-pick__body">
-        <span class="bidding-pick__title"><%= p.user&.display_name || "User ##{p.user_id}" %></span>
-        <span class="bidding-pick__sub">Grade at entry <%= p.grade_at_entry %> · <%= BiddingHelper::PARTICIPANT_LABELS.fetch(p.status) %></span>
+        <span class="bidding-pick__title"><%= p.user&.display_name || "ผู้ใช้ ##{p.user_id}" %></span>
+        <span class="bidding-pick__sub">เกรดตอนเข้าร่วม <%= p.grade_at_entry %> · <%= BiddingHelper::PARTICIPANT_LABELS.fetch(p.status) %></span>
       </span>
       <% if !p.revoked? && (@auction.draft? || @auction.scheduled?) %>
-        <%= button_to "Revoke", revoke_admin_bidding_auction_invitation_path(@auction, p), class: "bidding-btn",
-              form: { data: { turbo_confirm: "Revoke this buyer's access?" } } %>
+        <%= button_to "ยกเลิกสิทธิ์", revoke_admin_bidding_auction_invitation_path(@auction, p), class: "bidding-btn",
+              form: { data: { turbo_confirm: "ยกเลิกสิทธิ์ของผู้ใช้นี้?" } } %>
       <% end %>
     </div>
   <% end %>
 
   <% if @auction.english? && (@auction.draft? || @auction.scheduled?) %>
-    <h2>Invite buyers</h2>
-    <% if @invitable_users.empty? %><p class="bidding-hint">No grade A buyers with approved proof of income left to invite.</p><% end %>
+    <h2>เชิญผู้ซื้อ</h2>
+    <% if @invitable_users.empty? %><p class="bidding-hint">ไม่มีผู้ซื้อเกรด A ที่อนุมัติหลักฐานรายได้แล้วและยังไม่ได้รับเชิญ</p><% end %>
     <% @invitable_users.each do |u| %>
       <div class="bidding-pick">
-        <span class="bidding-pick__body"><span class="bidding-pick__title"><%= u.display_name %></span><span class="bidding-pick__sub">Grade <%= BuyerStanding.grade(u) %> · proof of income approved</span></span>
-        <%= button_to admin_bidding_auction_invitations_path(@auction, user_id: u.id), class: "bidding-btn" do %><%= bidding_icon(:user_plus) %>Invite<% end %>
+        <span class="bidding-pick__body"><span class="bidding-pick__title"><%= u.display_name %></span><span class="bidding-pick__sub">เกรด <%= BuyerStanding.grade(u) %> · หลักฐานรายได้อนุมัติแล้ว</span></span>
+        <%= button_to "+ เชิญ", admin_bidding_auction_invitations_path(@auction, user_id: u.id), class: "bidding-btn" %>
       </div>
     <% end %>
   <% end %>
@@ -123,11 +123,11 @@
 
 <% if @auction.draft? || @auction.scheduled? %>
   <section class="bidding-card" aria-labelledby="cancel-h">
-    <h2 id="cancel-h">Cancel auction</h2>
+    <h2 id="cancel-h">ยกเลิกงาน</h2>
     <%= form_with url: cancel_admin_bidding_auction_path(@auction), method: :post, class: "bidding-field" do %>
-      <label for="cancel_reason">Reason (required)</label>
+      <label for="cancel_reason">เหตุผล (จำเป็น)</label>
       <textarea id="cancel_reason" name="cancel_reason" rows="2" required></textarea>
-      <div class="bidding-actions"><button class="bidding-btn bidding-btn--danger" data-turbo-confirm="Cancel this auction? This can't be undone.">Cancel auction</button></div>
+      <div class="bidding-actions"><button class="bidding-btn bidding-btn--danger" data-turbo-confirm="ยกเลิกงานนี้? ทำย้อนกลับไม่ได้">ยกเลิกงาน</button></div>
     <% end %>
   </section>
 <% end %>

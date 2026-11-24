@@ -1,6 +1,6 @@
 module Bidding
   # English bid history for one lot (issue #34), newest first, with bidders masked as
-  # "Bidder N" (same numbering as Broadcaster.masked_leader). The viewer's own bids say "You".
+  # "ผู้ประมูล N" (same numbering as Broadcaster.masked_leader). The viewer's own bids say "คุณ".
   # Never used for sealed lots: their amounts stay secret until results are published.
   class BidHistory
     PER_PAGE = 20
@@ -34,14 +34,14 @@ module Bidding
 
     def to_row(bid)
       mine = @viewer && bid.user_id == @viewer.id
-      Row.new(bidder: mine ? "You" : label_for(bid.user_id), mine: !!mine, amount_cents: bid.amount, placed_at: bid.created_at)
+      Row.new(bidder: mine ? "คุณ" : label_for(bid.user_id), mine: !!mine, amount_cents: bid.amount, placed_at: bid.created_at)
     end
 
     def label_for(user_id)
       return unless user_id
 
       position = participant_ids.index(user_id)
-      position ? "Bidder #{position + 1}" : nil
+      position ? "ผู้ประมูล #{position + 1}" : nil
     end
 
     def participant_ids

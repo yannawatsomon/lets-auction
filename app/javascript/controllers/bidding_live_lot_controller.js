@@ -19,8 +19,8 @@ export default class extends Controller {
       { channel: "Bidding::AuctionChannel", auction_id: this.auctionIdValue },
       {
         connected: () => this.say(""),
-        disconnected: () => this.say("Live connection lost. Reconnecting… the price shown may be out of date."),
-        rejected: () => this.say("Live prices aren't available (accepted invitees only). Refresh to see the latest price."),
+        disconnected: () => this.say("การเชื่อมต่อสดหลุด กำลังเชื่อมต่อใหม่… ราคาที่แสดงอาจไม่ใช่ล่าสุด"),
+        rejected: () => this.say("ดูราคาสดไม่ได้ (ต้องเป็นผู้ได้รับเชิญที่ตอบรับแล้ว) · รีเฟรชหน้าเพื่อดูราคาล่าสุด"),
         received: (msg) => this.receive(msg)
       }
     )
@@ -50,7 +50,7 @@ export default class extends Controller {
         if (msg.lot_id === this.lotIdValue) this.close()
         break
       case "auction.result_published":
-        this.say("Results published. Reloading…")
+        this.say("ประกาศผลแล้ว · กำลังโหลดหน้าใหม่")
         setTimeout(() => window.location.reload(), 1200)
         break
     }
@@ -59,10 +59,10 @@ export default class extends Controller {
   apply(lot) {
     const hasBids = Number(lot.bid_count) > 0
     if (this.hasPriceTarget) this.priceTarget.textContent = baht(hasBids ? lot.current_price_cents : lot.min_price_cents)
-    if (this.hasPriceLabelTarget) this.priceLabelTarget.textContent = hasBids ? "Current price" : "Starting price"
+    if (this.hasPriceLabelTarget) this.priceLabelTarget.textContent = hasBids ? "ราคาปัจจุบัน" : "ราคาเริ่มต้น"
     if (this.hasCountTarget) this.countTarget.textContent = lot.bid_count
     if (this.hasNextMinTarget) this.nextMinTarget.textContent = baht(lot.next_minimum_cents)
-    if (this.hasLeaderTarget) this.leaderTarget.textContent = lot.leader ? `Leader: ${lot.leader}` : ""
+    if (this.hasLeaderTarget) this.leaderTarget.textContent = lot.leader ? `ผู้นำ: ${lot.leader}` : ""
 
     const mine = Boolean(lot.leader) && lot.leader === this.myLabelValue
     if (this.hasLeadingTarget) this.leadingTarget.hidden = !mine
@@ -94,7 +94,7 @@ export default class extends Controller {
       const res = await fetch(this.historyUrlValue, { headers: { Accept: "text/html" }, credentials: "same-origin" })
       if (res.ok) this.historyTarget.innerHTML = await res.text()
     } catch (_) {
-      this.say("Couldn't load the bid history. Refresh to see the latest.")
+      this.say("โหลดประวัติการบิดไม่สำเร็จ · รีเฟรชหน้าเพื่อดูล่าสุด")
     }
   }
 

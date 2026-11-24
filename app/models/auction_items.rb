@@ -1,7 +1,7 @@
 # The one place bidding reads products from (issue #28 follow-up, 2026-11-11).
 #
 # Products come from product onboarding's store (`ProductOnboarding::Store`, ids 201+): an item
-# an admin approves there shows up in "Add items". Bidding's own demo products
+# an admin approves there shows up in "Add สินค้าเข้างาน". Bidding's own demo products
 # (`db/mock/items.yml`, ids 101–108, incl. the ฿20M+ English items) stay as extra mock stock
 # until real data exists. When the `items` table lands, this module becomes `Item.approved` /
 # `Item.find_by` (see ai/knowledge/mock-data.md).

@@ -1,30 +1,28 @@
-<% content_for :title, "My bids" %>
-<div class="bidding-stack">
-  <h1>My bids</h1>
-  <p class="bidding-hint">You only see your own amounts. Results show once an admin publishes them.</p>
-</div>
+<% content_for :title, "ซองของฉัน" %>
+<h1>ซองของฉัน</h1>
+<p class="bidding-hint">เห็นเฉพาะราคาของคุณเอง · ผลจะแสดงเมื่อแอดมินประกาศ</p>
 <div class="bidding-card bidding-card--scroll">
   <% if @bids.empty? %>
-    <p class="bidding-hint">You haven't placed a sealed bid yet. <%= link_to "Browse auctions", bidding_auctions_path %></p>
+    <p class="bidding-hint">ยังไม่ได้ยื่นซอง · <%= link_to "ดูงานประมูล", bidding_auctions_path %></p>
   <% else %>
     <table class="bidding-table">
-      <thead><tr><th>Receipt</th><th>Item</th><th>Auction</th><th>Placed</th><th>My bid</th><th>Status</th></tr></thead>
+      <thead><tr><th>เลขที่ซอง</th><th>สินค้า</th><th>งาน</th><th>เวลายื่น</th><th>ราคาของฉัน</th><th>สถานะ</th></tr></thead>
       <tbody>
         <% @bids.each do |b| %>
           <tr>
             <td class="bidding-mono"><%= b.lot.receipt_no_for(b) %></td>
-            <td><%= link_to(b.lot.item&.title || "Lot #{b.lot.lot_no}", bidding_lot_path(b.lot)) %></td>
+            <td><%= link_to(b.lot.item&.title || "ล็อต #{b.lot.lot_no}", bidding_lot_path(b.lot)) %></td>
             <td><%= b.lot.auction.title %></td>
-            <td class="bidding-mono"><%= bidding_time(b.created_at) %></td>
-            <td class="bidding-mono"><%= bidding_baht(b.amount) %></td>
-            <td><%= b.lot.auction.published? ? link_to("View result", result_bidding_lot_path(b.lot)) : "Awaiting results" %></td>
+            <td><%= bidding_time(b.created_at) %></td>
+            <td><%= bidding_baht(b.amount) %></td>
+            <td><%= b.lot.auction.published? ? link_to("ดูผล", result_bidding_lot_path(b.lot)) : "รอประกาศผล" %></td>
           </tr>
         <% end %>
       </tbody>
     </table>
   <% end %>
 </div>
-<nav class="bidding-actions" aria-label="Pages">
-  <% if @page > 1 %><%= link_to bidding_bids_path(page: @page - 1), class: "bidding-btn" do %><%= bidding_icon(:arrow_left) %>Previous<% end %><% end %>
-  <% if @next_page %><%= link_to bidding_bids_path(page: @page + 1), class: "bidding-btn" do %>Next<%= bidding_icon(:arrow_right) %><% end %><% end %>
+<nav class="bidding-actions" aria-label="หน้า">
+  <% if @page > 1 %><%= link_to "← ก่อนหน้า", bidding_bids_path(page: @page - 1), class: "bidding-btn" %><% end %>
+  <% if @next_page %><%= link_to "ถัดไป →", bidding_bids_path(page: @page + 1), class: "bidding-btn" %><% end %>
 </nav>

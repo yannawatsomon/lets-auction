@@ -64,37 +64,37 @@ module Bidding
     private
 
     def check_participant!
-      raise Error.new("wrong_auction_type", "This lot is not an English auction.", :unprocessable_content) unless @lot.auction.english?
+      raise Error.new("wrong_auction_type", "ล็อตนี้ไม่ใช่การประมูลแบบ English", :unprocessable_content) unless @lot.auction.english?
 
       participant = @lot.auction.participants.find_by(user_id: @user.id)
       return if participant&.accepted? && @user.buyer?
 
-      message = participant&.invited? ? "Accept the invitation before you bid. Your bid was not placed." : "This auction is open to invited buyers only. Your bid was not placed."
+      message = participant&.invited? ? "ตอบรับคำเชิญก่อนจึงจะเสนอราคาได้ ยังไม่ได้ยื่นราคา" : "งานนี้เปิดเฉพาะผู้ที่ได้รับเชิญ ยังไม่ได้ยื่นราคา"
       raise Error.new("not_invited", message, :forbidden)
     end
 
     def check_open!
       return if @lot.accepting_bids?(@now)
 
-      message = @now < @lot.auction.starts_at ? "Bidding hasn't opened yet. Your bid was not placed." : "Bidding is closed. Your bid was not placed."
+      message = @now < @lot.auction.starts_at ? "ยังไม่ถึงเวลาเปิดประมูล ยังไม่ได้ยื่นราคา" : "ปิดประมูลแล้ว ยังไม่ได้ยื่นราคา"
       raise Error.new("bidding_closed", message, :conflict)
     end
 
     def check_not_leading!
       return unless @lot.leader_bid&.user_id == @user.id
 
-      raise Error.new("already_leading", "You're already the highest bidder.", :conflict)
+      raise Error.new("already_leading", "คุณเป็นผู้นำอยู่แล้ว ไม่ต้องเสนอราคาซ้ำ", :conflict)
     end
 
     def check_amount!(amount)
       minimum = @lot.next_minimum_cents
       return if amount >= minimum
 
-      raise Error.new("bid_too_low", "Your bid must be at least ฿ #{Baht.format(minimum)}. Your bid was not placed.", :unprocessable_content)
+      raise Error.new("bid_too_low", "ราคาต้องไม่ต่ำกว่า ฿ #{Baht.format(minimum)} ยังไม่ได้ยื่นราคา", :unprocessable_content)
     end
 
     def outbid_meanwhile
-      Error.new("price_moved", "Someone bid at the same moment, so your bid was not saved. Reload to see the latest price.", :conflict)
+      Error.new("price_moved", "มีผู้เสนอราคาเข้ามาพร้อมกันพอดี ราคาของคุณยังไม่ถูกบันทึก โหลดหน้าใหม่แล้วดูราคาล่าสุด", :conflict)
     end
   end
 end

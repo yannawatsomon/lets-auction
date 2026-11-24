@@ -67,7 +67,7 @@ class BiddingSealedBidTest < ActionDispatch::IntegrationTest
     [ bidding_lot_path(@lot), bidding_auction_path(@auction), bidding_bids_path, bidding_auctions_path ].each do |path|
       get path
       assert_not_includes response.body, "77,777", "#{path} leaked an amount"
-      assert_no_match(/\d+\s*(bids?|bidders?)\b|bids so far|bid count\s*:?\s*\d/i, response.body, "#{path} leaked a count")
+      assert_no_match(/ซองทั้งหมด\s*\d|ผู้ยื่นซอง\s*\d|\d+\s*ซอง/, response.body, "#{path} leaked a count")
     end
     get bidding_bids_path
     assert_select "tbody tr", count: 0
@@ -94,13 +94,13 @@ class BiddingSealedBidTest < ActionDispatch::IntegrationTest
   test "not registered: told to register; guests must log in" do
     open_now
     get bidding_lot_path(@lot)
-    assert_select ".bidding-notice--warn", /Sign in/
+    assert_select ".bidding-notice--warn", /เข้าสู่ระบบ/
     post bidding_lot_bids_path(@lot, format: :json), params: { amount: "30000" }, headers: { "Idempotency-Key" => "g" }
     assert_response :unauthorized
 
     login(21)
     get bidding_lot_path(@lot)
-    assert_select ".bidding-notice--warn", /Register/
+    assert_select ".bidding-notice--warn", /ลงทะเบียน/
   end
 
   test "bid amounts are filtered from the request log" do
