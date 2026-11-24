@@ -230,6 +230,54 @@ table.list td { padding: 12px 8px; border-bottom: 1px solid var(--line-soft); ve
   .payment-choice-grid { gap: 8px; }
   .payment-choice { padding: 8px; font-size: 14px; }
 }
+/* MOCK QR payment and receipt modals (#55) */
+.payment-modal-backdrop {
+  min-height: calc(100vh - 64px); padding: 32px 16px; display: flex; align-items: flex-start;
+  justify-content: center; background: #15171C99;
+}
+.payment-modal {
+  width: 100%; max-width: 440px; padding: 22px; display: flex; flex-direction: column; gap: 16px;
+  background: var(--white); border: 2px solid var(--ink); border-radius: 16px; box-shadow: 0 5px 0 var(--ink);
+}
+.payment-modal-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.payment-modal-header h1 { margin: 0; font-size: 22px; }
+.payment-modal-header h1:focus { outline: none; }
+.payment-modal-close {
+  min-height: 44px; padding: 0 12px; display: inline-flex; align-items: center; border-radius: 8px;
+  color: var(--body); font-size: 14px; font-weight: 600; text-decoration: underline;
+}
+.payment-qr-frame { position: relative; width: 232px; margin: 0 auto; padding: 8px; background: var(--white); border: 1px solid var(--line); border-radius: 12px; }
+.payment-qr-code { display: block; width: 100%; height: auto; background: var(--white); }
+.payment-qr-frame.is-inactive .payment-qr-code { opacity: .18; filter: grayscale(1); }
+.payment-qr-overlay {
+  position: absolute; inset: 0; margin: 0; display: flex; align-items: center; justify-content: center;
+  color: var(--ink); font-size: 17px; font-weight: 700;
+}
+.payment-qr-caption { margin: -6px 0 0; color: var(--muted); font-size: 12px; text-align: center; }
+.payment-qr-details { border-top: 0; }
+.payment-mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-variant-numeric: tabular-nums; }
+.payment-qr-timer { font-size: 17px; }
+.payment-qr-waiting { margin: 0; color: var(--muted); font-size: 13px; text-align: center; }
+.payment-modal .payment-errors { margin: 0; }
+.payment-demo-panel { padding: 10px 12px; border: 1px dashed var(--field); border-radius: 10px; font-size: 13px; color: var(--body); }
+.payment-demo-panel summary { min-height: 32px; display: flex; align-items: center; font-weight: 600; cursor: pointer; }
+.payment-demo-panel p { margin: 6px 0 10px; }
+.payment-demo-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.payment-demo-actions button {
+  min-height: 44px; padding: 6px 10px; border: 1px solid var(--field); border-radius: 8px;
+  background: var(--cream); color: var(--ink); font: inherit; font-weight: 600; cursor: pointer;
+}
+.payment-demo-actions button:disabled { opacity: .5; cursor: wait; }
+.payment-success { color: var(--ok); }
+.payment-receipt-notes { margin: 0; padding: 12px 14px 12px 32px; border-radius: 9px; background: var(--ok-bg); color: var(--ok); font-size: 14px; }
+.payment-receipt-notes small { color: var(--body); }
+.payment-receipt .payment-breakdown dd { max-width: 60%; }
+@media print {
+  .payment-header, .payment-modal-close, .payment-print, .payment-demo-caption { display: none !important; }
+  .payment-modal-backdrop { min-height: 0; padding: 0; background: none; }
+  .payment-modal { max-width: none; border: 0; box-shadow: none; }
+}
+
 /* Product onboarding statuses (ProductOnboarding::Item::STATUSES) */
 .chip.pending_review { background: var(--warn-bg); color: var(--warn); }
 .chip.info_requested, .chip.withdrawn { background: var(--tile); color: var(--ink); }

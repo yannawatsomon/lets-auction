@@ -1,0 +1,71 @@
+<% content_for :title, "ใบเสร็จ #{@payment.receipt_number} · Lets Auction" %>
+
+<main class="payment-page">
+  <header class="payment-header">
+    <%= link_to "Lets Auction", root_path, class: "payment-brand" %>
+    <span class="payment-demo-tag">ข้อมูลตัวอย่าง</span>
+  </header>
+
+  <div class="payment-modal-backdrop">
+    <section class="payment-modal payment-receipt" role="dialog" aria-modal="true" aria-labelledby="payment-receipt-heading">
+      <header class="payment-modal-header">
+        <div>
+          <p class="payment-eyebrow payment-success">ชำระเงินสำเร็จ</p>
+          <h1 id="payment-receipt-heading">ใบเสร็จรับเงิน</h1>
+        </div>
+        <%= link_to "ปิด", root_path, class: "payment-modal-close" %>
+      </header>
+
+      <dl class="payment-breakdown">
+        <div>
+          <dt>เลขที่ใบเสร็จ</dt>
+          <dd class="payment-mono"><%= @payment.receipt_number %></dd>
+        </div>
+        <div>
+          <dt>วันที่ชำระ</dt>
+          <dd><%= l(@payment.paid_at.in_time_zone("Asia/Bangkok"), format: "%d/%m/%Y %H:%M น.") %></dd>
+        </div>
+        <div>
+          <dt>เลขอ้างอิง QR</dt>
+          <dd class="payment-mono"><%= @payment.reference %></dd>
+        </div>
+        <div>
+          <dt>รายการ</dt>
+          <dd><%= @order.item_title %></dd>
+        </div>
+        <div>
+          <dt>ราคาประมูล</dt>
+          <dd><%= baht(@order.winning_bid_satang) %></dd>
+        </div>
+        <div>
+          <dt>ค่าบริการผู้ซื้อ</dt>
+          <dd><%= baht(@order.buyer_premium_satang) %></dd>
+        </div>
+        <div>
+          <dt>ค่าขนส่ง</dt>
+          <dd><%= baht(@payment.delivery_method == "shipping" ? @order.shipping_fee_satang : 0) %></dd>
+        </div>
+        <div>
+          <dt>ภาษีมูลค่าเพิ่ม 7%</dt>
+          <dd><%= baht(@quote.vat_satang) %></dd>
+        </div>
+        <div class="payment-total-row">
+          <dt>ชำระแล้ว</dt>
+          <dd><%= baht(@payment.amount_satang) %></dd>
+        </div>
+        <div>
+          <dt>ผู้รับเงิน</dt>
+          <dd><%= MockQrPaymentStore::ACCOUNT_NAME %></dd>
+        </div>
+      </dl>
+
+      <ul class="payment-receipt-notes" role="status">
+        <li>ส่งสำเนาใบเสร็จไปที่ <%= @payment.email || "อีเมลของผู้ซื้อ" %> แล้ว <small>(จำลอง ยังไม่ส่งอีเมลจริง)</small></li>
+        <li>แจ้งผู้ขายแล้วว่าได้รับชำระ <small>(จำลอง)</small></li>
+      </ul>
+
+      <button type="button" class="payment-submit payment-print" data-controller="print" data-action="print#print">ดาวน์โหลด PDF</button>
+      <p class="payment-demo-caption">เปิดหน้าพิมพ์ของเบราว์เซอร์ เลือก "บันทึกเป็น PDF" ได้ · ไฟล์ PDF จากระบบจริงยังไม่ทำ</p>
+    </section>
+  </div>
+</main>

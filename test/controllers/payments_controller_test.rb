@@ -53,13 +53,22 @@ class PaymentsControllerTest < ActionDispatch::IntegrationTest
 
   test "valid preview never reports payment success" do
     post "/payment/preview", params: {
-      payment_method: "qr",
+      payment_method: "online_banking",
       delivery_method: "self_pickup",
       tax_invoice: "0"
     }
 
     assert_response :success
     assert_includes response.body, "ยังไม่มีการเรียกเก็บเงินจริง"
+    assert_not_includes response.body, "ชำระเงินสำเร็จ"
+  end
+
+  test "valid QR preview opens the QR modal without reporting payment success" do
+    post "/payment/preview", params: { payment_method: "qr", delivery_method: "self_pickup", tax_invoice: "0" }
+    follow_redirect!
+
+    assert_response :success
+    assert_includes response.body, "สแกน QR พร้อมเพย์"
     assert_not_includes response.body, "ชำระเงินสำเร็จ"
   end
 end

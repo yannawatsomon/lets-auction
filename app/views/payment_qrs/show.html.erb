@@ -1,0 +1,72 @@
+<% content_for :title, "ชำระด้วย QR พร้อมเพย์ · Lets Auction" %>
+
+<main class="payment-page">
+  <header class="payment-header">
+    <%= link_to "Lets Auction", root_path, class: "payment-brand" %>
+    <span class="payment-demo-tag">ข้อมูลตัวอย่าง</span>
+  </header>
+
+  <div class="payment-modal-backdrop">
+    <section class="payment-modal" role="dialog" aria-modal="true" aria-labelledby="payment-qr-heading"
+             data-controller="payment-qr"
+             data-payment-qr-status-url-value="<%= payment_qr_status_path(@payment.reference) %>"
+             data-payment-qr-simulate-url-value="<%= payment_qr_simulate_path(@payment.reference) %>"
+             data-payment-qr-status-value="<%= @payment.status %>"
+             data-payment-qr-seconds-left-value="<%= @payment.seconds_left %>">
+      <header class="payment-modal-header">
+        <div>
+          <p class="payment-eyebrow">ขั้นตอนที่ 2 · ชำระเงิน</p>
+          <h1 id="payment-qr-heading" tabindex="-1" data-payment-qr-target="heading">สแกน QR พร้อมเพย์</h1>
+        </div>
+        <%= link_to "ยกเลิก", payment_path(delivery_method: @payment.delivery_method), class: "payment-modal-close" %>
+      </header>
+
+      <div class="payment-qr-frame <%= "is-inactive" unless @payment.pending? %>" data-payment-qr-target="frame">
+        <%= mock_qr_svg(@payment.reference) %>
+        <p class="payment-qr-overlay" data-payment-qr-target="overlay" <%= "hidden" if @payment.pending? %>>
+          <%= @payment.failed? ? "ชำระไม่สำเร็จ" : "QR หมดอายุแล้ว" %>
+        </p>
+      </div>
+      <p class="payment-qr-caption">QR ตัวอย่าง สแกนจ่ายไม่ได้ · ใช้ได้ครั้งเดียว เฉพาะยอดนี้</p>
+
+      <dl class="payment-breakdown payment-qr-details">
+        <div class="payment-total-row">
+          <dt>ยอดชำระ</dt>
+          <dd><%= baht(@payment.amount_satang) %></dd>
+        </div>
+        <div>
+          <dt>ชื่อบัญชี</dt>
+          <dd><%= MockQrPaymentStore::ACCOUNT_NAME %></dd>
+        </div>
+        <div>
+          <dt>เลขอ้างอิง</dt>
+          <dd class="payment-mono"><%= @payment.reference %></dd>
+        </div>
+        <div>
+          <dt>QR หมดอายุใน</dt>
+          <dd class="payment-mono payment-qr-timer" data-payment-qr-target="timer" aria-live="off"><%= mm_ss(@payment.seconds_left) %></dd>
+        </div>
+      </dl>
+
+      <p class="payment-qr-waiting" role="status" data-payment-qr-target="waiting" <%= "hidden" unless @payment.pending? %>>
+        กำลังรอการยืนยันจากธนาคาร… ระบบตรวจสถานะทุก 4 วินาที
+      </p>
+      <div class="payment-errors" role="alert" data-payment-qr-target="error" <%= "hidden" if @payment.pending? %>>
+        <p data-payment-qr-target="errorMessage"><%= @payment.failure || "QR นี้หมดอายุแล้ว กรุณาสร้าง QR ใหม่" %></p>
+      </div>
+      <%= button_to "สร้าง QR ใหม่", payment_qr_renew_path(@payment.reference), class: "payment-submit",
+            form: { data: { payment_qr_target: "renew" }, hidden: @payment.pending? } %>
+
+      <details class="payment-demo-panel" <%= "hidden" unless @payment.pending? %> data-payment-qr-target="demo">
+        <summary>จำลองผลจากธนาคาร (แทน webhook)</summary>
+        <p>ยังไม่เชื่อม payment gateway ปุ่มเหล่านี้ส่งผลแบบเดียวกับที่ webhook จะส่งมา</p>
+        <div class="payment-demo-actions">
+          <button type="button" data-action="payment-qr#simulate" data-outcome="paid">ชำระสำเร็จ</button>
+          <button type="button" data-action="payment-qr#simulate" data-outcome="amount_mismatch">ยอดไม่ตรง</button>
+          <button type="button" data-action="payment-qr#simulate" data-outcome="failed">ธนาคารปฏิเสธ</button>
+          <button type="button" data-action="payment-qr#simulate" data-outcome="expire">ให้ QR หมดอายุ</button>
+        </div>
+      </details>
+    </section>
+  </div>
+</main>

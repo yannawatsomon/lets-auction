@@ -29,7 +29,11 @@ class PaymentsController < ApplicationController
     return render_invalid_delivery_method unless PaymentQuote::DELIVERY_METHODS.include?(@delivery_method)
 
     prepare_page
-    if @payment_submission.valid?
+    if @payment_submission.valid? && @payment_submission.payment_method == "qr"
+      payment = MockQrPaymentStore.create!(amount_satang: @quote.total_satang,
+        delivery_method: @delivery_method, email: @payment_submission.email)
+      redirect_to payment_qr_path(payment.reference)
+    elsif @payment_submission.valid?
       @demo_notice = "นี่เป็นหน้าทดลอง ยังไม่มีการเรียกเก็บเงินจริง"
       render :show
     else
