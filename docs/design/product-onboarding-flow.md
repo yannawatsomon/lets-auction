@@ -6,9 +6,9 @@
 > wins. Items marked **NEW** are not in the Milestone 1 design draft and need confirming before
 > code (see [Open questions](#open-questions)).
 >
-> Proposed answers to the open questions are in
-> [`docs/decision/product-onboarding.md`](../decision/product-onboarding.md) (Open until a
-> collaborator confirms). One change from this draft: files are stored as attachments, so
+> Answers to the open questions are in
+> [`docs/decision/product-onboarding.md`](../decision/product-onboarding.md) (Decided
+> 2026-11-25). One change from this draft: files are stored as attachments, so
 > `item_media` has no `url` column.
 
 ## Goal

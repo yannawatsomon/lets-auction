@@ -1,7 +1,7 @@
 # Product onboarding (seller lists a product, admin verifies it)
 
-**Status:** Open · **Effort:** M · **Deadline risk:** High — issues #48 to #54 of the
-`product onboarding` milestone all wait on these answers
+**Status:** Decided (2026-11-25) · **Effort:** M · **Deadline risk:** High — issues #48 to #54
+of the `product onboarding` milestone build on these answers
 
 ## Context
 
@@ -9,15 +9,19 @@ A seller lists a product and an admin verifies it before it can go into an aucti
 described in [`docs/design/product-onboarding-flow.md`](../design/product-onboarding-flow.md)
 (draft) and builds on [`scope.md`](scope.md) and the Milestone 1 design draft
 [`docs/design/milestone-1-api-and-database.md`](../design/milestone-1-api-and-database.md).
-The flow doc leaves ten questions open; this file answers them as **proposals**. Each bullet
-becomes Decided only when a collaborator confirms it in a PR (see `README.md`). Tracking issue:
-#47. Implementation plan: [`docs/plans/2026-11-11-product-onboarding.md`](../plans/2026-11-11-product-onboarding.md).
+The flow doc leaves ten questions open; this file answers them. Every bullet under
+**Decisions** was confirmed as written by @guy127 on 2026-11-25 (issue #47), including the video
+limit of 2 over the team's UI sketch (1). The limits and file rules are already in the mock code
+on `main`: `ProductOnboarding::Item::MEDIA_LIMITS` (`app/models/product_onboarding/item.rb`) and
+`ProductOnboarding::UploadPolicy::LIMITS` (`app/models/product_onboarding/upload_policy.rb`); the
+remaining bullets describe the real implementation that replaces the mock (#48 to #54). Tracking
+issue: #47. Implementation plan: [`docs/plans/2026-11-11-product-onboarding.md`](../plans/2026-11-11-product-onboarding.md).
 
 Not decided here (owned elsewhere): money as integer satang → `bidding.md`; auth and roles →
 `auth.md`; database (Postgres vs SQLite) → `stack.md`, `deployment.md`; Rails views vs a separate
 client → `stack.md`.
 
-## Proposals
+## Decisions
 
 - **Media limits.** What: 1 to 5 images (required), 0 to 2 videos (optional), counted per item
   and enforced by the server in a transaction that locks the item row. Why: buyers and the
@@ -115,9 +119,9 @@ client → `stack.md`.
 
 ## Open questions
 
-- **Who confirms these proposals?** A collaborator, in the PR for #47. Until then, #48 to #54
-  must not code past a proposal that is still Open.
-- **Video count:** 2 here, 1 in the team's UI sketch. Which one?
+- ~~**Who confirms these proposals?**~~ Confirmed by @guy127, 2026-11-25 (#47).
+- ~~**Video count:** 2 here, 1 in the team's UI sketch. Which one?~~ 2, confirmed by @guy127,
+  2026-11-25.
 - **Production file storage:** which S3-compatible service, and who approves the gem? Blocks
   the production half of #49.
 - **Database:** the row-lock rule cannot be tested on SQLite → `stack.md`.
