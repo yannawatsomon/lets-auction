@@ -50,8 +50,8 @@ draft gives them, and each bullet becomes Decided only when a collaborator confi
   Source: collaborator-preserved change in commit `5447d0d`, 2026-11-11.
 
 - **Product media limits.** What: each item has 1 to 5 images (required) and 0 to 2 videos
-  (optional); verification documents are separate and have no limit yet. The API enforces the
-  counts. Why: the draft already caps images at 5; a minimum of 1 means buyers and the admin
+  (optional); verification documents are separate, up to 10 per item (`product-onboarding.md`,
+  Decided 2026-11-25). The API enforces the counts. Why: the draft already caps images at 5; a minimum of 1 means buyers and the admin
   always have something to look at. Trade-off: a seller with only a video or a document cannot
   list. Source: onboarding flow draft
   [`docs/design/product-onboarding-flow.md`](../design/product-onboarding-flow.md), 2026-11-11
@@ -62,8 +62,8 @@ draft gives them, and each bullet becomes Decided only when a collaborator confi
 ## Open questions
 
 - Product media: file formats and sizes, a limit on documents, and whether the 20M THB English
-  items must include documents → answered as proposals in
-  [`product-onboarding.md`](product-onboarding.md), waiting for a collaborator to confirm.
+  items must include documents → Decided in [`product-onboarding.md`](product-onboarding.md)
+  (@guy127, 2026-11-25).
 - Page 6 shows a credit card option, but Milestone 1 uses slips. Hide it until a gateway exists?
 - Is there a platform fee (deducted from the seller or added for the buyer)? If yes, `orders`
   and `payouts` need a `fee` column.
